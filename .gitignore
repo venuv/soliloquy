@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+client/dist/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Data (persisted on fly.io volume)
+server/data/analytics/*.json
+server/data/keys.json
+
+# Keep author data in git
+!server/data/authors/
+
+# OS files
+.DS_Store
+._*
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
