@@ -18,7 +18,7 @@ primary_region = "ord"
 
 [mounts]
   source = "soliloquy_data"
-  destination = "/app/server/data"
+  destination = "/app/server/data/analytics"
 
 [[vm]]
   memory = "256mb"
