@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js';
 import authorsRoutes from './routes/authors.js';
 import analyticsRoutes from './routes/analytics.js';
 import adminRoutes from './routes/admin.js';
+import visualizeRoutes from './routes/visualize.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/authors', authorsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/visualize', visualizeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
