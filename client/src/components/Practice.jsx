@@ -5,38 +5,9 @@ import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image
 } from 'lucide-react'
+import { similarityScore, containsExpected, wordCount } from '../utils/memoryCard'
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-
-const normalizeText = (text) => {
-  return text.toLowerCase()
-    .replace(/[''\']/g, '')  // Remove all apostrophes for comparison
-    .replace(/[—–-]/g, '-')
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-const similarityScore = (str1, str2) => {
-  const s1 = normalizeText(str1)
-  const s2 = normalizeText(str2)
-  const words1 = s1.split(' ')
-  const words2 = s2.split(' ')
-  let matches = 0
-  words1.forEach(w1 => {
-    if (words2.some(w2 => w2.includes(w1) || w1.includes(w2))) matches++
-  })
-  return matches / Math.max(words1.length, words2.length)
-}
-
-// Check if answer contains the expected text (user typed more than needed)
-const containsExpected = (userAnswer, expected) => {
-  const normUser = normalizeText(userAnswer)
-  const normExpected = normalizeText(expected)
-  return normUser.includes(normExpected) || normUser.startsWith(normExpected)
-}
-
-const wordCount = (text) => text.trim().split(/\s+/).length
 
 export default function Practice() {
   const { authorId, workId } = useParams()
