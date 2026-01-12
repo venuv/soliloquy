@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
-  CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft
+  CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image
 } from 'lucide-react'
 import { similarityScore, containsExpected, wordCount } from '../utils/memoryCard'
 
@@ -229,7 +229,7 @@ export default function Practice() {
         <p className="text-gray-400 mb-2">{work.character} • {work.source}</p>
         <p className="text-gray-500 mb-8">{work.act} • {work.chunks.length} chunks</p>
         
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap justify-center">
           <button
             onClick={() => startMode('memorize')}
             className="flex flex-col items-center gap-3 p-8 bg-gray-800 hover:bg-gray-700 rounded-2xl transition-all w-48"
@@ -246,6 +246,14 @@ export default function Practice() {
             <span className="text-white font-medium text-lg">Test</span>
             <span className="text-gray-400 text-sm text-center">Voice or type answers</span>
           </button>
+          <Link
+            to={`/visualize/${authorId}/${workId}`}
+            className="flex flex-col items-center gap-3 p-8 bg-gray-800 hover:bg-gray-700 rounded-2xl transition-all w-48"
+          >
+            <Image size={48} className="text-purple-400" />
+            <span className="text-white font-medium text-lg">Visualize</span>
+            <span className="text-gray-400 text-sm text-center">Text analysis & images</span>
+          </Link>
         </div>
         
         <div className="mt-8 text-gray-500 text-sm">
