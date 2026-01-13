@@ -24,6 +24,82 @@ const TOMORROW_SOLILOQUY = {
   source: 'Macbeth',
   character: 'Macbeth',
   act: 'Act 5, Scene 5',
+  scaffold: {
+    letterSequence: 'TCTAT-LTATS',
+    themes: ['Time', 'Death', 'Theater', 'Nihilism'],
+    lines: [
+      {
+        number: 1,
+        text: 'Tomorrow, and tomorrow, and tomorrow,',
+        letter: 'T',
+        theme: 'Time',
+        mnemonic: 'Three funeral bells tolling in procession'
+      },
+      {
+        number: 2,
+        text: 'Creeps in this petty pace from day to day,',
+        letter: 'C',
+        theme: 'Time',
+        mnemonic: 'A leper dragging himself across flagstones'
+      },
+      {
+        number: 3,
+        text: 'To the last syllable of recorded time;',
+        letter: 'T',
+        theme: 'Time',
+        mnemonic: "A monk's quill scratching the final word of history"
+      },
+      {
+        number: 4,
+        text: 'And all our yesterdays have lighted fools',
+        letter: 'A',
+        theme: 'Time',
+        mnemonic: 'Torchbearers leading fools into an open grave'
+      },
+      {
+        number: 5,
+        text: 'The way to dusty death. Out, out, brief candle!',
+        letter: 'T',
+        theme: 'Death',
+        mnemonic: 'A finger snuffing a candle, dust in the dying light'
+      },
+      {
+        number: 6,
+        text: "Life's but a walking shadow, a poor player,",
+        letter: 'L',
+        theme: 'Theater',
+        mnemonic: 'A ragged player, shadow longer than himself'
+      },
+      {
+        number: 7,
+        text: 'That struts and frets his hour upon the stage,',
+        letter: 'T',
+        theme: 'Theater',
+        mnemonic: "Floorboards groaning under a peacock's strut"
+      },
+      {
+        number: 8,
+        text: 'And then is heard no more. It is a tale',
+        letter: 'A',
+        theme: 'Theater',
+        mnemonic: 'Empty theater, script pages scattering'
+      },
+      {
+        number: 9,
+        text: 'Told by an idiot, full of sound and fury,',
+        letter: 'T',
+        theme: 'Nihilism',
+        mnemonic: 'Madman howling into a tempest'
+      },
+      {
+        number: 10,
+        text: 'Signifying nothing.',
+        letter: 'S',
+        theme: 'Nihilism',
+        mnemonic: 'An open palm revealing nothing'
+      }
+    ]
+  },
   chunks: [
     { front: 'Tomorrow, and tomorrow,', back: 'and tomorrow,' },
     { front: 'Creeps in this petty pace', back: 'from day to day,' },
@@ -360,6 +436,114 @@ describe('Memory Card Utility - Tomorrow Soliloquy Tests', () => {
       expect(fullText).toContain('tale told')
       expect(fullText).toContain('sound and fury')
       expect(fullText).toContain('Signifying nothing')
+    })
+  })
+
+  describe('Mnemonic Scaffold', () => {
+    it('should have scaffold with letter sequence', () => {
+      expect(TOMORROW_SOLILOQUY.scaffold).toBeDefined()
+      expect(TOMORROW_SOLILOQUY.scaffold.letterSequence).toBe('TCTAT-LTATS')
+    })
+
+    it('should have 4 thematic movements', () => {
+      const { themes } = TOMORROW_SOLILOQUY.scaffold
+      expect(themes).toHaveLength(4)
+      expect(themes).toEqual(['Time', 'Death', 'Theater', 'Nihilism'])
+    })
+
+    it('should have 10 lines with mnemonic scaffolding', () => {
+      const { lines } = TOMORROW_SOLILOQUY.scaffold
+      expect(lines).toHaveLength(10)
+
+      // Each line should have required fields
+      lines.forEach((line, idx) => {
+        expect(line.number).toBe(idx + 1)
+        expect(line.text).toBeTruthy()
+        expect(line.letter).toMatch(/^[A-Z]$/)
+        expect(line.theme).toBeTruthy()
+        expect(line.mnemonic).toBeTruthy()
+      })
+    })
+
+    it('should have letters matching the letter sequence', () => {
+      const { lines, letterSequence } = TOMORROW_SOLILOQUY.scaffold
+      const letters = lines.map(l => l.letter).join('')
+      // Remove the dash from letterSequence for comparison
+      expect(letters).toBe(letterSequence.replace('-', ''))
+    })
+
+    it('should have each line starting with its designated letter', () => {
+      const { lines } = TOMORROW_SOLILOQUY.scaffold
+      lines.forEach(line => {
+        const firstChar = line.text.charAt(0).toUpperCase()
+        expect(firstChar).toBe(line.letter)
+      })
+    })
+
+    it('should have themes that progress through the soliloquy', () => {
+      const { lines } = TOMORROW_SOLILOQUY.scaffold
+
+      // First 4 lines are about Time
+      expect(lines.slice(0, 4).every(l => l.theme === 'Time')).toBe(true)
+
+      // Line 5 is about Death
+      expect(lines[4].theme).toBe('Death')
+
+      // Lines 6-8 are about Theater
+      expect(lines.slice(5, 8).every(l => l.theme === 'Theater')).toBe(true)
+
+      // Lines 9-10 are about Nihilism
+      expect(lines.slice(8, 10).every(l => l.theme === 'Nihilism')).toBe(true)
+    })
+
+    it('should have vivid, Shakespearean mnemonic imagery', () => {
+      const { lines } = TOMORROW_SOLILOQUY.scaffold
+
+      // Mnemonics should be evocative, not generic
+      const mnemonicKeywords = [
+        'funeral bells', 'leper', 'monk', 'torchbearers', 'candle',
+        'player', 'peacock', 'theater', 'madman', 'palm'
+      ]
+
+      lines.forEach((line, idx) => {
+        // Each mnemonic should contain at least one evocative word
+        const hasEvocativeWord = mnemonicKeywords.some(kw =>
+          line.mnemonic.toLowerCase().includes(kw)
+        )
+        expect(hasEvocativeWord).toBe(true)
+      })
+    })
+
+    it('should allow reconstructing the full text from lines', () => {
+      const { lines } = TOMORROW_SOLILOQUY.scaffold
+      const fullText = lines.map(l => l.text).join('\n')
+
+      expect(fullText).toContain('Tomorrow, and tomorrow, and tomorrow')
+      expect(fullText).toContain('Signifying nothing.')
+      expect(fullText.split('\n')).toHaveLength(10)
+    })
+
+    it('should support mnemonic-guided memorization flow', () => {
+      const { lines, themes } = TOMORROW_SOLILOQUY.scaffold
+
+      // Simulate a learner going through the scaffold
+      let currentTheme = null
+      let themeTransitions = 0
+
+      lines.forEach(line => {
+        if (line.theme !== currentTheme) {
+          themeTransitions++
+          currentTheme = line.theme
+        }
+
+        // Learner sees: letter -> mnemonic -> recalls line
+        expect(line.letter).toBeTruthy()
+        expect(line.mnemonic).toBeTruthy()
+        expect(line.text).toBeTruthy()
+      })
+
+      // Should have 4 theme transitions (one for each theme)
+      expect(themeTransitions).toBe(4)
     })
   })
 })

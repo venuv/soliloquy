@@ -54,6 +54,82 @@
       "source": "Macbeth",
       "character": "Macbeth",
       "act": "Act 5, Scene 5",
+      "scaffold": {
+        "letterSequence": "TCTAT-LTATS",
+        "themes": ["Time", "Death", "Theater", "Nihilism"],
+        "lines": [
+          {
+            "number": 1,
+            "text": "Tomorrow, and tomorrow, and tomorrow,",
+            "letter": "T",
+            "theme": "Time",
+            "mnemonic": "Three funeral bells tolling in procession"
+          },
+          {
+            "number": 2,
+            "text": "Creeps in this petty pace from day to day,",
+            "letter": "C",
+            "theme": "Time",
+            "mnemonic": "A leper dragging himself across flagstones"
+          },
+          {
+            "number": 3,
+            "text": "To the last syllable of recorded time;",
+            "letter": "T",
+            "theme": "Time",
+            "mnemonic": "A monk's quill scratching the final word of history"
+          },
+          {
+            "number": 4,
+            "text": "And all our yesterdays have lighted fools",
+            "letter": "A",
+            "theme": "Time",
+            "mnemonic": "Torchbearers leading fools into an open grave"
+          },
+          {
+            "number": 5,
+            "text": "The way to dusty death. Out, out, brief candle!",
+            "letter": "T",
+            "theme": "Death",
+            "mnemonic": "A finger snuffing a candle, dust in the dying light"
+          },
+          {
+            "number": 6,
+            "text": "Life's but a walking shadow, a poor player,",
+            "letter": "L",
+            "theme": "Theater",
+            "mnemonic": "A ragged player, shadow longer than himself"
+          },
+          {
+            "number": 7,
+            "text": "That struts and frets his hour upon the stage,",
+            "letter": "T",
+            "theme": "Theater",
+            "mnemonic": "Floorboards groaning under a peacock's strut"
+          },
+          {
+            "number": 8,
+            "text": "And then is heard no more. It is a tale",
+            "letter": "A",
+            "theme": "Theater",
+            "mnemonic": "Empty theater, script pages scattering"
+          },
+          {
+            "number": 9,
+            "text": "Told by an idiot, full of sound and fury,",
+            "letter": "T",
+            "theme": "Nihilism",
+            "mnemonic": "Madman howling into a tempest"
+          },
+          {
+            "number": 10,
+            "text": "Signifying nothing.",
+            "letter": "S",
+            "theme": "Nihilism",
+            "mnemonic": "An open palm revealing nothing"
+          }
+        ]
+      },
       "chunks": [
         { "front": "Tomorrow, and tomorrow,", "back": "and tomorrow," },
         { "front": "Creeps in this petty pace", "back": "from day to day," },
