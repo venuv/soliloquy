@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth, api } from '../App'
-import { LogOut, BarChart2, KeyRound } from 'lucide-react'
+import { LogOut, BarChart2, KeyRound, Sparkles } from 'lucide-react'
 
 export default function Home() {
   const { userKey, logout } = useAuth()
@@ -22,8 +22,15 @@ export default function Home() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-amber-400">🎭 Soliloquy Master</h1>
           <div className="flex items-center gap-4">
-            <Link 
-              to="/stats" 
+            <Link
+              to="/inspired"
+              className="text-gray-400 hover:text-amber-400 flex items-center gap-2"
+            >
+              <Sparkles size={20} />
+              <span className="hidden sm:inline">Get Inspired</span>
+            </Link>
+            <Link
+              to="/stats"
               className="text-gray-400 hover:text-white flex items-center gap-2"
             >
               <BarChart2 size={20} />
