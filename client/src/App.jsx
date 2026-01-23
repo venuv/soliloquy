@@ -6,6 +6,7 @@ import Practice from './components/Practice'
 import Stats from './components/Stats'
 import Login from './components/Login'
 import Visualize from './components/Visualize'
+import GetInspired from './components/GetInspired'
 
 // Auth Context
 const AuthContext = createContext(null)
@@ -88,6 +89,7 @@ function App() {
         <Route path="/practice/:authorId/:workId" element={userKey ? <Practice /> : <Navigate to="/login" />} />
         <Route path="/visualize/:authorId/:workId" element={userKey ? <Visualize /> : <Navigate to="/login" />} />
         <Route path="/stats" element={userKey ? <Stats /> : <Navigate to="/login" />} />
+        <Route path="/inspired" element={userKey ? <GetInspired /> : <Navigate to="/login" />} />
       </Routes>
     </AuthContext.Provider>
   )
