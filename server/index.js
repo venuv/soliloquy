@@ -11,6 +11,7 @@ import authorsRoutes from './routes/authors.js';
 import analyticsRoutes from './routes/analytics.js';
 import adminRoutes from './routes/admin.js';
 import visualizeRoutes from './routes/visualize.js';
+import museRoutes from './routes/muse.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,7 @@ app.use('/api/authors', authorsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/visualize', visualizeRoutes);
+app.use('/api/muse', museRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
