@@ -31,12 +31,18 @@ async function parseUserInput(client, userInput) {
 
 User says: "${userInput}"
 
+Be precise about the actual feeling expressed. Distinguish between:
+- sadness/melancholy (grief, sorrow)
+- aimlessness/searching (lack of purpose, seeking meaning)
+- anxiety (worry about future)
+- weariness (tiredness, exhaustion)
+
 Respond with JSON only:
 {
-  "emotions": ["..."],  // 1-3 from: joy, love, hope, fear, sadness, anger, anxiety, weariness
-  "themes": ["..."],    // 2-4 from: mortality, love, betrayal, ambition, power, jealousy, revenge, fate, honor, duty, madness, identity, transformation, decision, loss, time, family, change
+  "emotions": ["..."],  // 1-3 from: joy, love, hope, fear, sadness, anger, anxiety, weariness, aimlessness, contentment
+  "themes": ["..."],    // 2-4 from: mortality, love, betrayal, ambition, power, jealousy, revenge, fate, honor, duty, madness, identity, transformation, decision, loss, time, family, change, purpose, meaning, direction, self_discovery, aging, legacy
   "intensity": "...",   // low, medium, high
-  "valence": "..."      // positive, negative, mixed
+  "valence": "..."      // positive, negative, mixed, neutral
 }`;
 
   const message = await client.messages.create({
