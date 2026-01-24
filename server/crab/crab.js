@@ -98,8 +98,9 @@ function parseSpeeches(html, playInfo) {
   const speeches = [];
 
   // Pattern to match speeches: character name in bold, followed by blockquote
-  // <A NAME=speech#><b>CHARACTER</b></a>\n<blockquote>...lines...</blockquote>
-  const speechPattern = /<A NAME=speech(\d+)><b>([^<]+)<\/b><\/a>\s*<blockquote>([\s\S]*?)<\/blockquote>/gi;
+  // Actual format: <A NAME=speech1><b>PHILO</b></a>\n<blockquote>...</blockquote>
+  // Note: closing </a> is lowercase, and we need case-insensitive matching
+  const speechPattern = /<A NAME=speech(\d+)><b>([^<]+)<\/b><\/a>\s*\n?<blockquote>([\s\S]*?)<\/blockquote>/gi;
 
   let match;
   while ((match = speechPattern.exec(html)) !== null) {
@@ -108,8 +109,9 @@ function parseSpeeches(html, playInfo) {
     const blockContent = match[3];
 
     // Extract lines from the blockquote
-    // Lines are in format: <A NAME=#>text</A><br>
-    const linePattern = /<A NAME=\d+>([^<]*)<\/A>/gi;
+    // Actual format: <A NAME=1.1.1>Line text</A><br>
+    // The NAME is act.scene.line format
+    const linePattern = /<A NAME=[\d.]+>([^<]*)<\/A>/gi;
     const lines = [];
     let lineMatch;
     while ((lineMatch = linePattern.exec(blockContent)) !== null) {
