@@ -1,0 +1,55 @@
+{
+  "responses": [
+    {
+      "id": "muse-1769279727183",
+      "timestamp": "2026-01-24T18:35:27.183Z",
+      "userInput": "I woke up melancholy today",
+      "userState": {
+        "emotions": [
+          "sadness",
+          "weariness"
+        ],
+        "themes": [
+          "identity",
+          "time",
+          "loss"
+        ],
+        "intensity": "medium",
+        "valence": "negative",
+        "wisdom_type": "challenge"
+      },
+      "quoteId": "lear-fool-why-after-i-have-cut-the-egg-i",
+      "quoteSummary": "Why, after I have cut the egg i' the middle, and eat / up the meat, the two crowns of the egg. When thou / clovest thy crown i' the middle, and gavest away / both parts, thou borest thy ass on thy back o'er",
+      "character": "FOOL",
+      "play": "King Lear",
+      "wisdomType": "challenge",
+      "style": "modern"
+    },
+    {
+      "id": "muse-1769281183779",
+      "timestamp": "2026-01-24T18:59:43.779Z",
+      "userInput": "Slept well. Nothing drastically wrong. But feeling a bit light on purpose",
+      "userState": {
+        "emotions": [
+          "weariness",
+          "sadness"
+        ],
+        "themes": [
+          "identity",
+          "decision",
+          "time"
+        ],
+        "intensity": "low",
+        "valence": "mixed",
+        "wisdom_type": "comfort"
+      },
+      "quoteId": "hamlet-hamlet-it-will-be-short-the-interim-i",
+      "quoteSummary": "It will be short: the interim is mine; / And a man's life's no more than to say 'One.' / But I am very sorry, good Horatio, / That to Laertes I forgot myself;",
+      "character": "HAMLET",
+      "play": "Hamlet",
+      "wisdomType": "comfort",
+      "style": "redneck"
+    }
+  ],
+  "feedback": []
+}
