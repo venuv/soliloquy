@@ -266,7 +266,7 @@ export default function Visualize() {
                   {/* Chunk Header */}
                   <button
                     onClick={() => setExpandedChunk(isExpanded ? null : idx)}
-                    className="w-full p-4 flex items-start justify-between text-left hover:bg-gray-750 transition-colors"
+                    className="w-full p-4 flex items-start justify-between text-left hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="text-gray-500 text-xs mb-1">Chunk {idx + 1}</div>
