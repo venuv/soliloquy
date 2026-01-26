@@ -89,6 +89,203 @@ const PERFORMANCES = [
       }
     ]
   },
+  // === NEW SPEECHES FROM SCRAPER ===
+  {
+    id: 'o-what-a-rogue',
+    soliloquy: 'O, what a rogue and peasant slave am I',
+    play: 'Hamlet',
+    videos: [
+      {
+        youtubeId: 'Fje1acYFQg4',
+        title: 'Hamlet Act 2, Scene 2 Soliloquy',
+        performer: 'Film Performance',
+        duration: '3:39',
+        description: 'Hamlet berates himself after watching the Player King weep for Hecuba.'
+      }
+    ]
+  },
+  {
+    id: 'what-a-piece-of-work',
+    soliloquy: 'What a piece of work is man',
+    play: 'Hamlet',
+    videos: [
+      {
+        youtubeId: '8205kJSig4A',
+        title: 'What a piece of work is man',
+        performer: 'Brian Focht',
+        duration: '1:35',
+        description: "Hamlet's meditation on humanity's nobility and his own melancholy."
+      }
+    ]
+  },
+  {
+    id: 'is-this-a-dagger',
+    soliloquy: 'Is this a dagger which I see before me',
+    play: 'Macbeth',
+    videos: [
+      {
+        youtubeId: 'pusU90ov8pQ',
+        title: 'Is this a dagger which I see before me?',
+        performer: 'Film Performance',
+        duration: '3:46',
+        description: "Macbeth's hallucination before murdering King Duncan."
+      }
+    ]
+  },
+  {
+    id: 'out-damned-spot',
+    soliloquy: 'Out, damned spot',
+    play: 'Macbeth',
+    videos: [
+      {
+        youtubeId: '9dgbbtUbgcM',
+        title: 'Judi Dench as Lady Macbeth',
+        performer: 'Judi Dench',
+        duration: '4:34',
+        description: "The haunting sleepwalking scene from the 1979 RSC production."
+      }
+    ]
+  },
+  {
+    id: 'blow-winds',
+    soliloquy: 'Blow, winds, and crack your cheeks',
+    play: 'King Lear',
+    videos: [
+      {
+        youtubeId: 'zn955417swY',
+        title: 'Roger Allam - Shakespeare Solos',
+        performer: 'Roger Allam',
+        duration: '2:03',
+        description: 'Lear rages against the storm on the heath.'
+      }
+    ]
+  },
+  {
+    id: 'but-soft-what-light',
+    soliloquy: 'But soft, what light through yonder window breaks',
+    play: 'Romeo and Juliet',
+    videos: [
+      {
+        youtubeId: 'S0qao2xINsE',
+        title: 'Balcony Scene - Zeffirelli Film',
+        performer: 'Leonard Whiting',
+        duration: '4:24',
+        description: "The iconic balcony scene from the 1968 film adaptation."
+      }
+    ]
+  },
+  {
+    id: 'st-crispins-day',
+    soliloquy: 'We few, we happy few, we band of brothers',
+    play: 'Henry V',
+    videos: [
+      {
+        youtubeId: '9P8hogkNdu8',
+        title: "St. Crispin's Day Speech",
+        performer: 'Kenneth Branagh',
+        duration: '5:41',
+        description: "Henry rallies his troops before the Battle of Agincourt."
+      }
+    ]
+  },
+  {
+    id: 'this-sceptred-isle',
+    soliloquy: 'This royal throne of kings, this sceptred isle',
+    play: 'Richard II',
+    videos: [
+      {
+        youtubeId: 'hQQyyMyTHa0',
+        title: 'This Sceptered Isle Speech',
+        performer: 'Various',
+        duration: '7:29',
+        description: "John of Gaunt's dying tribute to England."
+      }
+    ]
+  },
+  {
+    id: 'quality-of-mercy',
+    soliloquy: 'The quality of mercy is not strained',
+    play: 'The Merchant of Venice',
+    videos: [
+      {
+        youtubeId: 'wmmBT_4dmI0',
+        title: 'Laura Carmichael - Shakespeare Solos',
+        performer: 'Laura Carmichael',
+        duration: '1:38',
+        description: "Portia's famous courtroom plea for mercy over justice."
+      }
+    ]
+  },
+  {
+    id: 'hath-not-a-jew-eyes',
+    soliloquy: 'Hath not a Jew eyes?',
+    play: 'The Merchant of Venice',
+    videos: [
+      {
+        youtubeId: 'GWLBwkj07OY',
+        title: 'David Suchet as Shylock',
+        performer: 'David Suchet',
+        duration: '1:57',
+        description: "Shylock's powerful defense of his humanity."
+      }
+    ]
+  },
+  {
+    id: 'all-the-worlds-a-stage',
+    soliloquy: 'All the world\'s a stage',
+    play: 'As You Like It',
+    videos: [
+      {
+        youtubeId: 'rOHhUUWeKN8',
+        title: 'The Seven Ages of Man',
+        performer: 'RedFrost Motivation',
+        duration: '2:59',
+        description: "Jaques' meditation on the seven stages of human life."
+      }
+    ]
+  },
+  {
+    id: 'our-revels-now-are-ended',
+    soliloquy: 'Our revels now are ended',
+    play: 'The Tempest',
+    videos: [
+      {
+        youtubeId: 'KFNTAsC8qQ0',
+        title: 'David Threlfall - Shakespeare Solos',
+        performer: 'David Threlfall',
+        duration: '1:24',
+        description: "Prospero's farewell to his magical powers."
+      }
+    ]
+  },
+  {
+    id: 'if-music-be-the-food',
+    soliloquy: 'If music be the food of love, play on',
+    play: 'Twelfth Night',
+    videos: [
+      {
+        youtubeId: 'SJcCLr19tIs',
+        title: 'BBC Shakespeare',
+        performer: 'BBC Production',
+        duration: '2:07',
+        description: "Duke Orsino's opening meditation on love and music."
+      }
+    ]
+  },
+  {
+    id: 'coriolanus-banishment',
+    soliloquy: 'You common cry of curs',
+    play: 'Coriolanus',
+    videos: [
+      {
+        youtubeId: 'MrAPDOT3xMM',
+        title: 'The Tragedy of Coriolanus',
+        performer: 'Stage Production',
+        duration: '3:14',
+        description: "Coriolanus turns on the Roman citizens who banish him."
+      }
+    ]
+  },
 ]
 
 function YouTubeEmbed({ videoId, title }) {
