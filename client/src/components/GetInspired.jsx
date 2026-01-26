@@ -11,18 +11,18 @@ const PERFORMANCES = [
     play: 'Hamlet',
     videos: [
       {
-        youtubeId: 'zGbZCgHQ9m8',
-        title: "Sir Ian McKellen's Masterclass",
-        performer: 'Sir Ian McKellen',
-        duration: '6:42',
-        description: 'An intimate breakdown of the famous soliloquy from one of the greatest Shakespearean actors.'
+        youtubeId: 'SjuZq-8PUw0',
+        title: 'Kenneth Branagh - Film (1996)',
+        performer: 'Kenneth Branagh',
+        duration: '4:15',
+        description: 'From the acclaimed unabridged 1996 film adaptation.'
       },
       {
-        youtubeId: 'SjuZq-8PUw0',
-        title: 'Benedict Cumberbatch - National Theatre',
-        performer: 'Benedict Cumberbatch',
-        duration: '4:15',
-        description: 'From the acclaimed 2015 National Theatre production.'
+        youtubeId: 'xYZHb2xo0OI',
+        title: 'David Tennant - RSC (2009)',
+        performer: 'David Tennant',
+        duration: '3:30',
+        description: 'The emotionally raw RSC production that defined Hamlet for a generation.'
       }
     ]
   },
@@ -32,18 +32,18 @@ const PERFORMANCES = [
     play: 'Macbeth',
     videos: [
       {
-        youtubeId: 'HZnaXDRwu84',
-        title: 'Ian McKellen - RSC',
+        youtubeId: '4LDdyafsR7g',
+        title: 'Ian McKellen - RSC Performance',
         performer: 'Ian McKellen',
         duration: '2:30',
         description: "McKellen's legendary RSC performance as the tortured Scottish king."
       },
       {
-        youtubeId: 'zWz1wTj9pIQ',
-        title: 'Patrick Stewart',
-        performer: 'Patrick Stewart',
-        duration: '3:15',
-        description: 'A powerful rendition from the acclaimed stage and screen actor.'
+        youtubeId: 'zGbZCgHQ9m8',
+        title: 'Ian McKellen - Masterclass Analysis',
+        performer: 'Ian McKellen',
+        duration: '6:42',
+        description: 'McKellen breaks down the speech line by line in this 1979 BBC masterclass.'
       }
     ]
   },
@@ -53,8 +53,8 @@ const PERFORMANCES = [
     play: 'Richard III',
     videos: [
       {
-        youtubeId: 'eL1CfuzLJB8',
-        title: 'Laurence Olivier - Classic Film',
+        youtubeId: 'cDxnXgYPnKg',
+        title: 'Laurence Olivier - Classic Film (1955)',
         performer: 'Laurence Olivier',
         duration: '4:45',
         description: 'The iconic 1955 film performance that defined Richard III.'
@@ -89,48 +89,6 @@ const PERFORMANCES = [
       }
     ]
   },
-  {
-    id: 'our-revels-now-are-ended',
-    soliloquy: 'Our revels now are ended',
-    play: 'The Tempest',
-    videos: [
-      {
-        youtubeId: 'btHdmGbx1aI',
-        title: 'John Gielgud',
-        performer: 'John Gielgud',
-        duration: '2:30',
-        description: "Prospero's famous farewell to his magical powers."
-      }
-    ]
-  },
-  {
-    id: 'blow-winds',
-    soliloquy: 'Blow, winds, and crack your cheeks',
-    play: 'King Lear',
-    videos: [
-      {
-        youtubeId: '1l3OyzHMDw4',
-        title: 'Ian McKellen - Storm Scene',
-        performer: 'Ian McKellen',
-        duration: '5:30',
-        description: 'Lear raging against the storm, from the 2008 RSC production.'
-      }
-    ]
-  },
-  {
-    id: 'out-damned-spot',
-    soliloquy: 'Out, damned spot',
-    play: 'Macbeth',
-    videos: [
-      {
-        youtubeId: 'SlcWrnNVXsA',
-        title: 'Judi Dench - RSC',
-        performer: 'Dame Judi Dench',
-        duration: '4:00',
-        description: "Lady Macbeth's guilt-ridden sleepwalking scene."
-      }
-    ]
-  }
 ]
 
 function YouTubeEmbed({ videoId, title }) {
