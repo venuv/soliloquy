@@ -39,11 +39,14 @@ router.get('/', async (req, res) => {
           console.log('Reading:', filePath);
           const content = await fs.readFile(filePath, 'utf-8');
           const author = JSON.parse(content);
+          // Get unique plays from work sources
+          const uniquePlays = [...new Set((author.works || []).map(w => w.source))];
           authors.push({
             id: author.id,
             name: author.name,
             subtitle: author.subtitle,
             worksCount: author.works?.length || 0,
+            playsCount: uniquePlays.length,
             portrait: author.portrait
           });
           console.log('Loaded author:', author.id);

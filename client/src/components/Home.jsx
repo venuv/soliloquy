@@ -17,6 +17,7 @@ export default function Home() {
   }, [])
 
   const totalWorks = authors.reduce((sum, a) => sum + (a.worksCount || 0), 0)
+  const totalPlays = authors.reduce((sum, a) => sum + (a.playsCount || 0), 0)
 
   return (
     <div style={{
@@ -490,7 +491,7 @@ export default function Home() {
             color: '#3d5c4a',
             position: 'relative',
             zIndex: 1
-          }}>7</div>
+          }}>{totalPlays || 9}</div>
           <div style={{
             fontSize: '0.65rem',
             color: '#9a9a9a',
