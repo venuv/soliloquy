@@ -297,6 +297,136 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
   }
 });
 
+// Build prompt for single chunk generation
+const buildSingleChunkPrompt = (work, chunkIndex, chunk) => {
+  return `You are a memory coach creating a PHONETIC MNEMONIC for Shakespeare memorization.
+
+CRITICAL RULES:
+1. SOUND-BASED HOOKS: Each key word must link to a similar-sounding image
+   - "whether" → WEATHER vane
+   - "'tis" → TISSUE paper
+   - "suffer" → SURFING
+   - "slings" → SLINGSHOT
+
+2. ECONOMY OF SYMBOLS: Use 2-4 vivid images MAX. Every symbol must earn its place.
+
+3. WORD LIMIT: The mnemonic must be 15-25 words. No longer!
+
+4. CHAIN THE SOUNDS: Images should connect in sequence matching word order
+
+5. ONE BIZARRE ELEMENT: Include ONE absurd/impossible detail to make it stick
+
+GOOD EXAMPLE for "Whether 'tis nobler in the mind to suffer":
+"A WEATHER vane made of TISSUE spins on a NOBLE knight's helmet. Inside his glass skull, he's SURFING on brain waves."
+(weather=whether, tissue='tis, noble=nobler, skull=mind, surfing=suffer)
+
+Soliloquy: "${work.title}" from ${work.source}
+Character: ${work.character}
+
+Chunk ${chunkIndex}: "${chunk.front} ${chunk.back}"
+
+Respond ONLY with valid JSON:
+{
+  "options": ["option1 (15-25 words)", "option2", "option3"]
+}
+
+Create 3 PHONETIC, ECONOMICAL mnemonic options for this chunk.`;
+};
+
+// POST /generate-chunk/:authorId/:workId/:chunkIndex - Generate word picture for single chunk
+router.post('/generate-chunk/:authorId/:workId/:chunkIndex', validateKey, async (req, res) => {
+  try {
+    const { authorId, workId, chunkIndex } = req.params;
+    const idx = parseInt(chunkIndex, 10);
+    const work = loadWork(authorId, workId);
+
+    if (!work) {
+      return res.status(404).json({ error: 'Work not found' });
+    }
+
+    if (idx < 0 || idx >= work.chunks.length) {
+      return res.status(400).json({ error: 'Invalid chunk index' });
+    }
+
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+    }
+
+    const chunk = work.chunks[idx];
+    console.log(`[${workId}] Generating word picture for chunk ${idx}...`);
+
+    const prompt = buildSingleChunkPrompt(work, idx, chunk);
+    const result = await callGroqAPI(prompt, apiKey);
+
+    // Save to analytics
+    const analyticsContent = await fs.readFile(req.analyticsPath, 'utf-8');
+    const analytics = JSON.parse(analyticsContent);
+    const workKey = `${authorId}/${workId}`;
+
+    if (!analytics.progress[workKey]) {
+      analytics.progress[workKey] = { mastered: [], attempts: [] };
+    }
+    if (!analytics.progress[workKey].wordPictures) {
+      analytics.progress[workKey].wordPictures = { generated: {}, selected: {} };
+    }
+    if (!analytics.progress[workKey].wordPictures.generated) {
+      analytics.progress[workKey].wordPictures.generated = {};
+    }
+
+    analytics.progress[workKey].wordPictures.generated[idx] = result.options;
+    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+
+    console.log(`[${workId}] Chunk ${idx} word picture generated`);
+
+    res.json({
+      success: true,
+      chunkIndex: idx,
+      options: result.options
+    });
+  } catch (err) {
+    console.error('Error generating chunk word picture:', err);
+    res.status(500).json({ error: err.message || 'Failed to generate word picture' });
+  }
+});
+
+// POST /save-chunk - Save single chunk's selected word picture
+router.post('/save-chunk', validateKey, async (req, res) => {
+  try {
+    const { authorId, workId, chunkIndex, selected, room } = req.body;
+    const workKey = `${authorId}/${workId}`;
+
+    const content = await fs.readFile(req.analyticsPath, 'utf-8');
+    const analytics = JSON.parse(content);
+
+    if (!analytics.progress[workKey]) {
+      analytics.progress[workKey] = { mastered: [], attempts: [] };
+    }
+    if (!analytics.progress[workKey].wordPictures) {
+      analytics.progress[workKey].wordPictures = { generated: {}, selected: {}, rooms: {} };
+    }
+    if (!analytics.progress[workKey].wordPictures.selected) {
+      analytics.progress[workKey].wordPictures.selected = {};
+    }
+    if (!analytics.progress[workKey].wordPictures.rooms) {
+      analytics.progress[workKey].wordPictures.rooms = {};
+    }
+
+    analytics.progress[workKey].wordPictures.selected[chunkIndex] = selected;
+    if (room) {
+      analytics.progress[workKey].wordPictures.rooms[chunkIndex] = room;
+    }
+    analytics.progress[workKey].wordPictures.lastEdited = new Date().toISOString();
+
+    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving chunk word picture:', err);
+    res.status(500).json({ error: 'Failed to save word picture' });
+  }
+});
+
 // POST /save - Save user's selected/edited word pictures
 router.post('/save', validateKey, async (req, res) => {
   try {
