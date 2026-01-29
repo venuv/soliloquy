@@ -1,0 +1,32 @@
+{
+  "currentNews": [
+    {
+      "id": "globe-2026-season",
+      "title": "Shakespeare's Globe announces 2026 season",
+      "summary": "The reconstructed Globe Theatre reveals its 2026 summer program featuring fresh interpretations of the classics.",
+      "source": "Shakespeare's Globe",
+      "date": "2026-01-15",
+      "category": "theater",
+      "url": "https://www.shakespearesglobe.com"
+    },
+    {
+      "id": "rsc-hamlet-tour",
+      "title": "RSC's Hamlet embarks on UK tour",
+      "summary": "The Royal Shakespeare Company brings its acclaimed production of Hamlet to venues across Britain.",
+      "source": "Royal Shakespeare Company",
+      "date": "2026-01-20",
+      "category": "theater",
+      "url": "https://www.rsc.org.uk"
+    },
+    {
+      "id": "folger-exhibition",
+      "title": "New Folger exhibition explores Shakespeare's sources",
+      "summary": "The Folger Shakespeare Library opens 'Before the Bard: Shakespeare's Source Texts' featuring rare manuscripts.",
+      "source": "Folger Shakespeare Library",
+      "date": "2026-01-10",
+      "category": "exhibition",
+      "url": "https://www.folger.edu"
+    }
+  ],
+  "lastFetched": "2026-01-29T14:20:12.903Z"
+}

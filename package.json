@@ -11,6 +11,8 @@
     "install:all": "npm install && cd server && npm install && cd ../client && npm install"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "youtube-sr": "^4.3.12",
+    "ytsr": "^3.8.4"
   }
 }

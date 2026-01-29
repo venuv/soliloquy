@@ -9,21 +9,31 @@ import { similarityScore, containsExpected, wordCount } from '../utils/memoryCar
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 
+// Sumi-e color palette
+const colors = {
+  paper: '#fdfcf8',
+  ink: '#1a1a1a',
+  crimson: '#9b2d30',
+  forest: '#3d5c4a',
+  blue: '#2a4a5e',
+  gold: '#c4a35a',
+  muted: '#4a4a4a',
+  faded: '#9a9a9a'
+}
+
 export default function Practice() {
   const { authorId, workId } = useParams()
   const navigate = useNavigate()
-  
+
   const [work, setWork] = useState(null)
-  const [mode, setMode] = useState(null) // 'memorize' | 'test'
+  const [mode, setMode] = useState(null)
   const [loading, setLoading] = useState(true)
   const [startTime, setStartTime] = useState(null)
-  
-  // Memorize mode state
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [mastered, setMastered] = useState(new Set())
-  
-  // Test mode state
+
   const [testOrder, setTestOrder] = useState([])
   const [testIndex, setTestIndex] = useState(0)
   const [userAnswer, setUserAnswer] = useState('')
@@ -31,10 +41,9 @@ export default function Practice() {
   const [isCorrect, setIsCorrect] = useState(false)
   const [score, setScore] = useState({ correct: 0, total: 0 })
   const [isListening, setIsListening] = useState(false)
-  
+
   const recognitionRef = useRef(null)
 
-  // Load work data and progress
   useEffect(() => {
     Promise.all([
       api(`/authors/${authorId}/works/${workId}`),
@@ -52,7 +61,6 @@ export default function Practice() {
       .finally(() => setLoading(false))
   }, [authorId, workId])
 
-  // Initialize speech recognition
   useEffect(() => {
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition()
@@ -69,33 +77,24 @@ export default function Practice() {
     }
   }, [])
 
-  // Save mastered progress
   const saveMastered = async (newMastered) => {
     try {
       await api('/analytics/mastered', {
         method: 'POST',
-        body: JSON.stringify({
-          authorId,
-          workId,
-          masteredChunks: Array.from(newMastered)
-        })
+        body: JSON.stringify({ authorId, workId, masteredChunks: Array.from(newMastered) })
       })
     } catch (err) {
       console.error('Failed to save progress:', err)
     }
   }
 
-  // Record session
   const recordSession = async (sessionScore) => {
     const duration = Math.round((Date.now() - startTime) / 1000)
     try {
       await api('/analytics/session', {
         method: 'POST',
         body: JSON.stringify({
-          authorId,
-          workId,
-          mode,
-          duration,
+          authorId, workId, mode, duration,
           chunksReviewed: mode === 'memorize' ? currentIndex + 1 : testOrder.length,
           correct: sessionScore?.correct || 0,
           total: sessionScore?.total || 0
@@ -106,19 +105,11 @@ export default function Practice() {
     }
   }
 
-  // Record individual test attempt
   const recordAttempt = async (chunkIndex, correct, userAns, expected) => {
     try {
       await api('/analytics/attempt', {
         method: 'POST',
-        body: JSON.stringify({
-          authorId,
-          workId,
-          chunkIndex,
-          correct,
-          userAnswer: userAns,
-          expectedAnswer: expected
-        })
+        body: JSON.stringify({ authorId, workId, chunkIndex, correct, userAnswer: userAns, expectedAnswer: expected })
       })
     } catch (err) {
       console.error('Failed to record attempt:', err)
@@ -131,7 +122,6 @@ export default function Practice() {
     setCurrentIndex(0)
     setFlipped(false)
     setScore({ correct: 0, total: 0 })
-    
     if (m === 'test') {
       const order = [...Array(work.chunks.length).keys()].sort(() => Math.random() - 0.5)
       setTestOrder(order)
@@ -170,7 +160,6 @@ export default function Practice() {
   const checkAnswer = () => {
     const chunk = work.chunks[testOrder[testIndex]]
     const similarity = similarityScore(userAnswer, chunk.back)
-    // Also accept if user typed the correct text (possibly with more)
     const hasExpected = containsExpected(userAnswer, chunk.back)
     const correct = similarity >= 0.5 || hasExpected
     setIsCorrect(correct)
@@ -192,24 +181,73 @@ export default function Practice() {
   }
 
   const exitPractice = () => {
-    if (mode === 'memorize') {
-      recordSession()
-    }
+    if (mode === 'memorize') recordSession()
     setMode(null)
+  }
+
+  const baseStyle = {
+    minHeight: '100vh',
+    background: colors.paper,
+    fontFamily: "'IBM Plex Sans', sans-serif",
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1.5rem',
+    position: 'relative'
+  }
+
+  const cardStyle = {
+    background: 'rgba(0,0,0,0.02)',
+    border: '1px solid rgba(0,0,0,0.08)',
+    borderRadius: '12px',
+    padding: '2rem',
+    width: '100%',
+    maxWidth: '32rem'
+  }
+
+  const btnPrimary = {
+    background: colors.crimson,
+    color: colors.paper,
+    border: 'none',
+    borderRadius: '8px',
+    padding: '0.75rem 1.5rem',
+    cursor: 'pointer',
+    fontFamily: "'IBM Plex Sans', sans-serif",
+    fontSize: '0.95rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s'
+  }
+
+  const btnSecondary = {
+    background: 'rgba(0,0,0,0.04)',
+    color: colors.ink,
+    border: '1px solid rgba(0,0,0,0.1)',
+    borderRadius: '8px',
+    padding: '0.75rem 1.5rem',
+    cursor: 'pointer',
+    fontFamily: "'IBM Plex Sans', sans-serif",
+    fontSize: '0.95rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s'
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-amber-400">Loading...</div>
+      <div style={baseStyle}>
+        <div style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.25rem' }}>Loading...</div>
       </div>
     )
   }
 
   if (!work) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400">Work not found</div>
+      <div style={baseStyle}>
+        <div style={{ color: colors.crimson }}>Work not found</div>
       </div>
     )
   }
@@ -217,48 +255,38 @@ export default function Practice() {
   // Mode Selection
   if (!mode) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
-        <Link 
-          to={`/author/${authorId}`}
-          className="absolute top-4 left-4 text-gray-400 hover:text-white flex items-center gap-2"
-        >
-          <ArrowLeft size={20} /> Back
+      <div style={baseStyle}>
+        <Link to={`/author/${authorId}`} style={{ position: 'absolute', top: '1rem', left: '1rem', color: colors.muted, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+          <ArrowLeft size={18} /> Back
         </Link>
-        
-        <h2 className="text-2xl font-bold text-white mb-2">"{work.title}"</h2>
-        <p className="text-gray-400 mb-2">{work.character} • {work.source}</p>
-        <p className="text-gray-500 mb-8">{work.act} • {work.chunks.length} chunks</p>
-        
-        <div className="flex gap-4 flex-wrap justify-center">
-          <button
-            onClick={() => startMode('memorize')}
-            className="flex flex-col items-center gap-3 p-8 bg-gray-800 hover:bg-gray-700 rounded-2xl transition-all w-48"
-          >
-            <BookOpen size={48} className="text-amber-400" />
-            <span className="text-white font-medium text-lg">Memorize</span>
-            <span className="text-gray-400 text-sm text-center">Walk through chunks</span>
+
+        <h2 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.75rem', color: colors.ink, fontWeight: 400, marginBottom: '0.5rem' }}>"{work.title}"</h2>
+        <p style={{ color: colors.muted, marginBottom: '0.25rem' }}>{work.character} • {work.source}</p>
+        <p style={{ color: colors.faded, marginBottom: '2rem' }}>{work.act} • {work.chunks.length} chunks</p>
+
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button onClick={() => startMode('memorize')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(155,45,48,0.15)', background: 'rgba(155,45,48,0.03)' }}>
+            <BookOpen size={40} style={{ color: colors.crimson, marginBottom: '0.75rem' }} />
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Memorize</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Walk through chunks</div>
           </button>
-          <button
-            onClick={() => startMode('test')}
-            className="flex flex-col items-center gap-3 p-8 bg-gray-800 hover:bg-gray-700 rounded-2xl transition-all w-48"
-          >
-            <GraduationCap size={48} className="text-green-400" />
-            <span className="text-white font-medium text-lg">Test</span>
-            <span className="text-gray-400 text-sm text-center">Voice or type answers</span>
+          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(61,92,74,0.15)', background: 'rgba(61,92,74,0.03)' }}>
+            <GraduationCap size={40} style={{ color: colors.forest, marginBottom: '0.75rem' }} />
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Test</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Voice or type answers</div>
           </button>
-          <Link
-            to={`/visualize/${authorId}/${workId}`}
-            className="flex flex-col items-center gap-3 p-8 bg-gray-800 hover:bg-gray-700 rounded-2xl transition-all w-48"
-          >
-            <Image size={48} className="text-purple-400" />
-            <span className="text-white font-medium text-lg">Visualize</span>
-            <span className="text-gray-400 text-sm text-center">Text analysis & images</span>
+          <Link to={`/visualize/${authorId}/${workId}`} style={{ ...cardStyle, textDecoration: 'none', textAlign: 'center', width: '12rem', border: '1px solid rgba(90,74,106,0.15)', background: 'rgba(90,74,106,0.03)' }}>
+            <Image size={40} style={{ color: '#5a4a6a', marginBottom: '0.75rem' }} />
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Visualize</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Text analysis & images</div>
           </Link>
         </div>
-        
-        <div className="mt-8 text-gray-500 text-sm">
-          {mastered.size > 0 && `${mastered.size} of ${work.chunks.length} chunks mastered`}
-        </div>
+
+        {mastered.size > 0 && (
+          <div style={{ marginTop: '2rem', color: colors.faded, fontSize: '0.9rem' }}>
+            {mastered.size} of {work.chunks.length} chunks mastered
+          </div>
+        )}
       </div>
     )
   }
@@ -269,75 +297,61 @@ export default function Practice() {
     const isMastered = mastered.has(currentIndex)
 
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
-        <button 
-          onClick={exitPractice}
-          className="absolute top-4 left-4 text-gray-400 hover:text-white flex items-center gap-2"
-        >
-          <ArrowLeft size={20} /> Exit
+      <div style={baseStyle}>
+        <button onClick={exitPractice} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'none', border: 'none', color: colors.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+          <ArrowLeft size={18} /> Exit
         </button>
-        
-        <h2 className="text-amber-400 text-lg mb-4">"{work.title}"</h2>
-        
-        {/* Progress bar */}
-        <div className="flex gap-1 mb-4 max-w-xl w-full">
+
+        <h2 style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1rem' }}>"{work.title}"</h2>
+
+        {/* Progress */}
+        <div style={{ display: 'flex', gap: '3px', marginBottom: '1rem', maxWidth: '32rem', width: '100%' }}>
           {work.chunks.map((_, idx) => (
             <div
               key={idx}
               onClick={() => { setCurrentIndex(idx); setFlipped(false) }}
-              className={`h-2 flex-1 rounded cursor-pointer transition-all ${
-                idx === currentIndex ? 'bg-amber-400' : mastered.has(idx) ? 'bg-green-500' : 'bg-gray-700'
-              }`}
+              style={{
+                height: '6px',
+                flex: 1,
+                borderRadius: '3px',
+                cursor: 'pointer',
+                background: idx === currentIndex ? colors.crimson : mastered.has(idx) ? colors.forest : 'rgba(0,0,0,0.1)',
+                transition: 'all 0.2s'
+              }}
             />
           ))}
         </div>
 
         {/* Flashcard */}
-        <div
-          onClick={() => setFlipped(!flipped)}
-          className={`flip-card w-full max-w-xl h-64 cursor-pointer`}
-        >
-          <div className={`flip-card-inner w-full h-full ${flipped ? 'flipped' : ''}`}>
-            {/* Front */}
-            <div className={`flip-card-front absolute inset-0 rounded-2xl shadow-2xl flex flex-col items-center justify-center p-8 ${isMastered ? 'bg-green-900' : 'bg-gray-800'}`}>
-              <p className="text-amber-300 text-sm mb-2">What comes next?</p>
-              <h3 className="text-2xl text-white text-center leading-relaxed">"{chunk.front}..."</h3>
-              <p className="text-gray-500 mt-auto text-sm">Click to reveal</p>
-            </div>
-            
-            {/* Back */}
-            <div className={`flip-card-back absolute inset-0 rounded-2xl shadow-2xl flex flex-col items-center justify-center p-8 ${isMastered ? 'bg-green-900' : 'bg-gray-800'}`}>
-              <p className="text-gray-400 text-center mb-2">{chunk.front}</p>
-              <h3 className="text-2xl text-amber-400 text-center font-bold leading-relaxed">{chunk.back}</h3>
-            </div>
-          </div>
+        <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(0,0,0,0.08)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(0,0,0,0.02)' }}>
+          {!flipped ? (
+            <>
+              <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem' }}>What comes next?</p>
+              <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.ink, lineHeight: 1.4 }}>"{chunk.front}..."</h3>
+              <p style={{ color: colors.faded, marginTop: 'auto', fontSize: '0.8rem' }}>Click to reveal</p>
+            </>
+          ) : (
+            <>
+              <p style={{ color: colors.muted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{chunk.front}</p>
+              <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.crimson, fontWeight: 500, lineHeight: 1.4 }}>{chunk.back}</h3>
+            </>
+          )}
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-4 mt-6">
-          <button 
-            onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} 
-            disabled={currentIndex === 0} 
-            className="p-3 bg-gray-800 rounded-full disabled:opacity-50 text-white hover:bg-gray-700"
-          >
-            <ChevronLeft size={24} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+          <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+            <ChevronLeft size={22} />
           </button>
-          <button
-            onClick={toggleMastered}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isMastered ? 'bg-green-600' : 'bg-gray-800 hover:bg-gray-700'} text-white`}
-          >
+          <button onClick={toggleMastered} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.crimson }}>
             <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
           </button>
-          <button 
-            onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} 
-            disabled={currentIndex === work.chunks.length - 1} 
-            className="p-3 bg-gray-800 rounded-full disabled:opacity-50 text-white hover:bg-gray-700"
-          >
-            <ChevronRight size={24} />
+          <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+            <ChevronRight size={22} />
           </button>
         </div>
-        
-        <p className="text-gray-500 mt-4">{currentIndex + 1} / {work.chunks.length}</p>
+
+        <p style={{ color: colors.faded, marginTop: '1rem', fontSize: '0.9rem' }}>{currentIndex + 1} / {work.chunks.length}</p>
       </div>
     )
   }
@@ -347,79 +361,80 @@ export default function Practice() {
     const chunk = work.chunks[testOrder[testIndex]]
 
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
-        <button 
-          onClick={exitPractice}
-          className="absolute top-4 left-4 text-gray-400 hover:text-white flex items-center gap-2"
-        >
-          <ArrowLeft size={20} /> Exit
+      <div style={baseStyle}>
+        <button onClick={exitPractice} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'none', border: 'none', color: colors.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+          <ArrowLeft size={18} /> Exit
         </button>
-        
-        <div className="absolute top-4 right-4 text-gray-400">
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', color: colors.muted, fontSize: '0.9rem' }}>
           Score: {score.correct}/{score.total}
         </div>
-        
-        <h2 className="text-amber-400 text-lg mb-6">"{work.title}" • Test Mode</h2>
-        
-        <div className="w-full max-w-xl bg-gray-800 rounded-2xl p-8 mb-6">
-          <p className="text-amber-300 text-sm mb-2 text-center">Complete this line:</p>
-          <h3 className="text-2xl text-white text-center mb-4 leading-relaxed">"{chunk.front}..."</h3>
-          <p className="text-gray-500 text-sm text-center mb-4">({wordCount(chunk.back)} words expected)</p>
-          
+
+        <h2 style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>"{work.title}" • Test</h2>
+
+        <div style={{ ...cardStyle }}>
+          <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Complete this line:</p>
+          <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '0.5rem', lineHeight: 1.4 }}>"{chunk.front}..."</h3>
+          <p style={{ color: colors.faded, fontSize: '0.8rem', textAlign: 'center', marginBottom: '1rem' }}>({wordCount(chunk.back)} words expected)</p>
+
           {!showResult ? (
             <>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <textarea
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   placeholder="Type or speak your answer..."
-                  className="w-full p-4 bg-gray-700 text-white rounded-xl resize-none h-24 pr-14"
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    paddingRight: '3.5rem',
+                    background: 'rgba(0,0,0,0.03)',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: '8px',
+                    resize: 'none',
+                    height: '6rem',
+                    fontFamily: "'IBM Plex Sans', sans-serif",
+                    fontSize: '0.95rem',
+                    color: colors.ink,
+                    boxSizing: 'border-box'
+                  }}
                 />
                 <button
                   onClick={isListening ? stopListening : startListening}
-                  className={`absolute right-3 top-3 p-2 rounded-full transition-all ${
-                    isListening 
-                      ? 'bg-red-500 listening-pulse' 
-                      : 'bg-amber-600 hover:bg-amber-500'
-                  }`}
+                  style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '0.75rem',
+                    padding: '0.5rem',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: isListening ? '#d64545' : colors.crimson,
+                    cursor: 'pointer'
+                  }}
                 >
-                  {isListening ? <MicOff size={20} className="text-white" /> : <Mic size={20} className="text-white" />}
+                  {isListening ? <MicOff size={18} style={{ color: 'white' }} /> : <Mic size={18} style={{ color: 'white' }} />}
                 </button>
               </div>
-              {isListening && <p className="text-amber-400 text-center mt-2 animate-pulse">Listening...</p>}
-              {!SpeechRecognition && (
-                <p className="text-yellow-500 text-sm text-center mt-2">Voice input not available in this browser</p>
-              )}
-              <button
-                onClick={checkAnswer}
-                disabled={!userAnswer.trim()}
-                className="w-full mt-4 py-3 bg-amber-600 hover:bg-amber-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
-              >
+              {isListening && <p style={{ color: colors.crimson, textAlign: 'center', marginTop: '0.5rem', fontSize: '0.9rem' }}>Listening...</p>}
+              {!SpeechRecognition && <p style={{ color: colors.gold, textAlign: 'center', marginTop: '0.5rem', fontSize: '0.85rem' }}>Voice input not available</p>}
+              <button onClick={checkAnswer} disabled={!userAnswer.trim()} style={{ ...btnPrimary, width: '100%', justifyContent: 'center', marginTop: '1rem', opacity: !userAnswer.trim() ? 0.5 : 1 }}>
                 Check Answer
               </button>
             </>
           ) : (
             <>
-              <div className={`p-4 rounded-xl mb-4 ${isCorrect ? 'bg-green-900' : 'bg-red-900'}`}>
-                <p className={`font-medium ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                  {isCorrect ? '✓ Correct!' : '✗ Not quite'}
-                </p>
-                <p className="text-gray-300 mt-2">Your answer: "{userAnswer}"</p>
-                <p className="text-white mt-2">
-                  Correct: <span className="text-amber-400 font-medium">{chunk.back}</span>
-                </p>
+              <div style={{ padding: '1rem', borderRadius: '8px', marginBottom: '1rem', background: isCorrect ? 'rgba(61,92,74,0.1)' : 'rgba(155,45,48,0.1)', border: `1px solid ${isCorrect ? 'rgba(61,92,74,0.3)' : 'rgba(155,45,48,0.3)'}` }}>
+                <p style={{ fontWeight: 500, color: isCorrect ? colors.forest : colors.crimson }}>{isCorrect ? '✓ Correct!' : '✗ Not quite'}</p>
+                <p style={{ color: colors.muted, marginTop: '0.5rem', fontSize: '0.9rem' }}>Your answer: "{userAnswer}"</p>
+                <p style={{ color: colors.ink, marginTop: '0.5rem', fontSize: '0.9rem' }}>Correct: <span style={{ color: colors.crimson, fontWeight: 500 }}>{chunk.back}</span></p>
               </div>
-              <button 
-                onClick={nextTest} 
-                className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-medium transition-colors"
-              >
+              <button onClick={nextTest} style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }}>
                 {testIndex < testOrder.length - 1 ? 'Next Question' : 'See Results'}
               </button>
             </>
           )}
         </div>
-        
-        <p className="text-gray-500">Question {testIndex + 1} / {testOrder.length}</p>
+
+        <p style={{ color: colors.faded, marginTop: '1rem', fontSize: '0.9rem' }}>Question {testIndex + 1} / {testOrder.length}</p>
       </div>
     )
   }
@@ -427,32 +442,23 @@ export default function Practice() {
   // Results
   if (mode === 'results') {
     const pct = Math.round((score.correct / score.total) * 100)
-    
+
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
-        <h2 className="text-3xl font-bold text-white mb-2">Test Complete!</h2>
-        <p className="text-gray-400 mb-6">"{work.title}"</p>
-        
-        <div className="text-6xl font-bold text-amber-400 mb-2">{pct}%</div>
-        <p className="text-gray-400 mb-8">{score.correct} of {score.total} correct</p>
-        
-        <div className="flex gap-4 flex-wrap justify-center">
-          <button 
-            onClick={() => startMode('test')} 
-            className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl flex items-center gap-2 transition-colors"
-          >
+      <div style={baseStyle}>
+        <h2 style={{ fontFamily: "'Cormorant', serif", fontSize: '2rem', color: colors.ink, fontWeight: 400, marginBottom: '0.5rem' }}>Test Complete!</h2>
+        <p style={{ color: colors.muted, marginBottom: '1.5rem' }}>"{work.title}"</p>
+
+        <div style={{ fontFamily: "'Cormorant', serif", fontSize: '4rem', color: colors.crimson, marginBottom: '0.5rem' }}>{pct}%</div>
+        <p style={{ color: colors.muted, marginBottom: '2rem' }}>{score.correct} of {score.total} correct</p>
+
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button onClick={() => startMode('test')} style={btnPrimary}>
             <RotateCcw size={18} /> Try Again
           </button>
-          <button 
-            onClick={() => startMode('memorize')} 
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl flex items-center gap-2 transition-colors"
-          >
+          <button onClick={() => startMode('memorize')} style={btnSecondary}>
             <BookOpen size={18} /> Practice More
           </button>
-          <Link 
-            to={`/author/${authorId}`}
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl flex items-center gap-2 transition-colors"
-          >
+          <Link to={`/author/${authorId}`} style={{ ...btnSecondary, textDecoration: 'none' }}>
             <Home size={18} /> Back to Works
           </Link>
         </div>
