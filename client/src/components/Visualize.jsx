@@ -165,25 +165,22 @@ export default function Visualize() {
       <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-          <Link to="/" style={{ color: colors.muted, textDecoration: 'none' }} title="Home">
-            <Home size={22} />
+          <Link to={`/practice/${authorId}/${workId}`} style={{ color: colors.muted, textDecoration: 'none' }} title="Back to Practice">
+            <ArrowLeft size={22} />
           </Link>
           <div>
             <h1 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.75rem', color: colors.purple, fontWeight: 400, margin: 0 }}>
-              Word Pictures
+              Memory Palace
             </h1>
             <p style={{ color: colors.muted, fontSize: '0.9rem', margin: '0.25rem 0 0' }}>
-              "{work.title}" - {work.character}
+              "{work.title}" - Floor Plan View
             </p>
           </div>
         </div>
 
-        <Link
-          to={`/practice/${authorId}/${workId}`}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: colors.muted, textDecoration: 'none', fontSize: '0.9rem', marginBottom: '1rem' }}
-        >
-          <ArrowLeft size={18} /> Back to Practice
-        </Link>
+        <p style={{ color: colors.faded, fontSize: '0.85rem', marginBottom: '1rem' }}>
+          Review your complete journey. Build mnemonics chunk-by-chunk in Practice → Advanced tab.
+        </p>
 
         {/* First Letters */}
         <div style={{ background: 'rgba(196,163,90,0.08)', border: '1px solid rgba(196,163,90,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>

@@ -3,11 +3,22 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
-  CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image
+  CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
+  Sparkles, Loader2, Check, Edit3, Map
 } from 'lucide-react'
 import { similarityScore, containsExpected, wordCount } from '../utils/memoryCard'
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+// Memory palace room names
+const ROOMS = [
+  'Foyer', 'Great Hall', 'Parlor', 'Library', 'Study', 'Gallery',
+  'Staircase', 'Ballroom', 'Tower', 'Chapel', 'Garden', 'Cellar',
+  'Kitchen', 'Attic', 'Conservatory', 'Drawing Room', 'Armory',
+  'Crypt', 'Observatory', 'Throne Room', 'Courtyard', 'Dungeon',
+  'Balcony', 'Vestibule', 'Antechamber', 'Solar', 'Scullery',
+  'Buttery', 'Minstrel Gallery', 'Keep', 'Gatehouse', 'Cloister'
+]
 
 // Sumi-e color palette
 const colors = {
@@ -42,19 +53,35 @@ export default function Practice() {
   const [score, setScore] = useState({ correct: 0, total: 0 })
   const [isListening, setIsListening] = useState(false)
 
+  // Advanced mode state (word pictures)
+  const [memTab, setMemTab] = useState('memorize') // 'memorize' | 'advanced'
+  const [wordPictures, setWordPictures] = useState({ generated: {}, selected: {}, rooms: {} })
+  const [generatingPicture, setGeneratingPicture] = useState(false)
+  const [editingPicture, setEditingPicture] = useState(false)
+  const [editText, setEditText] = useState('')
+
   const recognitionRef = useRef(null)
 
   useEffect(() => {
     Promise.all([
       api(`/authors/${authorId}/works/${workId}`),
-      api('/analytics/progress')
+      api('/analytics/progress'),
+      api(`/visualize/word-pictures/${authorId}/${workId}`)
     ])
-      .then(([workData, progressData]) => {
+      .then(([workData, progressData, vizData]) => {
         setWork(workData)
         const key = `${authorId}/${workId}`
         const savedProgress = progressData.progress?.[key]
         if (savedProgress?.mastered) {
           setMastered(new Set(savedProgress.mastered))
+        }
+        // Load word pictures
+        if (vizData.wordPictures) {
+          setWordPictures({
+            generated: vizData.wordPictures.generated || {},
+            selected: vizData.wordPictures.selected || {},
+            rooms: vizData.wordPictures.rooms || {}
+          })
         }
       })
       .catch(console.error)
@@ -140,6 +167,57 @@ export default function Practice() {
     }
     setMastered(newMastered)
     saveMastered(newMastered)
+  }
+
+  // Generate word picture for current chunk
+  const generatePicture = async () => {
+    setGeneratingPicture(true)
+    try {
+      const result = await api(`/visualize/generate-chunk/${authorId}/${workId}/${currentIndex}`, {
+        method: 'POST'
+      })
+      if (result.success && result.options) {
+        setWordPictures(prev => ({
+          ...prev,
+          generated: { ...prev.generated, [currentIndex]: result.options }
+        }))
+      }
+    } catch (err) {
+      console.error('Failed to generate picture:', err)
+    } finally {
+      setGeneratingPicture(false)
+    }
+  }
+
+  // Select a word picture option
+  const selectPicture = async (option) => {
+    const newSelected = { ...wordPictures.selected, [currentIndex]: option }
+    setWordPictures(prev => ({ ...prev, selected: newSelected }))
+
+    // Auto-assign room if not set
+    const room = wordPictures.rooms[currentIndex] || ROOMS[currentIndex % ROOMS.length]
+
+    try {
+      await api('/visualize/save-chunk', {
+        method: 'POST',
+        body: JSON.stringify({
+          authorId, workId,
+          chunkIndex: currentIndex,
+          selected: option,
+          room
+        })
+      })
+    } catch (err) {
+      console.error('Failed to save picture:', err)
+    }
+  }
+
+  // Save custom edited picture
+  const saveEditedPicture = async () => {
+    if (!editText.trim()) return
+    await selectPicture(editText.trim())
+    setEditingPicture(false)
+    setEditText('')
   }
 
   const startListening = () => {
@@ -295,12 +373,19 @@ export default function Practice() {
   if (mode === 'memorize') {
     const chunk = work.chunks[currentIndex]
     const isMastered = mastered.has(currentIndex)
+    const currentOptions = wordPictures.generated[currentIndex] || []
+    const currentSelected = wordPictures.selected[currentIndex]
+    const currentRoom = wordPictures.rooms[currentIndex] || ROOMS[currentIndex % ROOMS.length]
 
     return (
       <div style={baseStyle}>
         <button onClick={exitPractice} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'none', border: 'none', color: colors.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
           <ArrowLeft size={18} /> Exit
         </button>
+
+        <Link to={`/visualize/${authorId}/${workId}`} style={{ position: 'absolute', top: '1rem', right: '1rem', color: colors.muted, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem' }}>
+          <Map size={16} /> Floor Plan
+        </Link>
 
         <h2 style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1rem' }}>"{work.title}"</h2>
 
@@ -309,47 +394,180 @@ export default function Practice() {
           {work.chunks.map((_, idx) => (
             <div
               key={idx}
-              onClick={() => { setCurrentIndex(idx); setFlipped(false) }}
+              onClick={() => { setCurrentIndex(idx); setFlipped(false); setEditingPicture(false) }}
               style={{
                 height: '6px',
                 flex: 1,
                 borderRadius: '3px',
                 cursor: 'pointer',
-                background: idx === currentIndex ? colors.crimson : mastered.has(idx) ? colors.forest : 'rgba(0,0,0,0.1)',
+                background: idx === currentIndex ? colors.crimson : mastered.has(idx) ? colors.forest : wordPictures.selected[idx] ? 'rgba(90,74,106,0.5)' : 'rgba(0,0,0,0.1)',
                 transition: 'all 0.2s'
               }}
             />
           ))}
         </div>
 
-        {/* Flashcard */}
-        <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(0,0,0,0.08)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(0,0,0,0.02)' }}>
-          {!flipped ? (
-            <>
-              <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem' }}>What comes next?</p>
-              <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.ink, lineHeight: 1.4 }}>"{chunk.front}..."</h3>
-              <p style={{ color: colors.faded, marginTop: 'auto', fontSize: '0.8rem' }}>Click to reveal</p>
-            </>
-          ) : (
-            <>
-              <p style={{ color: colors.muted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{chunk.front}</p>
-              <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.crimson, fontWeight: 500, lineHeight: 1.4 }}>{chunk.back}</h3>
-            </>
-          )}
+        {/* Tab Selector */}
+        <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', padding: '0.25rem', marginBottom: '1rem', maxWidth: '32rem', width: '100%' }}>
+          <button
+            onClick={() => setMemTab('memorize')}
+            style={{
+              flex: 1, padding: '0.5rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
+              background: memTab === 'memorize' ? colors.crimson : 'transparent',
+              color: memTab === 'memorize' ? colors.paper : colors.muted,
+              fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+            }}
+          >
+            <BookOpen size={16} /> Memorize
+          </button>
+          <button
+            onClick={() => setMemTab('advanced')}
+            style={{
+              flex: 1, padding: '0.5rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
+              background: memTab === 'advanced' ? '#5a4a6a' : 'transparent',
+              color: memTab === 'advanced' ? colors.paper : colors.muted,
+              fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+            }}
+          >
+            <Sparkles size={16} /> Advanced
+          </button>
         </div>
 
-        {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-          <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
-            <ChevronLeft size={22} />
-          </button>
-          <button onClick={toggleMastered} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.crimson }}>
-            <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
-          </button>
-          <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
-            <ChevronRight size={22} />
-          </button>
-        </div>
+        {/* Memorize Tab - Flashcard */}
+        {memTab === 'memorize' && (
+          <>
+            <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(0,0,0,0.08)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(0,0,0,0.02)' }}>
+              {!flipped ? (
+                <>
+                  <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem' }}>What comes next?</p>
+                  <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.ink, lineHeight: 1.4 }}>"{chunk.front}..."</h3>
+                  <p style={{ color: colors.faded, marginTop: 'auto', fontSize: '0.8rem' }}>Click to reveal</p>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: colors.muted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{chunk.front}</p>
+                  <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.crimson, fontWeight: 500, lineHeight: 1.4 }}>{chunk.back}</h3>
+                  {currentSelected && (
+                    <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(90,74,106,0.08)', borderRadius: '8px', width: '100%' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.25rem' }}>{currentRoom}</p>
+                      <p style={{ fontSize: '0.85rem', color: colors.muted, fontStyle: 'italic' }}>{currentSelected}</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Controls */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+              <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+                <ChevronLeft size={22} />
+              </button>
+              <button onClick={toggleMastered} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.crimson }}>
+                <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
+              </button>
+              <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+                <ChevronRight size={22} />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Advanced Tab - Word Pictures */}
+        {memTab === 'advanced' && (
+          <>
+            <div style={{ ...cardStyle, minHeight: '16rem' }}>
+              {/* Chunk text */}
+              <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                <p style={{ fontSize: '0.75rem', color: colors.faded, marginBottom: '0.25rem' }}>Chunk {currentIndex + 1} • {currentRoom}</p>
+                <p style={{ color: colors.muted }}>{chunk.front} <span style={{ color: colors.crimson, fontWeight: 500 }}>{chunk.back}</span></p>
+              </div>
+
+              {/* Word Picture Section */}
+              {currentSelected && !editingPicture ? (
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Word Picture</p>
+                  <div style={{ background: 'rgba(90,74,106,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                    <p style={{ color: colors.ink, lineHeight: 1.5 }}>{currentSelected}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => { setEditingPicture(true); setEditText(currentSelected) }} style={{ ...btnSecondary, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
+                      <Edit3 size={14} /> Edit
+                    </button>
+                    <button onClick={generatePicture} disabled={generatingPicture} style={{ ...btnSecondary, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
+                      <Sparkles size={14} /> Regenerate
+                    </button>
+                  </div>
+                </div>
+              ) : editingPicture ? (
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edit Word Picture</p>
+                  <textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    placeholder="Write your mnemonic..."
+                    style={{ width: '100%', height: '5rem', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', resize: 'none', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem', color: colors.ink, boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <button onClick={saveEditedPicture} style={{ ...btnPrimary, background: colors.forest, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
+                      <Check size={14} /> Save
+                    </button>
+                    <button onClick={() => { setEditingPicture(false); setEditText('') }} style={{ ...btnSecondary, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : currentOptions.length > 0 ? (
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Choose a Word Picture</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {currentOptions.map((option, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => selectPicture(option)}
+                        style={{ width: '100%', textAlign: 'left', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.85rem', color: colors.ink }}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => setEditingPicture(true)} style={{ ...btnSecondary, marginTop: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
+                    <Edit3 size={14} /> Write my own
+                  </button>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                  <Sparkles size={32} style={{ color: colors.faded, marginBottom: '0.75rem' }} />
+                  <p style={{ color: colors.muted, marginBottom: '1rem' }}>Create a vivid mnemonic image for this chunk</p>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button onClick={generatePicture} disabled={generatingPicture} style={{ ...btnPrimary, background: '#5a4a6a' }}>
+                      {generatingPicture ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Generating...</> : <><Sparkles size={16} /> Generate Ideas</>}
+                    </button>
+                    <button onClick={() => setEditingPicture(true)} style={btnSecondary}>
+                      <Edit3 size={16} /> Write my own
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+              <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setEditingPicture(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+                <ChevronLeft size={22} />
+              </button>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <p style={{ color: colors.faded, fontSize: '0.85rem' }}>
+                  {Object.keys(wordPictures.selected).length} of {work.chunks.length} chunks have mnemonics
+                </p>
+              </div>
+              <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setEditingPicture(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+                <ChevronRight size={22} />
+              </button>
+            </div>
+          </>
+        )}
 
         <p style={{ color: colors.faded, marginTop: '1rem', fontSize: '0.9rem' }}>{currentIndex + 1} / {work.chunks.length}</p>
       </div>
