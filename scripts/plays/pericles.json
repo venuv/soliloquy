@@ -1,0 +1,66 @@
+{
+  "play": "Pericles",
+  "soliloquies": [
+    {
+      "id": "pericles-gower-prologue",
+      "title": "To sing a song that old was sung",
+      "character": "Gower",
+      "act": "Act 1, Prologue",
+      "chunks": [
+        { "front": "To sing a song", "back": "that old was sung," },
+        { "front": "From ashes ancient", "back": "Gower is come," },
+        { "front": "Assuming man's infirmities,", "back": "To glad your ear and please your eyes." },
+        { "front": "It hath been sung at festivals,", "back": "On ember-eves and holy-ales;" },
+        { "front": "And lords and ladies", "back": "in their lives" },
+        { "front": "Have read it for", "back": "restoratives." },
+        { "front": "The purchase is to make", "back": "men glorious," },
+        { "front": "Et bonum quo antiquius,", "back": "eo melius." },
+        { "front": "If you, born in these latter times,", "back": "When wit's more ripe," },
+        { "front": "accept my rhymes, And that to hear", "back": "an old man sing" },
+        { "front": "May to your wishes", "back": "pleasure bring," },
+        { "front": "I life would wish,", "back": "and that I might" },
+        { "front": "Waste it for you", "back": "like taper-light." }
+      ]
+    },
+    {
+      "id": "pericles-marina-recognition",
+      "title": "My name is Marina",
+      "character": "Marina",
+      "act": "Act 5, Scene 1",
+      "chunks": [
+        { "front": "My name is Marina,", "back": "and my mother died" },
+        { "front": "Even in the act", "back": "of birth, I was born." },
+        { "front": "My father was a king,", "back": "and call'd Pericles." },
+        { "front": "And being at sea", "back": "my mother died," },
+        { "front": "With sorrow never closing", "back": "either of her eyes." },
+        { "front": "The gods did favor me,", "back": "and I was brought" },
+        { "front": "To Tarsus,", "back": "where I was bred," },
+        { "front": "And there a wicked queen", "back": "did seek my life," },
+        { "front": "But fortune brought me", "back": "to another place," },
+        { "front": "Where I have lived", "back": "in sorrow and in woe," },
+        { "front": "Yet kept my virtue", "back": "pure and clean." }
+      ]
+    },
+    {
+      "id": "pericles-what-music",
+      "title": "But what music?",
+      "character": "Pericles",
+      "act": "Act 5, Scene 1",
+      "chunks": [
+        { "front": "But what music?", "back": "My Marina," },
+        { "front": "Tell him o'er point by point,", "back": "for yet he seems to doubt," },
+        { "front": "How sure you are", "back": "my daughter." },
+        { "front": "But what music?", "back": "I am wild in my beholding." },
+        { "front": "O heavens bless", "back": "my girl!" },
+        { "front": "But hark, what music?", "back": "Tell me, Helicanus," },
+        { "front": "My Marina,", "back": "tell her o'er" },
+        { "front": "Point by point,", "back": "for yet he seems to doubt." },
+        { "front": "O, come hither,", "back": "thou that begett'st him that did thee beget;" },
+        { "front": "Thou that wast born at sea,", "back": "buried at Tarsus," },
+        { "front": "And found at sea again.", "back": "O Helicanus," },
+        { "front": "Down on thy knees,", "back": "thank the holy gods as loud" },
+        { "front": "As thunder threatens us:", "back": "this is Marina." }
+      ]
+    }
+  ]
+}
