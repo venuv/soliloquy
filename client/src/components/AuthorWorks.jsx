@@ -24,16 +24,16 @@ export default function AuthorWorks() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-amber-400">Loading...</div>
+      <div style={{ minHeight: '100vh', background: '#fdfcf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#9b2d30', fontFamily: "'Cormorant', serif", fontSize: '1.25rem' }}>Loading...</div>
       </div>
     )
   }
 
   if (!author) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400">Author not found</div>
+      <div style={{ minHeight: '100vh', background: '#fdfcf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#9b2d30' }}>Author not found</div>
       </div>
     )
   }
@@ -48,63 +48,89 @@ export default function AuthorWorks() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div style={{
+      minHeight: '100vh',
+      background: '#fdfcf8',
+      fontFamily: "'IBM Plex Sans', sans-serif",
+      padding: '1.5rem'
+    }}>
       {/* Header */}
-      <div className="max-w-2xl mx-auto mb-8">
-        <Link to="/" className="text-gray-400 hover:text-white flex items-center gap-2 mb-4">
-          <Home size={20} />
-          <span>Back to Authors</span>
+      <div style={{ maxWidth: '40rem', margin: '0 auto 2rem' }}>
+        <Link to="/" style={{ color: '#4a4a4a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontSize: '0.9rem' }}>
+          <Home size={18} />
+          <span>Back to Home</span>
         </Link>
-        
-        <div className="flex items-center gap-4">
-          <span className="text-5xl">{author.portrait}</span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '3rem' }}>{author.portrait}</span>
           <div>
-            <h1 className="text-3xl font-bold text-white">{author.name}</h1>
-            <p className="text-gray-400">{author.subtitle}</p>
+            <h1 style={{ fontFamily: "'Cormorant', serif", fontSize: '2rem', color: '#1a1a1a', fontWeight: 400, margin: 0 }}>{author.name}</h1>
+            <p style={{ color: '#4a4a4a', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>{author.subtitle}</p>
           </div>
         </div>
       </div>
 
       {/* Works List */}
-      <div className="max-w-2xl mx-auto">
-        <h2 className="text-gray-400 mb-4">{author.works.length} works available</h2>
-        
-        <div className="space-y-2">
+      <div style={{ maxWidth: '40rem', margin: '0 auto' }}>
+        <h2 style={{ color: '#4a4a4a', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 400 }}>{author.works.length} works available</h2>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {author.works.map((work) => {
             const pct = getWorkProgress(work.id)
             return (
               <Link
                 key={work.id}
                 to={`/practice/${authorId}/${work.id}`}
-                className="block p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all group"
+                style={{
+                  display: 'block',
+                  padding: '1rem 1.25rem',
+                  background: 'rgba(0,0,0,0.02)',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(155, 45, 48, 0.04)'
+                  e.currentTarget.style.borderColor = 'rgba(155, 45, 48, 0.15)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(0,0,0,0.02)'
+                  e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg text-white group-hover:text-amber-400 transition-colors">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.1rem', color: '#1a1a1a', margin: 0, fontWeight: 400 }}>
                       "{work.title}"
                     </h3>
-                    <p className="text-gray-400 text-sm">
+                    <p style={{ color: '#4a4a4a', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
                       {work.character} • {work.source} • {work.act}
                     </p>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p style={{ color: '#9a9a9a', fontSize: '0.8rem', margin: '0.25rem 0 0' }}>
                       {work.chunks.length} chunks
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     {pct > 0 && (
-                      <div className="text-right">
-                        <div className="text-green-400 text-sm font-medium">{pct}%</div>
-                        <div className="text-gray-500 text-xs">mastered</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ color: '#3d5c4a', fontSize: '0.85rem', fontWeight: 500 }}>{pct}%</div>
+                        <div style={{ color: '#9a9a9a', fontSize: '0.7rem' }}>mastered</div>
                       </div>
                     )}
-                    <ChevronRight className="text-gray-500 group-hover:text-amber-400" size={20} />
+                    <ChevronRight size={18} style={{ color: '#9a9a9a' }} />
                   </div>
                 </div>
                 {pct > 0 && (
-                  <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-green-500 rounded-full transition-all"
-                      style={{ width: `${pct}%` }}
+                  <div style={{ marginTop: '0.5rem', height: '3px', background: 'rgba(0,0,0,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        height: '100%',
+                        background: '#3d5c4a',
+                        borderRadius: '2px',
+                        width: `${pct}%`,
+                        transition: 'width 0.3s'
+                      }}
                     />
                   </div>
                 )}

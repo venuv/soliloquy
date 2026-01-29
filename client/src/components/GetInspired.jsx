@@ -290,9 +290,9 @@ const PERFORMANCES = [
 
 function YouTubeEmbed({ videoId, title }) {
   return (
-    <div className="relative w-full pt-[56.25%] rounded-lg overflow-hidden bg-gray-900">
+    <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', borderRadius: '8px', overflow: 'hidden', background: '#1a1a1a' }}>
       <iframe
-        className="absolute top-0 left-0 w-full h-full"
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
         src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`}
         title={title}
         frameBorder="0"
@@ -306,23 +306,23 @@ function YouTubeEmbed({ videoId, title }) {
 
 function VideoCard({ video, isExpanded, onToggle }) {
   return (
-    <div className="bg-gray-700/50 rounded-lg overflow-hidden">
+    <div style={{ background: 'rgba(90,74,106,0.06)', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(90,74,106,0.12)' }}>
       <button
         onClick={onToggle}
-        className="w-full p-4 flex items-center justify-between hover:bg-gray-700 transition-colors text-left"
+        style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-            <Play size={16} className="text-purple-400 ml-0.5" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(90,74,106,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Play size={16} style={{ color: '#5a4a6a', marginLeft: '2px' }} />
           </div>
           <div>
-            <h4 className="font-medium text-white">{video.title}</h4>
-            <div className="flex items-center gap-3 text-sm text-gray-400">
-              <span className="flex items-center gap-1">
+            <h4 style={{ fontWeight: 500, color: '#1a1a1a', margin: 0 }}>{video.title}</h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: '#4a4a4a', marginTop: '0.25rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 <User size={12} />
                 {video.performer}
               </span>
-              <span className="flex items-center gap-1">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 <Clock size={12} />
                 {video.duration}
               </span>
@@ -330,21 +330,21 @@ function VideoCard({ video, isExpanded, onToggle }) {
           </div>
         </div>
         {isExpanded ? (
-          <ChevronUp size={20} className="text-gray-400" />
+          <ChevronUp size={20} style={{ color: '#9a9a9a' }} />
         ) : (
-          <ChevronDown size={20} className="text-gray-400" />
+          <ChevronDown size={20} style={{ color: '#9a9a9a' }} />
         )}
       </button>
 
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-3">
-          <p className="text-gray-400 text-sm">{video.description}</p>
+        <div style={{ padding: '0 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <p style={{ color: '#4a4a4a', fontSize: '0.9rem' }}>{video.description}</p>
           <YouTubeEmbed videoId={video.youtubeId} title={video.title} />
           <a
             href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-purple-400 hover:text-purple-300"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: '#5a4a6a', textDecoration: 'none' }}
           >
             Watch on YouTube <ExternalLink size={12} />
           </a>
@@ -362,25 +362,25 @@ function SoliloquySection({ performance }) {
   }
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6 space-y-4 border border-gray-700">
-      <div className="flex items-start justify-between">
+    <div style={{ background: 'rgba(0,0,0,0.02)', borderRadius: '12px', padding: '1.5rem', border: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h3 className="text-lg text-white font-semibold">
+          <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: '#1a1a1a', fontWeight: 500, margin: 0 }}>
             "{performance.soliloquy}"
           </h3>
-          <p className="text-gray-400 text-sm mt-1">
+          <p style={{ color: '#4a4a4a', fontSize: '0.9rem', marginTop: '0.25rem' }}>
             {performance.play}
           </p>
         </div>
         <Link
           to={`/practice/shakespeare/${performance.id}`}
-          className="text-sm bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded-lg hover:bg-amber-500/30 transition-colors"
+          style={{ fontSize: '0.85rem', background: 'rgba(155,45,48,0.08)', color: '#9b2d30', padding: '0.5rem 0.75rem', borderRadius: '6px', textDecoration: 'none' }}
         >
           Practice This
         </Link>
       </div>
 
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {performance.videos.map((video, index) => (
           <VideoCard
             key={video.youtubeId}
@@ -404,22 +404,18 @@ export default function GetInspired() {
     : PERFORMANCES.filter(p => p.play === filter)
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div style={{ minHeight: '100vh', background: '#fdfcf8', fontFamily: "'IBM Plex Sans', sans-serif", padding: '1.5rem' }}>
       {/* Header */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/"
-            className="text-gray-400 hover:text-white transition-colors"
-            title="Home"
-          >
-            <Home size={24} />
+      <div style={{ maxWidth: '56rem', margin: '0 auto 2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Link to="/" style={{ color: '#4a4a4a', textDecoration: 'none' }} title="Home">
+            <Home size={22} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-purple-400">
+            <h1 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.75rem', color: '#5a4a6a', fontWeight: 400, margin: 0 }}>
               Get Inspired
             </h1>
-            <p className="text-gray-400 text-sm">
+            <p style={{ color: '#4a4a4a', fontSize: '0.9rem', margin: '0.25rem 0 0' }}>
               Watch master performances of the soliloquies you're learning
             </p>
           </div>
@@ -427,15 +423,19 @@ export default function GetInspired() {
       </div>
 
       {/* Filter */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <div className="flex flex-wrap gap-2">
+      <div style={{ maxWidth: '56rem', margin: '0 auto 1.5rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              filter === 'all'
-                ? 'bg-purple-500 text-white'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              border: 'none',
+              cursor: 'pointer',
+              background: filter === 'all' ? '#5a4a6a' : 'rgba(0,0,0,0.03)',
+              color: filter === 'all' ? '#fdfcf8' : '#4a4a4a'
+            }}
           >
             All Plays
           </button>
@@ -443,11 +443,15 @@ export default function GetInspired() {
             <button
               key={play}
               onClick={() => setFilter(play)}
-              className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                filter === play
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                border: 'none',
+                cursor: 'pointer',
+                background: filter === play ? '#5a4a6a' : 'rgba(0,0,0,0.03)',
+                color: filter === play ? '#fdfcf8' : '#4a4a4a'
+              }}
             >
               {play}
             </button>
@@ -456,15 +460,15 @@ export default function GetInspired() {
       </div>
 
       {/* Performances */}
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div style={{ maxWidth: '56rem', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {filteredPerformances.map(performance => (
           <SoliloquySection key={performance.id} performance={performance} />
         ))}
       </div>
 
       {/* Footer */}
-      <div className="max-w-4xl mx-auto mt-12 text-center">
-        <p className="text-gray-500 text-sm">
+      <div style={{ maxWidth: '56rem', margin: '3rem auto 0', textAlign: 'center' }}>
+        <p style={{ color: '#9a9a9a', fontSize: '0.85rem' }}>
           Videos embedded from YouTube
         </p>
       </div>

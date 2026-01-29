@@ -16,81 +16,88 @@ export default function Stats() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-amber-400">Loading...</div>
+      <div style={{ minHeight: '100vh', background: '#fdfcf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#9b2d30', fontFamily: "'Cormorant', serif", fontSize: '1.25rem' }}>Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
-      <div className="max-w-2xl mx-auto">
+    <div style={{
+      minHeight: '100vh',
+      background: '#fdfcf8',
+      fontFamily: "'IBM Plex Sans', sans-serif",
+      padding: '1.5rem'
+    }}>
+      <div style={{ maxWidth: '40rem', margin: '0 auto' }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-amber-400">Your Stats</h1>
-          <Link to="/" className="text-gray-400 hover:text-white flex items-center gap-2">
-            <Home size={20} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+          <h1 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.75rem', color: '#1a1a1a', fontWeight: 400 }}>
+            Your Stats
+          </h1>
+          <Link to="/" style={{ color: '#4a4a4a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+            <Home size={18} />
             <span>Home</span>
           </Link>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <BookOpen className="text-amber-400" size={24} />
-              <span className="text-gray-400">Total Sessions</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ background: 'rgba(155, 45, 48, 0.06)', border: '1px solid rgba(155, 45, 48, 0.15)', borderRadius: '8px', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <BookOpen size={22} style={{ color: '#9b2d30' }} />
+              <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Total Sessions</span>
             </div>
-            <div className="text-3xl font-bold text-white">{summary?.totalSessions || 0}</div>
+            <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>{summary?.totalSessions || 0}</div>
           </div>
-          
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="text-blue-400" size={24} />
-              <span className="text-gray-400">Time Practiced</span>
+
+          <div style={{ background: 'rgba(42, 74, 94, 0.06)', border: '1px solid rgba(42, 74, 94, 0.15)', borderRadius: '8px', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <Clock size={22} style={{ color: '#2a4a5e' }} />
+              <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Time Practiced</span>
             </div>
-            <div className="text-3xl font-bold text-white">{summary?.totalTimeMinutes || 0} min</div>
+            <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>{summary?.totalTimeMinutes || 0} min</div>
           </div>
-          
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Target className="text-green-400" size={24} />
-              <span className="text-gray-400">Tests Taken</span>
+
+          <div style={{ background: 'rgba(61, 92, 74, 0.06)', border: '1px solid rgba(61, 92, 74, 0.15)', borderRadius: '8px', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <Target size={22} style={{ color: '#3d5c4a' }} />
+              <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Tests Taken</span>
             </div>
-            <div className="text-3xl font-bold text-white">{summary?.testSessions || 0}</div>
+            <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>{summary?.testSessions || 0}</div>
           </div>
-          
-          <div className="bg-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Trophy className="text-yellow-400" size={24} />
-              <span className="text-gray-400">Avg Test Score</span>
+
+          <div style={{ background: 'rgba(196, 163, 90, 0.08)', border: '1px solid rgba(196, 163, 90, 0.2)', borderRadius: '8px', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <Trophy size={22} style={{ color: '#c4a35a' }} />
+              <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Avg Test Score</span>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>
               {summary?.avgScore !== null ? `${summary.avgScore}%` : '—'}
             </div>
           </div>
         </div>
 
         {/* Progress Summary */}
-        <div className="bg-gray-800 rounded-xl p-6 mb-8">
-          <h2 className="text-lg font-medium text-white mb-4">Progress</h2>
-          <div className="flex justify-between text-gray-400">
+        <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem' }}>
+          <h2 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: '#1a1a1a', marginBottom: '1rem', fontWeight: 400 }}>Progress</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#4a4a4a', fontSize: '0.9rem' }}>
             <span>Works Started</span>
-            <span className="text-white font-medium">{summary?.worksStarted || 0}</span>
+            <span style={{ color: '#1a1a1a', fontWeight: 500 }}>{summary?.worksStarted || 0}</span>
           </div>
-          <div className="flex justify-between text-gray-400 mt-2">
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#4a4a4a', fontSize: '0.9rem', marginTop: '0.5rem' }}>
             <span>Works with Mastered Chunks</span>
-            <span className="text-white font-medium">{summary?.worksMastered || 0}</span>
+            <span style={{ color: '#1a1a1a', fontWeight: 500 }}>{summary?.worksMastered || 0}</span>
           </div>
         </div>
 
         {/* Member Info */}
-        <div className="bg-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3">
-            <Calendar className="text-gray-400" size={20} />
-            <span className="text-gray-400">
-              Member since {summary?.memberSince 
-                ? new Date(summary.memberSince).toLocaleDateString() 
+        <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Calendar size={18} style={{ color: '#9a9a9a' }} />
+            <span style={{ color: '#4a4a4a', fontSize: '0.9rem' }}>
+              Member since {summary?.memberSince
+                ? new Date(summary.memberSince).toLocaleDateString()
                 : '—'}
             </span>
           </div>

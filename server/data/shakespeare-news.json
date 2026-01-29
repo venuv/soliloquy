@@ -1,0 +1,345 @@
+{
+  "onThisDay": [
+    {
+      "month": 1,
+      "day": 28,
+      "year": 1547,
+      "event": "King Henry VIII dies at Whitehall Palace. Shakespeare would later immortalize him in 'Henry VIII' (1613).",
+      "category": "historical"
+    },
+    {
+      "month": 1,
+      "day": 28,
+      "year": 1596,
+      "event": "Sir Francis Drake dies at sea. His privateering adventures influenced Shakespeare's maritime imagery.",
+      "category": "historical"
+    },
+    {
+      "month": 4,
+      "day": 23,
+      "year": 1564,
+      "event": "William Shakespeare born in Stratford-upon-Avon (traditional date).",
+      "category": "shakespeare"
+    },
+    {
+      "month": 4,
+      "day": 23,
+      "year": 1616,
+      "event": "William Shakespeare dies in Stratford-upon-Avon, aged 52.",
+      "category": "shakespeare"
+    },
+    {
+      "month": 6,
+      "day": 29,
+      "year": 1613,
+      "event": "The Globe Theatre burns down during a performance of Henry VIII when a cannon misfires.",
+      "category": "theater"
+    },
+    {
+      "month": 9,
+      "day": 21,
+      "year": 1599,
+      "event": "The Globe Theatre likely opens with a performance of Julius Caesar.",
+      "category": "theater"
+    },
+    {
+      "month": 11,
+      "day": 1,
+      "year": 1604,
+      "event": "Shakespeare's 'Othello' is performed at Whitehall Palace for King James I.",
+      "category": "performance"
+    },
+    {
+      "month": 2,
+      "day": 2,
+      "year": 1585,
+      "event": "Shakespeare's twins Hamnet and Judith are baptized in Stratford.",
+      "category": "shakespeare"
+    },
+    {
+      "month": 8,
+      "day": 11,
+      "year": 1596,
+      "event": "Shakespeare's only son Hamnet dies at age 11, possibly inspiring the melancholy of later plays.",
+      "category": "shakespeare"
+    },
+    {
+      "month": 5,
+      "day": 19,
+      "year": 1603,
+      "event": "The Lord Chamberlain's Men become the King's Men under James I's patronage.",
+      "category": "theater"
+    },
+    {
+      "month": 12,
+      "day": 26,
+      "year": 1606,
+      "event": "King Lear is performed before King James I at Whitehall.",
+      "category": "performance"
+    },
+    {
+      "month": 7,
+      "day": 22,
+      "year": 1934,
+      "event": "Laurence Olivier makes his Old Vic debut as Hamlet, launching his legendary career.",
+      "category": "modern"
+    },
+    {
+      "month": 3,
+      "day": 5,
+      "year": 1953,
+      "event": "Richard Burton opens as Hamlet at the Old Vic to acclaim.",
+      "category": "modern"
+    },
+    {
+      "month": 10,
+      "day": 17,
+      "year": 1965,
+      "event": "The National Theatre's production of Othello with Olivier opens to controversy and acclaim.",
+      "category": "modern"
+    },
+    {
+      "month": 8,
+      "day": 8,
+      "year": 1987,
+      "event": "Kenneth Branagh's Renaissance Theatre Company performs Hamlet in London.",
+      "category": "modern"
+    },
+    {
+      "month": 1,
+      "day": 1,
+      "year": 1600,
+      "event": "The start of Shakespeare's most prolific period - Hamlet, Othello, King Lear, and Macbeth would all be written in the next six years.",
+      "category": "historical"
+    },
+    {
+      "month": 1,
+      "day": 15,
+      "year": 1559,
+      "event": "Elizabeth I is crowned Queen of England. Her 45-year reign would see the flowering of English drama.",
+      "category": "historical"
+    },
+    {
+      "month": 2,
+      "day": 14,
+      "year": 1595,
+      "event": "Shakespeare's Romeo and Juliet is likely first performed around this Valentine's Day period.",
+      "category": "performance"
+    },
+    {
+      "month": 3,
+      "day": 24,
+      "year": 1603,
+      "event": "Queen Elizabeth I dies. James VI of Scotland becomes James I of England.",
+      "category": "historical"
+    },
+    {
+      "month": 6,
+      "day": 12,
+      "year": 1997,
+      "event": "Shakespeare's Globe Theatre reopens on Bankside, reconstructed near the original site.",
+      "category": "modern"
+    },
+    {
+      "month": 7,
+      "day": 7,
+      "year": 1598,
+      "event": "The Theatre in Shoreditch is dismantled; its timbers would be used to build The Globe.",
+      "category": "theater"
+    },
+    {
+      "month": 10,
+      "day": 25,
+      "year": 1415,
+      "event": "The Battle of Agincourt is fought - immortalized in Shakespeare's Henry V.",
+      "category": "historical"
+    },
+    {
+      "month": 11,
+      "day": 5,
+      "year": 1605,
+      "event": "The Gunpowder Plot is discovered. Its aftermath may have influenced Macbeth.",
+      "category": "historical"
+    },
+    {
+      "month": 12,
+      "day": 10,
+      "year": 1610,
+      "event": "The Tempest is likely performed for the first time at the Blackfriars Theatre.",
+      "category": "performance"
+    },
+    {
+      "month": 1,
+      "day": 6,
+      "year": 1601,
+      "event": "Twelfth Night is performed at Middle Temple Hall for the Twelfth Night celebration.",
+      "category": "performance"
+    },
+    {
+      "month": 5,
+      "day": 22,
+      "year": 1907,
+      "event": "Laurence Olivier is born in Dorking, Surrey.",
+      "category": "modern"
+    },
+    {
+      "month": 12,
+      "day": 9,
+      "year": 1934,
+      "event": "Dame Judi Dench is born in York.",
+      "category": "modern"
+    },
+    {
+      "month": 5,
+      "day": 25,
+      "year": 1913,
+      "event": "Sir Ian McKellen is born in Burnley, Lancashire.",
+      "category": "modern"
+    },
+    {
+      "month": 12,
+      "day": 10,
+      "year": 1960,
+      "event": "Kenneth Branagh is born in Belfast.",
+      "category": "modern"
+    },
+    {
+      "month": 4,
+      "day": 18,
+      "year": 1971,
+      "event": "David Tennant is born in Bathgate, Scotland.",
+      "category": "modern"
+    }
+  ],
+  "festivals": [
+    {
+      "name": "Oregon Shakespeare Festival",
+      "location": "Ashland, Oregon",
+      "season": "February - October",
+      "website": "https://www.osfashland.org",
+      "description": "America's largest repertory theatre, presenting works by Shakespeare and others since 1935."
+    },
+    {
+      "name": "Stratford Festival",
+      "location": "Stratford, Ontario, Canada",
+      "season": "April - November",
+      "website": "https://www.stratfordfestival.ca",
+      "description": "North America's largest classical repertory theatre, founded in 1953."
+    },
+    {
+      "name": "Royal Shakespeare Company",
+      "location": "Stratford-upon-Avon, UK",
+      "season": "Year-round",
+      "website": "https://www.rsc.org.uk",
+      "description": "The world-renowned company performing Shakespeare in his birthplace."
+    },
+    {
+      "name": "Shakespeare's Globe",
+      "location": "London, UK",
+      "season": "April - October (outdoor), Year-round (indoor)",
+      "website": "https://www.shakespearesglobe.com",
+      "description": "A faithful reconstruction of the 1599 Globe Theatre on the South Bank."
+    },
+    {
+      "name": "Utah Shakespeare Festival",
+      "location": "Cedar City, Utah",
+      "season": "June - October",
+      "website": "https://www.bfrorg.com",
+      "description": "Tony Award-winning festival in a replica of the original Globe."
+    },
+    {
+      "name": "Colorado Shakespeare Festival",
+      "location": "Boulder, Colorado",
+      "season": "June - August",
+      "website": "https://cupresents.org/series/colorado-shakespeare-festival",
+      "description": "One of the oldest Shakespeare festivals in the US, founded in 1958."
+    },
+    {
+      "name": "New York Shakespeare Festival",
+      "location": "Central Park, New York",
+      "season": "June - August",
+      "website": "https://publictheater.org/programs/shakespeare-in-the-park",
+      "description": "Free Shakespeare in the Park productions since 1962."
+    },
+    {
+      "name": "Folger Shakespeare Library",
+      "location": "Washington, D.C.",
+      "season": "Year-round",
+      "website": "https://www.folger.edu",
+      "description": "Home to the world's largest Shakespeare collection, reopened after renovation."
+    }
+  ],
+  "notablePerformances": [
+    {
+      "actor": "Laurence Olivier",
+      "role": "Hamlet",
+      "year": 1948,
+      "venue": "Film",
+      "note": "Won Academy Award for Best Picture and Best Actor"
+    },
+    {
+      "actor": "John Gielgud",
+      "role": "Hamlet",
+      "year": 1936,
+      "venue": "Empire Theatre, NYC",
+      "note": "Ran for 132 performances, then a Broadway record for Shakespeare"
+    },
+    {
+      "actor": "Ian McKellen",
+      "role": "Richard III",
+      "year": 1990,
+      "venue": "National Theatre",
+      "note": "Set in 1930s fascist Britain, later adapted to acclaimed 1995 film"
+    },
+    {
+      "actor": "Judi Dench",
+      "role": "Lady Macbeth",
+      "year": 1976,
+      "venue": "RSC",
+      "note": "Definitive performance opposite Ian McKellen's Macbeth"
+    },
+    {
+      "actor": "Kenneth Branagh",
+      "role": "Hamlet",
+      "year": 1996,
+      "venue": "Film",
+      "note": "First uncut film version of Hamlet, running 4 hours"
+    },
+    {
+      "actor": "David Tennant",
+      "role": "Hamlet",
+      "year": 2008,
+      "venue": "RSC/West End",
+      "note": "Critically acclaimed modern dress production with Patrick Stewart"
+    },
+    {
+      "actor": "Benedict Cumberbatch",
+      "role": "Hamlet",
+      "year": 2015,
+      "venue": "Barbican Theatre",
+      "note": "Highest-grossing play in West End history at the time"
+    },
+    {
+      "actor": "Mark Rylance",
+      "role": "Hamlet",
+      "year": 2000,
+      "venue": "Shakespeare's Globe",
+      "note": "All-male production, Rylance also played Cleopatra and Olivia"
+    },
+    {
+      "actor": "Glenda Jackson",
+      "role": "King Lear",
+      "year": 2019,
+      "venue": "Broadway",
+      "note": "Won Tony Award at age 82, one of few women to play the role"
+    },
+    {
+      "actor": "Ralph Fiennes",
+      "role": "Coriolanus",
+      "year": 2011,
+      "venue": "Donmar/Film",
+      "note": "Modern military adaptation, also directed the film version"
+    }
+  ],
+  "lastUpdated": "2026-01-28T00:00:00Z"
+}

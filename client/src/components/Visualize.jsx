@@ -3,8 +3,20 @@ import { useParams, Link } from 'react-router-dom'
 import { api } from '../App'
 import {
   ArrowLeft, Sparkles, Save, Loader2, Check, Edit3, X,
-  Grid3X3, List, ChevronDown, ChevronUp
+  Grid3X3, List, ChevronDown, ChevronUp, Home
 } from 'lucide-react'
+
+const colors = {
+  paper: '#fdfcf8',
+  ink: '#1a1a1a',
+  crimson: '#9b2d30',
+  forest: '#3d5c4a',
+  blue: '#2a4a5e',
+  gold: '#c4a35a',
+  purple: '#5a4a6a',
+  muted: '#4a4a4a',
+  faded: '#9a9a9a'
+}
 
 export default function Visualize() {
   const { authorId, workId } = useParams()
@@ -132,16 +144,16 @@ export default function Visualize() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <Loader2 className="animate-spin text-amber-400" size={32} />
+      <div style={{ minHeight: '100vh', background: colors.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={32} style={{ color: colors.gold, animation: 'spin 1s linear infinite' }} />
       </div>
     )
   }
 
   if (!work) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400">Failed to load work</div>
+      <div style={{ minHeight: '100vh', background: colors.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: colors.crimson }}>Failed to load work</div>
       </div>
     )
   }
@@ -149,68 +161,81 @@ export default function Visualize() {
   const hasGenerated = Object.keys(generatedPictures).length > 0
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4 pb-24">
-      <div className="max-w-4xl mx-auto">
+    <div style={{ minHeight: '100vh', background: colors.paper, fontFamily: "'IBM Plex Sans', sans-serif", padding: '1.5rem', paddingBottom: '6rem' }}>
+      <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
         {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <Link to="/" style={{ color: colors.muted, textDecoration: 'none' }} title="Home">
+            <Home size={22} />
+          </Link>
+          <div>
+            <h1 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.75rem', color: colors.purple, fontWeight: 400, margin: 0 }}>
+              Word Pictures
+            </h1>
+            <p style={{ color: colors.muted, fontSize: '0.9rem', margin: '0.25rem 0 0' }}>
+              "{work.title}" - {work.character}
+            </p>
+          </div>
+        </div>
+
         <Link
           to={`/practice/${authorId}/${workId}`}
-          className="text-gray-400 hover:text-white flex items-center gap-2 mb-4"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: colors.muted, textDecoration: 'none', fontSize: '0.9rem', marginBottom: '1rem' }}
         >
-          <ArrowLeft size={20} /> Back to Practice
+          <ArrowLeft size={18} /> Back to Practice
         </Link>
 
-        <h1 className="text-2xl font-bold text-white mb-1">
-          Word Pictures
-        </h1>
-        <p className="text-gray-400 mb-4">
-          "{work.title}" - {work.character}
-        </p>
-
         {/* First Letters */}
-        <div className="bg-gray-800 rounded-lg p-4 mb-4">
-          <div className="text-gray-400 text-sm mb-2">First Letters (by sentence)</div>
-          <div className="font-mono text-amber-300 text-lg tracking-wider">
+        <div style={{ background: 'rgba(196,163,90,0.08)', border: '1px solid rgba(196,163,90,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
+          <div style={{ color: colors.muted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>First Letters (by sentence)</div>
+          <div style={{ fontFamily: 'monospace', color: colors.gold, fontSize: '1.1rem', letterSpacing: '0.1em' }}>
             {firstLetters || 'N/A'}
           </div>
-          <div className="text-gray-500 text-xs mt-1">
+          <div style={{ color: colors.faded, fontSize: '0.75rem', marginTop: '0.25rem' }}>
             {firstLetters.length} sentences - memorize this sequence!
           </div>
         </div>
 
         {/* View Toggle & Actions */}
-        <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-          <div className="flex bg-gray-800 rounded-lg p-1">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', padding: '0.25rem' }}>
             <button
               onClick={() => setView('editor')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${
-                view === 'editor'
-                  ? 'bg-amber-600 text-white'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                background: view === 'editor' ? colors.gold : 'transparent',
+                color: view === 'editor' ? colors.paper : colors.muted,
+                fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem'
+              }}
             >
               <List size={16} /> Editor
             </button>
             <button
               onClick={() => setView('bingo')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${
-                view === 'bingo'
-                  ? 'bg-amber-600 text-white'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                background: view === 'bingo' ? colors.gold : 'transparent',
+                color: view === 'bingo' ? colors.paper : colors.muted,
+                fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem'
+              }}
             >
               <Grid3X3 size={16} /> Floor Plan
             </button>
           </div>
 
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               onClick={handleGenerate}
               disabled={generating}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
+                background: generating ? 'rgba(0,0,0,0.1)' : colors.purple, color: generating ? colors.faded : colors.paper,
+                cursor: generating ? 'not-allowed' : 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem'
+              }}
             >
               {generating ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                   Creating & Improving...
                 </>
               ) : (
@@ -225,10 +250,14 @@ export default function Visualize() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
+                  background: saving ? 'rgba(0,0,0,0.1)' : colors.forest, color: saving ? colors.faded : colors.paper,
+                  cursor: saving ? 'not-allowed' : 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem'
+                }}
               >
                 {saving ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                 ) : (
                   <Save size={16} />
                 )}
@@ -240,17 +269,17 @@ export default function Visualize() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-900/50 border border-red-700 text-red-300 rounded-lg p-4 mb-4">
+          <div style={{ background: 'rgba(155,45,48,0.08)', border: '1px solid rgba(155,45,48,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', color: colors.crimson }}>
             {error}
           </div>
         )}
 
         {/* Editor View */}
         {view === 'editor' && (
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {!hasGenerated && (
-              <div className="text-center py-12 text-gray-500">
-                <Sparkles size={48} className="mx-auto mb-4 opacity-50" />
+              <div style={{ textAlign: 'center', padding: '3rem 0', color: colors.faded }}>
+                <Sparkles size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
                 <p>Click "Generate" to create word picture mnemonics for each chunk</p>
               </div>
             )}
@@ -262,28 +291,28 @@ export default function Visualize() {
               const isExpanded = expandedChunk === idx
 
               return (
-                <div key={idx} className="bg-gray-800 rounded-xl overflow-hidden">
+                <div key={idx} style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
                   {/* Chunk Header */}
                   <button
                     onClick={() => setExpandedChunk(isExpanded ? null : idx)}
-                    className="w-full p-4 flex items-start justify-between text-left hover:bg-gray-700 transition-colors"
+                    style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="text-gray-500 text-xs mb-1">Chunk {idx + 1}</div>
-                      <div className="text-white">
-                        <span className="text-gray-300">{chunk.front}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: colors.faded, fontSize: '0.75rem', marginBottom: '0.25rem' }}>Chunk {idx + 1}</div>
+                      <div style={{ color: colors.ink }}>
+                        <span style={{ color: colors.muted }}>{chunk.front}</span>
                         {' '}
-                        <span className="text-amber-400">{chunk.back}</span>
+                        <span style={{ color: colors.gold }}>{chunk.back}</span>
                       </div>
                       {selected && !isExpanded && (
-                        <div className="mt-2 text-sm text-purple-300 truncate">
-                          <Check size={14} className="inline mr-1" />
+                        <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: colors.purple, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <Check size={14} style={{ display: 'inline', marginRight: '0.25rem', verticalAlign: 'middle' }} />
                           {selected}
                         </div>
                       )}
                     </div>
                     {options.length > 0 && (
-                      <div className="ml-4 text-gray-500">
+                      <div style={{ marginLeft: '1rem', color: colors.faded }}>
                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>
                     )}
@@ -291,28 +320,28 @@ export default function Visualize() {
 
                   {/* Expanded Options */}
                   {isExpanded && options.length > 0 && (
-                    <div className="px-4 pb-4 space-y-2">
+                    <div style={{ padding: '0 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {/* Edit Mode */}
                       {isEditing ? (
-                        <div className="space-y-2">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                           <textarea
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="w-full bg-gray-700 text-white rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.04)', color: colors.ink, border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', padding: '0.75rem', fontSize: '0.9rem', resize: 'none', fontFamily: "'IBM Plex Sans', sans-serif", boxSizing: 'border-box' }}
                             rows={3}
                             placeholder="Write your custom word picture..."
                             autoFocus
                           />
-                          <div className="flex gap-2">
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                               onClick={handleSaveEdit}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white text-sm rounded-lg"
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.5rem 0.75rem', background: colors.forest, color: colors.paper, fontSize: '0.85rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
                             >
                               <Check size={14} /> Save
                             </button>
                             <button
                               onClick={handleCancelEdit}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white text-sm rounded-lg"
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.1)', color: colors.muted, fontSize: '0.85rem', borderRadius: '6px', border: 'none', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
                             >
                               <X size={14} /> Cancel
                             </button>
@@ -325,21 +354,22 @@ export default function Visualize() {
                             <button
                               key={optIdx}
                               onClick={() => handleSelect(idx, option)}
-                              className={`w-full text-left p-3 rounded-lg transition-all ${
-                                selected === option
-                                  ? 'bg-purple-600/30 border-2 border-purple-500 text-white'
-                                  : 'bg-gray-700/50 border-2 border-transparent text-gray-300 hover:bg-gray-700 hover:text-white'
-                              }`}
+                              style={{
+                                width: '100%', textAlign: 'left', padding: '0.75rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif",
+                                background: selected === option ? 'rgba(90,74,106,0.15)' : 'rgba(0,0,0,0.03)',
+                                outline: selected === option ? '2px solid rgba(90,74,106,0.5)' : 'none',
+                                color: selected === option ? colors.ink : colors.muted
+                              }}
                             >
-                              <div className="flex items-start gap-2">
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
-                                  selected === option
-                                    ? 'border-purple-400 bg-purple-500'
-                                    : 'border-gray-500'
-                                }`}>
-                                  {selected === option && <Check size={12} className="text-white" />}
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                                <div style={{
+                                  width: '20px', height: '20px', borderRadius: '50%', border: '2px solid', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px',
+                                  borderColor: selected === option ? colors.purple : colors.faded,
+                                  background: selected === option ? colors.purple : 'transparent'
+                                }}>
+                                  {selected === option && <Check size={12} style={{ color: colors.paper }} />}
                                 </div>
-                                <span className="text-sm">{option}</span>
+                                <span style={{ fontSize: '0.9rem' }}>{option}</span>
                               </div>
                             </button>
                           ))}
@@ -348,7 +378,7 @@ export default function Visualize() {
                           {selected && (
                             <button
                               onClick={() => handleStartEdit(idx)}
-                              className="flex items-center gap-2 text-sm text-gray-400 hover:text-white mt-2"
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: colors.muted, marginTop: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif" }}
                             >
                               <Edit3 size={14} /> Edit selected
                             </button>
@@ -367,8 +397,8 @@ export default function Visualize() {
         {view === 'bingo' && (
           <div>
             {Object.keys(selectedPictures).length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <Grid3X3 size={48} className="mx-auto mb-4 opacity-50" />
+              <div style={{ textAlign: 'center', padding: '3rem 0', color: colors.faded }}>
+                <Grid3X3 size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
                 <p>Generate and select word pictures to see your floor plan</p>
               </div>
             ) : (() => {
@@ -458,8 +488,7 @@ export default function Visualize() {
 
               return (
                 <div
-                  className="max-w-4xl mx-auto p-4 overflow-x-auto"
-                  style={{ backgroundColor: '#faf8f5' }}
+                  style={{ maxWidth: '56rem', margin: '0 auto', padding: '1rem', overflowX: 'auto', backgroundColor: colors.paper }}
                 >
                   <svg
                     viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -647,53 +676,53 @@ export default function Visualize() {
 
               return (
                 <div
-                  className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+                  style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }}
                   onClick={() => setExpandedChunk(null)}
                 >
                   <div
-                    className="max-w-lg w-full p-6 border border-gray-400 shadow-xl"
                     style={{
-                      backgroundColor: '#faf8f5',
-                      fontFamily: 'Georgia, "Times New Roman", serif'
+                      maxWidth: '32rem', width: '100%', padding: '1.5rem', border: '1px solid rgba(0,0,0,0.15)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                      backgroundColor: colors.paper, borderRadius: '12px',
+                      fontFamily: "'Cormorant', serif"
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Room Header */}
-                    <div className="flex items-baseline gap-3 mb-4 pb-3 border-b border-gray-300">
-                      <span className="text-3xl text-gray-400">
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+                      <span style={{ fontSize: '1.75rem', color: colors.faded }}>
                         {expandedChunk + 1}
                       </span>
-                      <span className="text-sm tracking-widest text-gray-500 uppercase">
+                      <span style={{ fontSize: '0.85rem', letterSpacing: '0.15em', color: colors.muted, textTransform: 'uppercase' }}>
                         The {room}
                       </span>
                     </div>
 
                     {/* Original Text */}
-                    <div className="mb-4">
-                      <div className="text-[10px] tracking-wider text-gray-400 uppercase mb-2">
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ fontSize: '0.7rem', letterSpacing: '0.1em', color: colors.faded, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                         Original Text
                       </div>
-                      <div className="text-base text-gray-700 italic leading-relaxed">
+                      <div style={{ fontSize: '1rem', color: colors.muted, fontStyle: 'italic', lineHeight: 1.6 }}>
                         {chunks[expandedChunk]?.front}{' '}
-                        <span className="not-italic font-medium text-gray-900">
+                        <span style={{ fontStyle: 'normal', fontWeight: 500, color: colors.ink }}>
                           {chunks[expandedChunk]?.back}
                         </span>
                       </div>
                     </div>
 
                     {/* Mnemonic */}
-                    <div className="mb-6">
-                      <div className="text-[10px] tracking-wider text-gray-400 uppercase mb-2">
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.7rem', letterSpacing: '0.1em', color: colors.faded, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                         Word Picture
                       </div>
-                      <div className="text-base text-gray-900 leading-relaxed">
+                      <div style={{ fontSize: '1rem', color: colors.ink, lineHeight: 1.6 }}>
                         {selectedPictures[expandedChunk]}
                       </div>
                     </div>
 
                     <button
                       onClick={() => setExpandedChunk(null)}
-                      className="w-full py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors tracking-wider"
+                      style={{ width: '100%', padding: '0.5rem', fontSize: '0.9rem', color: colors.muted, background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.1em', fontFamily: "'IBM Plex Sans', sans-serif" }}
                     >
                       Close
                     </button>
