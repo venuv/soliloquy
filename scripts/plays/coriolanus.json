@@ -1,0 +1,91 @@
+{
+  "play": "Coriolanus",
+  "soliloquies": [
+    {
+      "id": "coriolanus-banishment",
+      "title": "You common cry of curs!",
+      "character": "Coriolanus",
+      "act": "Act 3, Scene 3",
+      "chunks": [
+        { "front": "You common cry", "back": "of curs!" },
+        { "front": "whose breath I hate", "back": "As reek o' the rotten fens," },
+        { "front": "whose loves I prize", "back": "As the dead carcasses of unburied men" },
+        { "front": "That do corrupt", "back": "my air," },
+        { "front": "I banish you!", "back": "And here remain with your uncertainty!" },
+        { "front": "Let every feeble rumor", "back": "shake your hearts!" },
+        { "front": "Your enemies, with nodding", "back": "of their plumes," },
+        { "front": "Fan you into despair!", "back": "Have the power still" },
+        { "front": "To banish your defenders;", "back": "till at length" },
+        { "front": "Your ignorance, which finds not", "back": "till it feels," },
+        { "front": "Making not reservation", "back": "of yourselves," },
+        { "front": "Still your own foes,", "back": "deliver you as most" },
+        { "front": "Abated captives", "back": "to some nation" },
+        { "front": "That won you", "back": "without blows!" },
+        { "front": "Despising, for you,", "back": "the city," },
+        { "front": "Thus I turn my back:", "back": "There is a world elsewhere." }
+      ]
+    },
+    {
+      "id": "coriolanus-alone-like-dragon",
+      "title": "Like a lonely dragon",
+      "character": "Coriolanus",
+      "act": "Act 4, Scene 1",
+      "chunks": [
+        { "front": "Come, leave your tears:", "back": "a brief farewell." },
+        { "front": "The beast with many heads", "back": "butts me away." },
+        { "front": "Nay, mother, Where is", "back": "your ancient courage?" },
+        { "front": "You were used to say", "back": "Extremity was the trier of spirits;" },
+        { "front": "That common chances", "back": "common men could bear;" },
+        { "front": "That when the sea was calm", "back": "all boats alike" },
+        { "front": "Show'd mastership", "back": "in floating;" },
+        { "front": "Fortune's blows, when most struck home,", "back": "being gentle wounded," },
+        { "front": "craves a noble", "back": "cunning." },
+        { "front": "I go alone, Like to", "back": "a lonely dragon," },
+        { "front": "that his fen Makes fear'd", "back": "and talk'd of more than seen." }
+      ]
+    },
+    {
+      "id": "coriolanus-aufidius-welcome",
+      "title": "My name is Caius Marcius",
+      "character": "Coriolanus",
+      "act": "Act 4, Scene 5",
+      "chunks": [
+        { "front": "My name is", "back": "Caius Marcius," },
+        { "front": "who hath done to thee", "back": "particularly" },
+        { "front": "and to all the Volsces", "back": "Great hurt and mischief;" },
+        { "front": "thereto witness may", "back": "My surname, Coriolanus:" },
+        { "front": "The painful service,", "back": "The extreme dangers" },
+        { "front": "and the drops of blood", "back": "Shed for my thankless country" },
+        { "front": "are requited But with", "back": "that surname;" },
+        { "front": "a good memory, And witness", "back": "of the malice and displeasure" },
+        { "front": "Which thou shouldst bear me:", "back": "only that name remains." },
+        { "front": "The cruelty and envy", "back": "of the people," },
+        { "front": "Permitted by our dastard nobles,", "back": "who Have all forsook me," },
+        { "front": "hath devour'd the rest;", "back": "And suffer'd me by the voice of slaves" },
+        { "front": "to be Whoop'd out", "back": "of Rome." }
+      ]
+    },
+    {
+      "id": "coriolanus-mother-bow",
+      "title": "What is this? Your knees to me?",
+      "character": "Coriolanus",
+      "act": "Act 5, Scene 3",
+      "chunks": [
+        { "front": "What is this?", "back": "Your knees to me?" },
+        { "front": "to your corrected son?", "back": "Then let the pebbles" },
+        { "front": "on the hungry beach", "back": "Fillip the stars;" },
+        { "front": "then let the mutinous winds", "back": "Strike the proud cedars" },
+        { "front": "'gainst the fiery sun;", "back": "Murdering impossibility," },
+        { "front": "to make What cannot be,", "back": "slight work." },
+        { "front": "I beseech you, peace:", "back": "Or, if you'd ask," },
+        { "front": "remember this before:", "back": "The thing I have forsworn" },
+        { "front": "to grant may never Be held", "back": "by you denials." },
+        { "front": "Do not bid me dismiss", "back": "my soldiers," },
+        { "front": "or capitulate Again", "back": "with Rome's mechanics:" },
+        { "front": "tell me not Wherein", "back": "I seem unnatural:" },
+        { "front": "desire not To allay", "back": "my rages and revenges" },
+        { "front": "with Your colder reasons.", "back": "O no more, no more!" }
+      ]
+    }
+  ]
+}
