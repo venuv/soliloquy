@@ -58,16 +58,39 @@ export default function Home() {
         padding: '1.5rem 2.5rem',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'baseline'
+        alignItems: 'center'
       }}>
-        <span style={{
-          fontFamily: "'Cormorant', serif",
-          fontWeight: 300,
-          fontSize: '1.25rem',
-          color: '#1a1a1a'
-        }}>
-          Soliloquy Master
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+          <div style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            flexShrink: 0,
+            border: '1.5px solid rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+          }}>
+            <img
+              src="/images/shakespeare/globe-theatre.jpg"
+              alt="The Globe Theatre"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center 25%',
+                filter: 'saturate(0.9) contrast(1.05)'
+              }}
+            />
+          </div>
+          <span style={{
+            fontFamily: "'Cormorant', serif",
+            fontWeight: 300,
+            fontSize: '1.25rem',
+            color: '#1a1a1a'
+          }}>
+            Soliloquy Master
+          </span>
+        </div>
         <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <Link to="/live" style={{
             fontSize: '0.8rem',
