@@ -1,3 +1,19 @@
+## Verse-Line Chunking
+
+**Script**: `scripts/rechunk-by-verse.mjs`
+
+Soliloquies are chunked by natural verse lines (one line = one card) rather than arbitrary word counts. This matches how Shakespeare is recited.
+
+**Completed**: to-be-or-not-to-be, tomorrow-and-tomorrow, coriolanus-banishment
+**Remaining**: ~29 soliloquies need verse sources added to the script
+
+## Mnemonic Generation
+
+**Model**: `llama-3.1-8b-instant` (fast) via Groq API
+**Output**: 5-10 word thumbnail mnemonics using sound-alike images
+**Example**: "whether" → WEATHER, "slings" → SLINGSHOT, "suffer" → SURFING
+
+---
 
 ## Image Stylization for UI
 
