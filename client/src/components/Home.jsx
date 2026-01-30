@@ -442,93 +442,49 @@ export default function Home() {
         padding: '2rem 2.5rem 3rem'
       }}>
         {/* Stat 1 - Crimson with stronger halo */}
-        <div style={{ textAlign: 'center', position: 'relative' }}>
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -55%)',
-            width: '100px',
-            height: '75px',
-            background: 'radial-gradient(ellipse at 45% 50%, rgba(155, 45, 48, 0.28) 0%, rgba(155, 45, 48, 0.15) 35%, rgba(155, 45, 48, 0.05) 60%, transparent 80%)',
-            borderRadius: '50%',
-            zIndex: 0,
-            filter: 'blur(2px)'
-          }} />
-          <div style={{
-            fontFamily: "'Cormorant', serif",
-            fontSize: '2.5rem',
-            color: '#9b2d30',
-            position: 'relative',
-            zIndex: 1
-          }}>{totalWorks || 25}</div>
-          <div style={{
-            fontSize: '0.65rem',
-            color: '#9a9a9a',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            marginTop: '0.25rem'
-          }}>Soliloquies</div>
+        <div className="stat-card">
+          <div
+            className="stat-halo"
+            style={{
+              width: '100px',
+              height: '75px',
+              background: 'radial-gradient(ellipse at 45% 50%, rgba(155, 45, 48, 0.28) 0%, rgba(155, 45, 48, 0.15) 35%, rgba(155, 45, 48, 0.05) 60%, transparent 80%)'
+            }}
+          />
+          <div className="stat-value" style={{ color: '#9b2d30' }}>
+            {totalWorks || 25}
+          </div>
+          <div className="stat-label">Soliloquies</div>
         </div>
 
         {/* Stat 2 - Forest with stronger halo */}
-        <div style={{ textAlign: 'center', position: 'relative' }}>
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -55%)',
-            width: '90px',
-            height: '70px',
-            background: 'radial-gradient(ellipse at 55% 50%, rgba(61, 92, 74, 0.32) 0%, rgba(61, 92, 74, 0.18) 35%, rgba(61, 92, 74, 0.06) 60%, transparent 80%)',
-            borderRadius: '50%',
-            zIndex: 0,
-            filter: 'blur(2px)'
-          }} />
-          <div style={{
-            fontFamily: "'Cormorant', serif",
-            fontSize: '2.5rem',
-            color: '#3d5c4a',
-            position: 'relative',
-            zIndex: 1
-          }}>{totalPlays || 9}</div>
-          <div style={{
-            fontSize: '0.65rem',
-            color: '#9a9a9a',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            marginTop: '0.25rem'
-          }}>Plays</div>
+        <div className="stat-card">
+          <div
+            className="stat-halo"
+            style={{
+              width: '90px',
+              height: '70px',
+              background: 'radial-gradient(ellipse at 55% 50%, rgba(61, 92, 74, 0.32) 0%, rgba(61, 92, 74, 0.18) 35%, rgba(61, 92, 74, 0.06) 60%, transparent 80%)'
+            }}
+          />
+          <div className="stat-value" style={{ color: '#3d5c4a' }}>
+            {totalPlays || 9}
+          </div>
+          <div className="stat-label">Plays</div>
         </div>
 
         {/* Stat 3 - Deep Blue with stronger halo */}
-        <div style={{ textAlign: 'center', position: 'relative' }}>
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -55%)',
-            width: '95px',
-            height: '72px',
-            background: 'radial-gradient(ellipse at 50% 50%, rgba(42, 74, 94, 0.30) 0%, rgba(42, 74, 94, 0.16) 35%, rgba(42, 74, 94, 0.05) 60%, transparent 80%)',
-            borderRadius: '50%',
-            zIndex: 0,
-            filter: 'blur(2px)'
-          }} />
-          <div style={{
-            fontFamily: "'Cormorant', serif",
-            fontSize: '2.5rem',
-            color: '#2a4a5e',
-            position: 'relative',
-            zIndex: 1
-          }}>∞</div>
-          <div style={{
-            fontSize: '0.65rem',
-            color: '#9a9a9a',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            marginTop: '0.25rem'
-          }}>Performances</div>
+        <div className="stat-card">
+          <div
+            className="stat-halo"
+            style={{
+              width: '95px',
+              height: '72px',
+              background: 'radial-gradient(ellipse at 50% 50%, rgba(42, 74, 94, 0.30) 0%, rgba(42, 74, 94, 0.16) 35%, rgba(42, 74, 94, 0.05) 60%, transparent 80%)'
+            }}
+          />
+          <div className="stat-value" style={{ color: '#2a4a5e' }}>∞</div>
+          <div className="stat-label">Performances</div>
         </div>
       </div>
 

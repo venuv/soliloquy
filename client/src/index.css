@@ -52,3 +52,64 @@ body {
 .flip-card-back {
   transform: rotateX(180deg);
 }
+
+/* Stat halo anemone pulse animation */
+@keyframes anemone-pulse {
+  0%, 100% {
+    transform: translate(-50%, -55%) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(-50%, -55%) scale(1.15, 1.08);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -55%) scale(1.05, 1.12);
+    opacity: 0.95;
+  }
+  75% {
+    transform: translate(-50%, -55%) scale(1.12, 1.05);
+    opacity: 0.88;
+  }
+}
+
+.stat-card {
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+}
+
+.stat-card .stat-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  border-radius: 50%;
+  z-index: 0;
+  filter: blur(2px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.stat-card:hover .stat-halo {
+  animation: anemone-pulse 2.5s ease-in-out infinite;
+}
+
+.stat-card .stat-value {
+  font-family: 'Cormorant', serif;
+  font-size: 2.5rem;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover .stat-value {
+  transform: scale(1.05);
+}
+
+.stat-card .stat-label {
+  font-size: 0.65rem;
+  color: #9a9a9a;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
