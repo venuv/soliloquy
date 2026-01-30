@@ -439,13 +439,13 @@ export default function Home() {
           fontFamily: "'Cormorant', serif",
           fontWeight: 300,
           fontStyle: 'italic',
-          fontSize: '1.4rem',
+          fontSize: '1.3rem',
           lineHeight: 1.5,
           color: '#1a1a1a',
-          textAlign: 'center'
+          textAlign: 'center',
+          whiteSpace: 'nowrap'
         }}>
-          "Speak the speech, I pray you, as I pronounced it to you,
-          trippingly on the tongue."
+          "Speak the speech, I pray you, as I pronounced it to you, trippingly on the tongue."
         </blockquote>
         <p style={{
           fontSize: '0.8rem',
