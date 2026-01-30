@@ -13,6 +13,7 @@ const AUTHORS_DIR = path.join(__dirname, '../data/authors');
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_MODEL_FAST = 'llama-3.1-8b-instant'; // Faster for simple tasks
 
 // Middleware to validate user key
 async function validateKey(req, res, next) {
@@ -154,7 +155,7 @@ Remember: PHONETIC HOOKS are mandatory. Every key word needs a sound-alike image
 };
 
 // Call Groq API helper
-const callGroqAPI = async (prompt, apiKey) => {
+const callGroqAPI = async (prompt, apiKey, fast = false) => {
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
     headers: {
@@ -162,13 +163,13 @@ const callGroqAPI = async (prompt, apiKey) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model: fast ? GROQ_MODEL_FAST : GROQ_MODEL,
       messages: [{
         role: 'user',
         content: prompt
       }],
-      temperature: 0.8,
-      max_tokens: 8192,
+      temperature: fast ? 0.7 : 0.8,
+      max_tokens: fast ? 256 : 8192,
       response_format: { type: 'json_object' }
     })
   });
@@ -297,40 +298,16 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
   }
 });
 
-// Build prompt for single chunk generation
+// Build prompt for single chunk generation - BRIEF thumbnails
 const buildSingleChunkPrompt = (work, chunkIndex, chunk) => {
-  return `You are a memory coach creating a PHONETIC MNEMONIC for Shakespeare memorization.
+  return `Create 3 brief mnemonic thumbnails (5-10 words each) for memorizing this Shakespeare line.
 
-CRITICAL RULES:
-1. SOUND-BASED HOOKS: Each key word must link to a similar-sounding image
-   - "whether" → WEATHER vane
-   - "'tis" → TISSUE paper
-   - "suffer" → SURFING
-   - "slings" → SLINGSHOT
+Use sound-alike images: "whether"→WEATHER, "slings"→SLINGSHOT, "suffer"→SURFING
 
-2. ECONOMY OF SYMBOLS: Use 2-4 vivid images MAX. Every symbol must earn its place.
+Line: "${chunk.front} ${chunk.back}"
 
-3. WORD LIMIT: The mnemonic must be 15-25 words. No longer!
-
-4. CHAIN THE SOUNDS: Images should connect in sequence matching word order
-
-5. ONE BIZARRE ELEMENT: Include ONE absurd/impossible detail to make it stick
-
-GOOD EXAMPLE for "Whether 'tis nobler in the mind to suffer":
-"A WEATHER vane made of TISSUE spins on a NOBLE knight's helmet. Inside his glass skull, he's SURFING on brain waves."
-(weather=whether, tissue='tis, noble=nobler, skull=mind, surfing=suffer)
-
-Soliloquy: "${work.title}" from ${work.source}
-Character: ${work.character}
-
-Chunk ${chunkIndex}: "${chunk.front} ${chunk.back}"
-
-Respond ONLY with valid JSON:
-{
-  "options": ["option1 (15-25 words)", "option2", "option3"]
-}
-
-Create 3 PHONETIC, ECONOMICAL mnemonic options for this chunk.`;
+JSON only:
+{"options":["thumb1","thumb2","thumb3"]}`;
 };
 
 // POST /generate-chunk/:authorId/:workId/:chunkIndex - Generate word picture for single chunk
@@ -357,7 +334,7 @@ router.post('/generate-chunk/:authorId/:workId/:chunkIndex', validateKey, async 
     console.log(`[${workId}] Generating word picture for chunk ${idx}...`);
 
     const prompt = buildSingleChunkPrompt(work, idx, chunk);
-    const result = await callGroqAPI(prompt, apiKey);
+    const result = await callGroqAPI(prompt, apiKey, true); // Use fast model
 
     // Save to analytics
     const analyticsContent = await fs.readFile(req.analyticsPath, 'utf-8');
