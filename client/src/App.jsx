@@ -8,6 +8,7 @@ import Login from './components/Login'
 import Visualize from './components/Visualize'
 import GetInspired from './components/GetInspired'
 import MorningMuse from './components/MorningMuse'
+import ArtworkGallery from './components/ArtworkGallery'
 
 // Auth Context
 const AuthContext = createContext(null)
@@ -92,6 +93,7 @@ function App() {
         <Route path="/stats" element={userKey ? <Stats /> : <Navigate to="/login" />} />
         <Route path="/inspired" element={userKey ? <GetInspired /> : <Navigate to="/login" />} />
         <Route path="/fortune" element={userKey ? <MorningMuse /> : <Navigate to="/login" />} />
+        <Route path="/artwork" element={userKey ? <ArtworkGallery /> : <Navigate to="/login" />} />
       </Routes>
     </AuthContext.Provider>
   )

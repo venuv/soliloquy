@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth, api } from '../App'
-import { LogOut, BarChart2, KeyRound } from 'lucide-react'
+import { LogOut, BarChart2, KeyRound, Palette } from 'lucide-react'
 import './Home.css'
+import ShakespeareArtwork from './ShakespeareArtwork'
 
 export default function Home() {
   const { userKey, logout } = useAuth()
@@ -76,14 +77,18 @@ export default function Home() {
           }} title="Coming soon">
             Live Performances
           </span>
-          <span style={{
+          <Link to="/artwork" style={{
             fontSize: '0.8rem',
-            color: '#9a9a9a',
+            color: '#4a4a4a',
+            textDecoration: 'none',
             letterSpacing: '0.03em',
-            cursor: 'not-allowed'
-          }} title="Coming soon">
-            Daily News
-          </span>
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem'
+          }}>
+            <Palette size={14} />
+            Artwork
+          </Link>
           <Link to="/stats" style={{
             fontSize: '0.8rem',
             color: '#4a4a4a',
@@ -203,73 +208,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Collage */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          gap: '1rem'
-        }}>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <div className="collage-item">
-              <div className="collage-piece" style={{ width: '200px', height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg viewBox="0 0 200 260" fill="none" style={{ width: '100%', height: '100%' }}>
-                  <path d="M100 40 Q105 58 100 75" stroke="#2a4a5e" strokeWidth="1.5" fill="none" opacity="0.8"/>
-                  <ellipse cx="100" cy="30" rx="17" ry="23" stroke="#2a4a5e" strokeWidth="1.5" fill="none" opacity="0.7"/>
-                  <path d="M83 75 Q68 105 66 145 Q64 185 72 225" stroke="#2a4a5e" strokeWidth="1.5" fill="none" opacity="0.7"/>
-                  <path d="M117 75 Q132 105 134 145 Q136 185 128 225" stroke="#2a4a5e" strokeWidth="1.5" fill="none" opacity="0.7"/>
-                  <path d="M83 90 Q58 102 50 128" stroke="#2a4a5e" strokeWidth="1.5" fill="none" opacity="0.6"/>
-                  <ellipse cx="47" cy="148" rx="15" ry="19" stroke="#2a4a5e" strokeWidth="1.5" fill="none" opacity="0.6"/>
-                  <circle cx="40" cy="143" r="3" stroke="#2a4a5e" strokeWidth="1" fill="none" opacity="0.5"/>
-                  <circle cx="54" cy="143" r="3" stroke="#2a4a5e" strokeWidth="1" fill="none" opacity="0.5"/>
-                </svg>
-              </div>
-              <p className="piece-label">Hamlet</p>
-            </div>
-            <div className="collage-item">
-              <div className="collage-piece" style={{ width: '155px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg viewBox="0 0 155 200" fill="none" style={{ width: '100%', height: '100%' }}>
-                  <ellipse cx="77" cy="35" rx="15" ry="20" stroke="#3d5c4a" strokeWidth="1.5" fill="none" opacity="0.75"/>
-                  <path d="M77 55 Q77 78 77 98" stroke="#3d5c4a" strokeWidth="1.5" fill="none" opacity="0.65"/>
-                  <path d="M62 70 Q42 54 34 38" stroke="#3d5c4a" strokeWidth="1.5" fill="none" opacity="0.6"/>
-                  <path d="M92 70 Q112 54 120 38" stroke="#3d5c4a" strokeWidth="1.5" fill="none" opacity="0.6"/>
-                  <path d="M62 98 Q50 138 42 180" stroke="#3d5c4a" strokeWidth="1.5" fill="none" opacity="0.55"/>
-                  <path d="M92 98 Q104 138 112 180" stroke="#3d5c4a" strokeWidth="1.5" fill="none" opacity="0.55"/>
-                </svg>
-              </div>
-              <p className="piece-label">Lady Macbeth</p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1rem', marginRight: '3.5rem' }}>
-            <div className="collage-item">
-              <div className="collage-piece" style={{ width: '170px', height: '115px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg viewBox="0 0 170 115" fill="none" style={{ width: '100%', height: '100%' }}>
-                  <path d="M20 92 L20 52 L85 28 L150 52 L150 92" stroke="#c4a35a" strokeWidth="1.5" fill="none" opacity="0.7"/>
-                  <ellipse cx="85" cy="28" rx="65" ry="16" stroke="#c4a35a" strokeWidth="1" fill="none" opacity="0.5"/>
-                  <path d="M85 12 L85 28" stroke="#c4a35a" strokeWidth="1" opacity="0.6"/>
-                  <path d="M85 12 L102 17 L85 22" stroke="#c4a35a" strokeWidth="1" fill="none" opacity="0.5"/>
-                  <rect x="60" y="55" width="50" height="30" stroke="#c4a35a" strokeWidth="1" fill="none" opacity="0.45"/>
-                </svg>
-              </div>
-              <p className="piece-label">The Globe</p>
-            </div>
-            <div className="collage-item">
-              <div className="collage-piece" style={{ width: '130px', height: '170px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg viewBox="0 0 130 170" fill="none" style={{ width: '100%', height: '100%' }}>
-                  <ellipse cx="65" cy="32" rx="14" ry="18" stroke="#9b2d30" strokeWidth="1.5" fill="none" opacity="0.7"/>
-                  <path d="M65 50 Q65 72 65 92" stroke="#9b2d30" strokeWidth="1.5" fill="none" opacity="0.65"/>
-                  <path d="M52 65 Q40 60 34 70 Q30 82 38 94" stroke="#9b2d30" strokeWidth="1.5" fill="none" opacity="0.55"/>
-                  <path d="M78 65 Q90 60 96 70 Q100 82 92 94" stroke="#9b2d30" strokeWidth="1.5" fill="none" opacity="0.55"/>
-                  <path d="M52 92 Q45 128 43 158" stroke="#9b2d30" strokeWidth="1.5" fill="none" opacity="0.5"/>
-                  <path d="M78 92 Q85 128 87 158" stroke="#9b2d30" strokeWidth="1.5" fill="none" opacity="0.5"/>
-                  <path d="M50 16 L54 6 L60 14 L65 4 L70 14 L76 6 L80 16" stroke="#c4a35a" strokeWidth="1.5" fill="none" opacity="0.65"/>
-                </svg>
-              </div>
-              <p className="piece-label">Richard III</p>
-            </div>
-          </div>
-        </div>
+        {/* Collage - Artistic Shakespeare Artwork */}
+        <ShakespeareArtwork variant="collage" />
       </section>
 
       {/* Ink Band */}
