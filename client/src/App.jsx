@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import InkFilters from './components/InkFilters'
 import Home from './components/Home'
 import AuthorWorks from './components/AuthorWorks'
 import Practice from './components/Practice'
@@ -75,14 +76,15 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-amber-400 text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--paper)' }}>
+        <div className="sumi-heading text-xl" style={{ color: 'var(--ink-light)' }}>Loading...</div>
       </div>
     )
   }
 
   return (
     <AuthContext.Provider value={{ userKey, login, logout }}>
+      <InkFilters />
       <Routes>
         <Route path="/login" element={userKey ? <Navigate to="/" /> : <Login />} />
         <Route path="/" element={userKey ? <Home /> : <Navigate to="/login" />} />

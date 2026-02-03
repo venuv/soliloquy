@@ -1,0 +1,275 @@
+/* Sumi-e (Ink Wash) Design System */
+
+:root {
+  --paper: #fdfcf8;
+  --ink: #1a1a1a;
+  --ink-light: #4a4a4a;
+  --ink-faint: #9a9a9a;
+  --crimson: #9b2d30;
+  --gold: #c4a35a;
+  --deep-blue: #2a4a5e;
+  --forest: #3d5c4a;
+}
+
+/* Base Typography */
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 300;
+  font-size: 15px;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+/* Serif headings */
+.sumi-heading {
+  font-family: 'Cormorant', serif;
+  font-weight: 300;
+}
+
+.sumi-heading em {
+  font-style: italic;
+}
+
+/* Links */
+.sumi-link {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 2px;
+}
+
+.sumi-link:hover {
+  color: var(--crimson);
+  border-color: var(--crimson);
+}
+
+/* Nav links */
+.sumi-nav-link {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: color 0.2s ease;
+}
+
+.sumi-nav-link:hover {
+  color: var(--ink);
+}
+
+/* Collage pieces */
+.collage-piece {
+  background: var(--paper);
+  border: 1px solid rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.piece-label {
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+  margin-top: 0.4rem;
+  text-align: right;
+}
+
+/* Ink Band Section */
+.ink-band {
+  position: relative;
+  margin: 3rem 0;
+  padding: 3rem 2.5rem;
+  overflow: hidden;
+}
+
+.ink-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg,
+      rgba(155, 45, 48, 0.95) 0%,
+      rgba(155, 45, 48, 0.82) 15%,
+      rgba(155, 45, 48, 0.78) 50%,
+      rgba(155, 45, 48, 0.85) 85%,
+      rgba(155, 45, 48, 0.92) 100%
+    );
+  filter: url(#ink-texture);
+}
+
+.ink-band::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 20' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 Q5 8 10 15 Q15 5 20 12 Q25 3 30 14 Q35 6 40 13 Q45 2 50 11 Q55 5 60 14 Q65 3 70 12 Q75 7 80 15 Q85 4 90 13 Q95 8 100 16 L100 20 Z' fill='%239b2d30' opacity='0.7'/%3E%3C/svg%3E");
+  background-size: 200px 20px;
+  opacity: 0.85;
+}
+
+.ink-band-content {
+  position: relative;
+  z-index: 2;
+}
+
+.band-item {
+  color: var(--paper);
+}
+
+.band-title {
+  font-family: 'Cormorant', serif;
+  font-weight: 400;
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.95;
+}
+
+.band-desc {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* Gold brush stroke */
+.gold-stroke svg {
+  width: 100%;
+  height: 40px;
+  margin-top: -16px;
+}
+
+/* Quote styling */
+.sumi-quote {
+  font-family: 'Cormorant', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--ink);
+  text-align: center;
+}
+
+.sumi-quote-attr {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Stats with ink wash numbers */
+.stat-number {
+  font-family: 'Cormorant', serif;
+  font-size: 2.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.stat-number.crimson { color: var(--crimson); }
+.stat-number.forest { color: var(--forest); }
+.stat-number.deep-blue { color: var(--deep-blue); }
+
+.stat-number::before {
+  content: '';
+  position: absolute;
+  inset: -8px -12px;
+  filter: url(#ink-soft);
+  z-index: -1;
+}
+
+.stat-number.crimson::before {
+  background: radial-gradient(ellipse at 40% 50%, rgba(155, 45, 48, 0.15) 0%, rgba(155, 45, 48, 0.05) 50%, transparent 70%);
+}
+
+.stat-number.forest::before {
+  background: radial-gradient(ellipse at 60% 50%, rgba(61, 92, 74, 0.18) 0%, rgba(61, 92, 74, 0.06) 50%, transparent 70%);
+}
+
+.stat-number.deep-blue::before {
+  background: radial-gradient(ellipse at 50% 50%, rgba(42, 74, 94, 0.16) 0%, rgba(42, 74, 94, 0.05) 50%, transparent 70%);
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+/* Card styles for interior pages */
+.sumi-card {
+  background: var(--paper);
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.sumi-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Button styles */
+.sumi-button {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 300;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sumi-button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.sumi-button.primary {
+  background: var(--crimson);
+  border-color: var(--crimson);
+  color: var(--paper);
+}
+
+.sumi-button.primary:hover {
+  background: #7a2426;
+  border-color: #7a2426;
+}
+
+/* Input styles */
+.sumi-input {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 300;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.sumi-input:focus {
+  border-color: var(--ink);
+}
+
+.sumi-input::placeholder {
+  color: var(--ink-faint);
+}
+
+/* Practice text fade effect */
+.text-fade-0 { opacity: 1; }
+.text-fade-1 { opacity: 0.7; }
+.text-fade-2 { opacity: 0.4; }
+.text-fade-3 { opacity: 0.15; }
+.text-fade-4 { opacity: 0; }
+
+/* Responsive */
+@media (max-width: 800px) {
+  .ink-band {
+    padding: 2rem 1.5rem;
+  }
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../App'
-import { Home, BookOpen, GraduationCap, ChevronRight } from 'lucide-react'
+import SumiLayout from './SumiLayout'
 
 export default function AuthorWorks() {
   const { authorId } = useParams()
@@ -24,16 +24,16 @@ export default function AuthorWorks() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-amber-400">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--paper)' }}>
+        <div className="sumi-heading text-xl" style={{ color: 'var(--ink-light)' }}>Loading...</div>
       </div>
     )
   }
 
   if (!author) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400">Author not found</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--paper)' }}>
+        <div style={{ color: 'var(--crimson)' }}>Author not found</div>
       </div>
     )
   }
@@ -48,71 +48,75 @@ export default function AuthorWorks() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
-      {/* Header */}
-      <div className="max-w-2xl mx-auto mb-8">
-        <Link to="/" className="text-gray-400 hover:text-white flex items-center gap-2 mb-4">
-          <Home size={20} />
-          <span>Back to Authors</span>
-        </Link>
-        
-        <div className="flex items-center gap-4">
-          <span className="text-5xl">{author.portrait}</span>
-          <div>
-            <h1 className="text-3xl font-bold text-white">{author.name}</h1>
-            <p className="text-gray-400">{author.subtitle}</p>
-          </div>
-        </div>
+    <SumiLayout title={author.name}>
+      {/* Author header */}
+      <div className="mb-10">
+        <h1 className="sumi-heading text-3xl mb-2" style={{ color: 'var(--ink)' }}>
+          {author.name}
+        </h1>
+        <p style={{ color: 'var(--ink-light)' }}>{author.subtitle}</p>
       </div>
 
+      {/* Works count */}
+      <p className="text-sm mb-6" style={{ color: 'var(--ink-faint)' }}>
+        {author.works.length} works available
+      </p>
+
       {/* Works List */}
-      <div className="max-w-2xl mx-auto">
-        <h2 className="text-gray-400 mb-4">{author.works.length} works available</h2>
-        
-        <div className="space-y-2">
-          {author.works.map((work) => {
-            const pct = getWorkProgress(work.id)
-            return (
-              <Link
-                key={work.id}
-                to={`/practice/${authorId}/${work.id}`}
-                className="block p-4 bg-gray-800 hover:bg-gray-700 rounded-xl transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg text-white group-hover:text-amber-400 transition-colors">
-                      "{work.title}"
-                    </h3>
-                    <p className="text-gray-400 text-sm">
-                      {work.character} • {work.source} • {work.act}
-                    </p>
-                    <p className="text-gray-500 text-sm mt-1">
-                      {work.chunks.length} chunks
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {pct > 0 && (
-                      <div className="text-right">
-                        <div className="text-green-400 text-sm font-medium">{pct}%</div>
-                        <div className="text-gray-500 text-xs">mastered</div>
-                      </div>
-                    )}
-                    <ChevronRight className="text-gray-500 group-hover:text-amber-400" size={20} />
-                  </div>
+      <div className="space-y-3">
+        {author.works.map((work) => {
+          const pct = getWorkProgress(work.id)
+          return (
+            <Link
+              key={work.id}
+              to={`/practice/${authorId}/${work.id}`}
+              className="sumi-card block hover:border-gray-300 transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="sumi-heading text-lg" style={{ color: 'var(--ink)' }}>
+                    "{work.title}"
+                  </h3>
+                  <p className="text-sm mt-1" style={{ color: 'var(--ink-light)' }}>
+                    {work.character} · {work.source} · {work.act}
+                  </p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--ink-faint)' }}>
+                    {work.chunks.length} passages
+                  </p>
                 </div>
-                {pct > 0 && (
-                  <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-green-500 rounded-full transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                )}
-              </Link>
-            )
-          })}
-        </div>
+                <div className="flex items-center gap-4">
+                  {pct > 0 && (
+                    <div className="text-right">
+                      <div className="text-sm font-medium" style={{ color: 'var(--forest)' }}>{pct}%</div>
+                      <div className="text-xs" style={{ color: 'var(--ink-faint)' }}>mastered</div>
+                    </div>
+                  )}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    style={{ color: 'var(--ink-faint)' }}
+                    className="group-hover:translate-x-1 transition-transform"
+                  >
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </div>
+              </div>
+              {pct > 0 && (
+                <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.06)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${pct}%`, background: 'var(--forest)' }}
+                  />
+                </div>
+              )}
+            </Link>
+          )
+        })}
       </div>
-    </div>
+    </SumiLayout>
   )
 }
