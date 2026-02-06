@@ -1,0 +1,121 @@
+{
+  "segments": [
+    {
+      "videoId": "hamlet-prince-of-denmark-1980",
+      "soliloquyId": "to-be-or-not-to-be",
+      "title": "To be or not to be",
+      "actor": "Derek Jacobi",
+      "production": "BBC Shakespeare Collection",
+      "year": 1980,
+      "startSeconds": 5700,
+      "endSeconds": 5940,
+      "confidence": "estimated",
+      "source": "Estimated based on BBC 1980 Hamlet total runtime of 212 minutes. Act 3 Scene 1 typically occurs around 45% through the play, placing it approximately at 1:35:00-1:39:00. The soliloquy itself is roughly 4 minutes.",
+      "notes": "Total film runtime 212 minutes (3h32m). Act 3 Scene 1 is the structural middle of the play."
+    },
+    {
+      "videoId": "great-performances-macbeth-2010",
+      "soliloquyId": "tomorrow-and-tomorrow",
+      "title": "Tomorrow and tomorrow and tomorrow",
+      "actor": "Patrick Stewart",
+      "production": "Great Performances: Macbeth (Rupert Goold)",
+      "year": 2010,
+      "startSeconds": 8400,
+      "endSeconds": 8520,
+      "confidence": "estimated",
+      "source": "Act 5 Scene 5 occurs near the end of the 159-minute film. Estimated at approximately 2:20:00 based on play structure where this scene is in the final 10% of the drama.",
+      "notes": "Total film runtime 159 minutes. Scene follows Lady Macbeth's death announcement."
+    },
+    {
+      "videoId": "great-performances-macbeth-2010",
+      "soliloquyId": "is-this-a-dagger",
+      "title": "Is this a dagger which I see before me",
+      "actor": "Patrick Stewart",
+      "production": "Great Performances: Macbeth (Rupert Goold)",
+      "year": 2010,
+      "startSeconds": 2280,
+      "endSeconds": 2505,
+      "confidence": "verified",
+      "source": "Academic analysis from ecampusontario.pressbooks.pub confirms scene occurs at 38:27-38:36 mark, with the full dagger speech running 3:45 in length.",
+      "notes": "Stewart delivers this in one prolonged take. Act 2 Scene 1. Full speech approximately 3:45 duration."
+    },
+    {
+      "videoId": "richard-iii-1995",
+      "soliloquyId": "now-is-the-winter",
+      "title": "Now is the winter of our discontent",
+      "actor": "Ian McKellen",
+      "production": "Richard III (Richard Loncraine)",
+      "year": 1995,
+      "startSeconds": 339,
+      "endSeconds": 540,
+      "confidence": "verified",
+      "source": "Multiple sources confirm soliloquy begins approximately 5:30 into film. Public toast portion runs 5:39-6:44, followed by private bathroom mirror portion. Total opening sequence including both parts approximately 8 minutes.",
+      "notes": "Unique staging: first part as public toast, second part in bathroom mirror speaking directly to camera. Film runtime 104 minutes."
+    },
+    {
+      "videoId": "richard-iii-1955",
+      "soliloquyId": "now-is-the-winter",
+      "title": "Now is the winter of our discontent",
+      "actor": "Laurence Olivier",
+      "production": "Richard III (Laurence Olivier)",
+      "year": 1955,
+      "startSeconds": 120,
+      "endSeconds": 420,
+      "confidence": "estimated",
+      "source": "Opening soliloquy in Olivier's film. Includes additional lines from Henry VI Part 3. Estimated at film opening after brief credits.",
+      "notes": "Film runtime 161 minutes. Olivier added lines from 3 Henry VI to the opening speech."
+    },
+    {
+      "videoId": "hamlet-1996-branagh",
+      "soliloquyId": "to-be-or-not-to-be",
+      "title": "To be or not to be",
+      "actor": "Kenneth Branagh",
+      "production": "Hamlet (Kenneth Branagh)",
+      "year": 1996,
+      "startSeconds": 6600,
+      "endSeconds": 6840,
+      "confidence": "estimated",
+      "source": "Branagh's uncut Hamlet is 242 minutes. Act 3 Scene 1 at approximately 45% runtime places it around 1:50:00. Famous mirror/hall scene.",
+      "notes": "Film runtime 242 minutes (4h02m). Shot in hall of mirrors with camera slowly zooming in. Branagh delivers in slow whisper."
+    },
+    {
+      "videoId": "macbeth-1971-polanski",
+      "soliloquyId": "is-this-a-dagger",
+      "title": "Is this a dagger which I see before me",
+      "actor": "Jon Finch",
+      "production": "Macbeth (Roman Polanski)",
+      "year": 1971,
+      "startSeconds": 2400,
+      "endSeconds": 2580,
+      "confidence": "estimated",
+      "source": "Polanski's Macbeth is 140 minutes. Act 2 Scene 1 typically around 25-30% into the play, estimated at approximately 40:00.",
+      "notes": "Film runtime 140 minutes. Polanski's version noted for its graphic realism."
+    },
+    {
+      "videoId": "macbeth-1971-polanski",
+      "soliloquyId": "tomorrow-and-tomorrow",
+      "title": "Tomorrow and tomorrow and tomorrow",
+      "actor": "Jon Finch",
+      "production": "Macbeth (Roman Polanski)",
+      "year": 1971,
+      "startSeconds": 7200,
+      "endSeconds": 7320,
+      "confidence": "estimated",
+      "source": "Act 5 Scene 5 near end of 140-minute film. Estimated at approximately 2:00:00.",
+      "notes": "Film runtime 140 minutes."
+    }
+  ],
+  "metadata": {
+    "lastUpdated": "2026-02-06",
+    "researchNotes": "Timestamps gathered from web research. 'verified' confidence means specific timestamps were found in academic or production sources. 'estimated' means calculated based on play structure and known film runtimes.",
+    "estimationMethod": "For estimated timestamps: Act 3 Scene 1 (To be or not to be) typically occurs at 40-50% of Hamlet runtime. Act 2 Scene 1 (Is this a dagger) at 25-30% of Macbeth. Act 5 Scene 5 (Tomorrow) at 85-90% of Macbeth. Richard III opening soliloquy is in first 10 minutes.",
+    "sources": [
+      "IMDB production details and runtimes",
+      "ecampusontario.pressbooks.pub - Goold Macbeth analysis with timestamps",
+      "shakespeareflix.net - Ian McKellen Richard III soliloquy analysis",
+      "mckellen.com - Official screenplay notes",
+      "PBS Great Performances production information",
+      "BBC Shakespeare Collection documentation"
+    ]
+  }
+}

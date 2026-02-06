@@ -13,6 +13,7 @@ import adminRoutes from './routes/admin.js';
 import visualizeRoutes from './routes/visualize.js';
 import museRoutes from './routes/muse.js';
 import newsRoutes from './routes/news.js';
+import videosRoutes from './routes/videos.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +39,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/visualize', visualizeRoutes);
 app.use('/api/muse', museRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/videos', videosRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
