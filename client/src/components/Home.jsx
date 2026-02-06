@@ -61,15 +61,30 @@ export default function Home() {
         alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-          <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            flexShrink: 0,
-            border: '1.5px solid rgba(0,0,0,0.1)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
-          }}>
+          <div
+            className="globe-theatre-icon"
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              flexShrink: 0,
+              border: '1.5px solid rgba(0,0,0,0.1)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.8)'
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'
+              e.currentTarget.style.zIndex = '100'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'
+              e.currentTarget.style.zIndex = 'auto'
+            }}
+          >
             <img
               src="/images/shakespeare/globe-theatre.jpg"
               alt="The Globe Theatre"
@@ -224,6 +239,75 @@ export default function Home() {
               fontStyle: 'italic',
               color: '#1a1a1a'
             }}>Begin practicing</span>
+            {/* Stacked calligraphic burgundy chevrons - pointing down */}
+            <svg
+              width="32"
+              height="48"
+              viewBox="0 0 32 48"
+              style={{
+                marginLeft: '0.75rem',
+                animation: 'scroll-hint 2s ease-in-out infinite',
+                opacity: 0.85
+              }}
+            >
+              <defs>
+                {/* Washed burgundy gradient with distressed feel */}
+                <linearGradient id="burgundy-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#8b3a3d"/>
+                  <stop offset="30%" stopColor="#7a2f32"/>
+                  <stop offset="70%" stopColor="#6d2628"/>
+                  <stop offset="100%" stopColor="#5a2022"/>
+                </linearGradient>
+                {/* Ink bleed filter for calligraphic effect */}
+                <filter id="ink-bleed" x="-10%" y="-10%" width="120%" height="120%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" result="noise"/>
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+              </defs>
+
+              {/* First chevron (top) - lightest, most faded */}
+              <g opacity="0.45" style={{ filter: 'url(#ink-bleed)' }}>
+                <path
+                  d="M4,2 Q8,2 16,14 Q24,2 28,2"
+                  stroke="url(#burgundy-wash)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                {/* Distress marks */}
+                <circle cx="7" cy="4" r="0.5" fill="#5a2022" opacity="0.3"/>
+                <circle cx="25" cy="4" r="0.4" fill="#5a2022" opacity="0.25"/>
+              </g>
+
+              {/* Second chevron (middle) */}
+              <g transform="translate(0, 14)" opacity="0.6" style={{ filter: 'url(#ink-bleed)' }}>
+                <path
+                  d="M4,2 Q8,2 16,14 Q24,2 28,2"
+                  stroke="url(#burgundy-wash)"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                {/* Distress - ink splatter effect */}
+                <circle cx="9" cy="5" r="0.6" fill="#6d2628" opacity="0.35"/>
+                <ellipse cx="23" cy="6" rx="0.8" ry="0.5" fill="#5a2022" opacity="0.3"/>
+              </g>
+
+              {/* Third chevron (bottom, most prominent) */}
+              <g transform="translate(0, 28)" opacity="0.8" style={{ filter: 'url(#ink-bleed)' }}>
+                <path
+                  d="M4,2 Q8,2 16,16 Q24,2 28,2"
+                  stroke="url(#burgundy-wash)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                {/* Distress marks - aged ink spots */}
+                <circle cx="6" cy="4" r="0.7" fill="#5a2022" opacity="0.4"/>
+                <circle cx="26" cy="4" r="0.6" fill="#5a2022" opacity="0.35"/>
+                <ellipse cx="16" cy="12" rx="0.5" ry="0.8" fill="#6d2628" opacity="0.25"/>
+              </g>
+            </svg>
           </div>
         </div>
 

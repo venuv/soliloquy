@@ -191,4 +191,21 @@
   50% { transform: translateY(3px); }
 }
 
+/* Scroll hint arrow animation */
+@keyframes scroll-hint {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 0.9;
+  }
+}
+
+/* Globe Theatre icon hover effect */
+.globe-theatre-icon {
+  position: relative;
+}
+
 /* Remove spurious bottom edge - original only has TOP feathered edge */
