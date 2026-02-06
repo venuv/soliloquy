@@ -24,54 +24,101 @@ const PLAY_COLORS = {
 
 const DEFAULT_COLOR = { wash: 'rgba(100, 100, 100, 0.06)', accent: '#5a5a5a' }
 
-// Organic progress bar with main stroke + tributary (like the gold divider)
-const ProgressBar = ({ percent, color }) => {
-  if (percent === 0) return null
+// Dual progress bars: mastery (claimed) + test performance
+const DualProgressBar = ({ masteryPercent, testPercent, accentColor }) => {
+  const testColor = '#c4a35a' // warm gold for test performance
+
+  if (masteryPercent === 0 && testPercent === 0) return null
 
   return (
-    <div style={{ marginTop: '0.6rem', position: 'relative', height: '12px' }}>
-      {/* Background track */}
-      <svg viewBox="0 0 200 12" preserveAspectRatio="none" style={{ width: '100%', height: '12px', position: 'absolute', top: 0, left: 0 }}>
+    <div style={{ marginTop: '0.6rem', position: 'relative', height: '18px', overflow: 'hidden', borderRadius: '4px' }}>
+      {/* Background tracks */}
+      <svg viewBox="0 0 200 18" preserveAspectRatio="none" style={{ width: '100%', height: '18px', position: 'absolute', top: 0, left: 0 }}>
+        {/* Mastery track (upper) */}
         <path
-          d="M0 6 Q25 4 50 7 Q100 9 150 5 Q175 3 200 6"
-          stroke={color}
+          d="M0 5 Q25 3 50 6 Q100 8 150 4 Q175 2 200 5"
+          stroke={accentColor}
           strokeWidth="2"
           fill="none"
-          opacity="0.12"
+          opacity="0.1"
+          strokeLinecap="round"
+        />
+        {/* Test track (lower) */}
+        <path
+          d="M0 13 Q30 15 70 11 Q120 9 160 14 Q185 16 200 13"
+          stroke={testColor}
+          strokeWidth="2"
+          fill="none"
+          opacity="0.1"
           strokeLinecap="round"
         />
       </svg>
-      {/* Main progress stroke */}
-      <svg
-        viewBox="0 0 200 12"
-        preserveAspectRatio="none"
-        style={{
-          width: `${percent}%`,
-          height: '12px',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          overflow: 'visible'
-        }}
-      >
-        <path
-          d="M0 6 Q25 4 50 7 Q100 9 150 5 Q175 3 200 6"
-          stroke={color}
-          strokeWidth="3"
-          fill="none"
-          opacity="0.6"
-          strokeLinecap="round"
-        />
-        {/* Tributary - lighter, offset */}
-        <path
-          d="M10 8 Q40 10 80 6 Q120 4 160 8 Q180 9 195 7"
-          stroke={color}
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.3"
-          strokeLinecap="round"
-        />
-      </svg>
+
+      {/* Mastery progress (upper wave) - claimed mastery */}
+      {masteryPercent > 0 && (
+        <svg
+          viewBox="0 0 200 18"
+          preserveAspectRatio="none"
+          style={{
+            width: `${masteryPercent}%`,
+            height: '18px',
+            position: 'absolute',
+            top: 0,
+            left: 0
+          }}
+        >
+          <path
+            d="M0 5 Q25 3 50 6 Q100 8 150 4 Q175 2 200 5"
+            stroke={accentColor}
+            strokeWidth="3"
+            fill="none"
+            opacity="0.7"
+            strokeLinecap="round"
+          />
+          {/* Tributary */}
+          <path
+            d="M5 3 Q35 1 75 5 Q115 7 155 3 Q180 1 195 4"
+            stroke={accentColor}
+            strokeWidth="1.5"
+            fill="none"
+            opacity="0.35"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
+
+      {/* Test progress (lower wave) - test performance */}
+      {testPercent > 0 && (
+        <svg
+          viewBox="0 0 200 18"
+          preserveAspectRatio="none"
+          style={{
+            width: `${testPercent}%`,
+            height: '18px',
+            position: 'absolute',
+            top: 0,
+            left: 0
+          }}
+        >
+          <path
+            d="M0 13 Q30 15 70 11 Q120 9 160 14 Q185 16 200 13"
+            stroke={testColor}
+            strokeWidth="3"
+            fill="none"
+            opacity="0.7"
+            strokeLinecap="round"
+          />
+          {/* Tributary */}
+          <path
+            d="M8 15 Q45 17 85 12 Q130 10 170 15 Q190 17 198 14"
+            stroke={testColor}
+            strokeWidth="1.5"
+            fill="none"
+            opacity="0.35"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
     </div>
   )
 }
@@ -111,13 +158,48 @@ export default function AuthorWorks() {
     )
   }
 
-  const getWorkProgress = (workId) => {
+  // Get claimed mastery percentage
+  const getMasteryProgress = (workId) => {
     const key = `${authorId}/${workId}`
     const workProgress = progress[key]
     if (!workProgress || !workProgress.mastered) return 0
     const work = author.works.find(w => w.id === workId)
     if (!work) return 0
-    return Math.round((workProgress.mastered.length / work.chunks.length) * 100)
+    return Math.min(100, Math.round((workProgress.mastered.length / work.chunks.length) * 100))
+  }
+
+  // Get test performance percentage (chunks with 2+ attempts, weighted by success rate)
+  const getTestProgress = (workId) => {
+    const key = `${authorId}/${workId}`
+    const workProgress = progress[key]
+    if (!workProgress || !workProgress.attempts || workProgress.attempts.length === 0) return 0
+
+    const work = author.works.find(w => w.id === workId)
+    if (!work) return 0
+
+    // Group attempts by chunk index
+    const chunkAttempts = {}
+    workProgress.attempts.forEach(attempt => {
+      const idx = attempt.chunkIndex
+      if (!chunkAttempts[idx]) chunkAttempts[idx] = []
+      chunkAttempts[idx].push(attempt.correct)
+    })
+
+    // Calculate score for chunks with 1+ attempts
+    let testedChunks = 0
+    let totalScore = 0
+    Object.values(chunkAttempts).forEach(attempts => {
+      if (attempts.length >= 1) {
+        testedChunks++
+        const correctCount = attempts.filter(c => c).length
+        totalScore += correctCount / attempts.length
+      }
+    })
+
+    if (testedChunks === 0) return 0
+    // Return percentage of chunks that are "tested" (2+ attempts with good performance)
+    // Cap at 100%
+    return Math.min(100, Math.round((totalScore / work.chunks.length) * 100))
   }
 
   // Group works by play (source)
@@ -237,7 +319,9 @@ export default function AuthorWorks() {
               {/* Works in this play */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', position: 'relative', zIndex: 1 }}>
                 {works.map((work) => {
-                  const pct = getWorkProgress(work.id)
+                  const masteryPct = getMasteryProgress(work.id)
+                  const testPct = getTestProgress(work.id)
+                  const hasProgress = masteryPct > 0 || testPct > 0
                   return (
                     <Link
                       key={work.id}
@@ -276,21 +360,36 @@ export default function AuthorWorks() {
                           </p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          {pct > 0 && (
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{
-                                fontFamily: "'Cormorant', serif",
-                                color: colors.accent,
-                                fontSize: '1.1rem',
-                                fontWeight: 500
-                              }}>{pct}%</div>
-                              <div style={{ color: '#9a9a9a', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>mastered</div>
+                          {hasProgress && (
+                            <div style={{ textAlign: 'right', minWidth: '3.5rem' }}>
+                              {masteryPct > 0 && (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
+                                  <div style={{
+                                    fontFamily: "'Cormorant', serif",
+                                    color: colors.accent,
+                                    fontSize: '1rem',
+                                    fontWeight: 500
+                                  }}>{masteryPct}%</div>
+                                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent, opacity: 0.6 }} />
+                                </div>
+                              )}
+                              {testPct > 0 && (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
+                                  <div style={{
+                                    fontFamily: "'Cormorant', serif",
+                                    color: '#c4a35a',
+                                    fontSize: '1rem',
+                                    fontWeight: 500
+                                  }}>{testPct}%</div>
+                                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#c4a35a', opacity: 0.6 }} />
+                                </div>
+                              )}
                             </div>
                           )}
                           <ChevronRight size={16} style={{ color: '#9a9a9a' }} />
                         </div>
                       </div>
-                      <ProgressBar percent={pct} color={colors.accent} />
+                      <DualProgressBar masteryPercent={masteryPct} testPercent={testPct} accentColor={colors.accent} />
                     </Link>
                   )
                 })}
