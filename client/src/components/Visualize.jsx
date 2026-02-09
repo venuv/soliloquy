@@ -30,6 +30,10 @@ export default function Visualize() {
   const [chunks, setChunks] = useState([])
   const [wordInitialGrid, setWordInitialGrid] = useState([])
 
+  // Trouble spot overlay state
+  const [troubleSpots, setTroubleSpots] = useState([])
+  const [showTroubleOverlay, setShowTroubleOverlay] = useState(true)
+
   const [generatedPictures, setGeneratedPictures] = useState({})
   const [selectedPictures, setSelectedPictures] = useState({})
   const [hasChanges, setHasChanges] = useState(false)
@@ -58,6 +62,21 @@ export default function Visualize() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [authorId, workId])
+
+  // Fetch trouble spots from recitation analytics
+  useEffect(() => {
+    api(`/recite/trouble-spots/${authorId}/${workId}`)
+      .then(data => {
+        if (data.troubleSpots?.length > 0) setTroubleSpots(data.troubleSpots)
+      })
+      .catch(() => {}) // silently fail if no recitation data
+  }, [authorId, workId])
+
+  // Trouble spot lookup for grid cells
+  const getTroubleForCell = (chunkIdx, wordIdx) => {
+    if (!showTroubleOverlay) return null
+    return troubleSpots.find(s => s.chunkIdx === chunkIdx && s.wordInChunk === wordIdx) || null
+  }
 
   // Generate word pictures
   const handleGenerate = async () => {
@@ -182,9 +201,17 @@ export default function Visualize() {
           Review your complete journey. Build mnemonics chunk-by-chunk in Practice → Advanced tab.
         </p>
 
-        {/* Word-Initial Grid */}
+        {/* Word-Initial Grid with Trouble Spot Overlay */}
         <div style={{ background: 'rgba(196,163,90,0.08)', border: '1px solid rgba(196,163,90,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', overflowX: 'auto' }}>
-          <div style={{ color: colors.muted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Word Initials</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <div style={{ color: colors.muted, fontSize: '0.85rem' }}>Word Initials</div>
+            {troubleSpots.length > 0 && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontSize: '0.75rem', color: colors.muted }}>
+                <input type="checkbox" checked={showTroubleOverlay} onChange={(e) => setShowTroubleOverlay(e.target.checked)} />
+                Trouble spots
+              </label>
+            )}
+          </div>
           <div style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: '0.95rem', lineHeight: '1.8' }}>
             {wordInitialGrid.map((row, chunkIdx) => (
               <div key={chunkIdx} style={{ display: 'flex', whiteSpace: 'nowrap' }}>
@@ -200,14 +227,42 @@ export default function Visualize() {
                 }}>
                   {chunkIdx + 1}
                 </span>
-                <span style={{ color: colors.gold, letterSpacing: '0.15em' }}>
-                  {row.join(' ')}
+                <span style={{ display: 'flex', gap: '0.15em' }}>
+                  {row.map((cell, wordIdx) => {
+                    const trouble = getTroubleForCell(chunkIdx, wordIdx)
+                    return (
+                      <span
+                        key={wordIdx}
+                        title={trouble ? `${trouble.dominantType} (${trouble.count}x in last ${troubleSpots.length > 0 ? 'attempts' : ''})` : ''}
+                        style={{
+                          color: trouble
+                            ? trouble.dominantType === 'stop' ? colors.crimson : '#d4860a'
+                            : colors.gold,
+                          opacity: trouble ? 0.5 + trouble.severity * 0.5 : 1,
+                          fontWeight: trouble ? 700 : 400,
+                          textDecoration: trouble?.dominantType === 'stop' ? 'underline' : 'none',
+                          cursor: trouble ? 'help' : 'default',
+                          padding: '0 0.08em'
+                        }}
+                      >
+                        {cell}
+                      </span>
+                    )
+                  })}
                 </span>
               </div>
             ))}
           </div>
-          <div style={{ color: colors.faded, fontSize: '0.75rem', marginTop: '0.5rem' }}>
-            {wordInitialGrid.length} lines — the shape mirrors the poem's cadence
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ color: colors.faded, fontSize: '0.75rem' }}>
+              {wordInitialGrid.length} lines — the shape mirrors the poem's cadence
+            </div>
+            {troubleSpots.length > 0 && showTroubleOverlay && (
+              <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.7rem' }}>
+                <span style={{ color: colors.crimson }}>&#9632; stop</span>
+                <span style={{ color: '#d4860a' }}>&#9632; struggle</span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import { api } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
-  Sparkles, Loader2, Check, Edit3, Map
+  Sparkles, Loader2, Check, Edit3, Map, Square
 } from 'lucide-react'
 import { similarityScore, containsExpected, wordCount } from '../utils/memoryCard'
 
@@ -59,6 +59,15 @@ export default function Practice() {
   const [generatingPicture, setGeneratingPicture] = useState(false)
   const [editingPicture, setEditingPicture] = useState(false)
   const [editText, setEditText] = useState('')
+
+  // Recite mode state
+  const [recording, setRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [reciteAnalyzing, setReciteAnalyzing] = useState(false)
+  const [reciteResult, setReciteResult] = useState(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
+  const recordingTimerRef = useRef(null)
 
   const recognitionRef = useRef(null)
 
@@ -235,6 +244,71 @@ export default function Practice() {
     }
   }
 
+  // --- Recite mode functions ---
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm'
+      })
+      audioChunksRef.current = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data) }
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType })
+        stream.getTracks().forEach(t => t.stop())
+        analyzeRecitation(blob)
+      }
+      recorder.start(1000)
+      mediaRecorderRef.current = recorder
+      setRecording(true)
+      setRecordingTime(0)
+      setReciteResult(null)
+      recordingTimerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000)
+    } catch (err) {
+      console.error('Mic access denied:', err)
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop()
+    }
+    setRecording(false)
+    clearInterval(recordingTimerRef.current)
+  }
+
+  const analyzeRecitation = async (blob) => {
+    setReciteAnalyzing(true)
+    try {
+      const formData = new FormData()
+      formData.append('audio', blob, 'recitation.webm')
+      const key = localStorage.getItem('userKey')
+      const res = await fetch(`/api/recite/transcribe/${authorId}/${workId}`, {
+        method: 'POST',
+        headers: { 'X-User-Key': key },
+        body: formData
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed' }))
+        throw new Error(err.error)
+      }
+      setReciteResult(await res.json())
+    } catch (err) {
+      console.error('Recitation analysis failed:', err)
+      setReciteResult({ error: err.message })
+    } finally {
+      setReciteAnalyzing(false)
+    }
+  }
+
+  const formatRecordingTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
   const checkAnswer = () => {
     const chunk = work.chunks[testOrder[testIndex]]
     const similarity = similarityScore(userAnswer, chunk.back)
@@ -352,6 +426,11 @@ export default function Practice() {
             <GraduationCap size={40} style={{ color: colors.forest, marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Test</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Voice or type answers</div>
+          </button>
+          <button onClick={() => startMode('recite')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(196,163,90,0.15)', background: 'rgba(196,163,90,0.03)' }}>
+            <Mic size={40} style={{ color: colors.gold, marginBottom: '0.75rem' }} />
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Recite</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Full poem recitation</div>
           </button>
           <Link to={`/visualize/${authorId}/${workId}`} style={{ ...cardStyle, textDecoration: 'none', textAlign: 'center', width: '12rem', border: '1px solid rgba(90,74,106,0.15)', background: 'rgba(90,74,106,0.03)' }}>
             <Image size={40} style={{ color: '#5a4a6a', marginBottom: '0.75rem' }} />
@@ -653,6 +732,142 @@ export default function Practice() {
         </div>
 
         <p style={{ color: colors.faded, marginTop: '1rem', fontSize: '0.9rem' }}>Question {testIndex + 1} / {testOrder.length}</p>
+      </div>
+    )
+  }
+
+  // Recite Mode
+  if (mode === 'recite') {
+    return (
+      <div style={baseStyle}>
+        <button onClick={() => { stopRecording(); setMode(null) }} style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'none', border: 'none', color: colors.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+          <ArrowLeft size={18} /> Exit
+        </button>
+
+        <h2 style={{ color: colors.gold, fontFamily: "'Cormorant', serif", fontSize: '1.3rem', marginBottom: '0.5rem' }}>Full Recitation</h2>
+        <p style={{ color: colors.muted, fontSize: '0.9rem', marginBottom: '1.5rem' }}>"{work.title}"</p>
+
+        {/* Pre-recording / Recording */}
+        {!reciteAnalyzing && !reciteResult && (
+          <div style={{ ...cardStyle, textAlign: 'center', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            {!recording ? (
+              <>
+                <p style={{ color: colors.muted, marginBottom: '1.5rem', maxWidth: '22rem', lineHeight: 1.5 }}>
+                  Recite the entire soliloquy from memory. We'll analyze where you stop or struggle.
+                </p>
+                <button onClick={startRecording} style={{ width: '5rem', height: '5rem', borderRadius: '50%', background: colors.crimson, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(155,45,48,0.3)' }}>
+                  <Mic size={28} style={{ color: colors.paper }} />
+                </button>
+                <p style={{ color: colors.faded, fontSize: '0.8rem', marginTop: '1rem' }}>Tap to start recording</p>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '2.5rem', fontFamily: "'Cormorant', serif", color: colors.crimson, marginBottom: '1rem' }}>
+                  {formatRecordingTime(recordingTime)}
+                </div>
+                <div style={{ width: '5rem', height: '5rem', borderRadius: '50%', background: 'rgba(155,45,48,0.08)', border: '3px solid ' + colors.crimson, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', background: colors.crimson, animation: 'pulse 1.5s ease-in-out infinite' }} />
+                </div>
+                <button onClick={stopRecording} style={{ ...btnPrimary, marginTop: '1.5rem' }}>
+                  <Square size={16} /> Stop & Analyze
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Analyzing spinner */}
+        {reciteAnalyzing && (
+          <div style={{ ...cardStyle, textAlign: 'center', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 size={40} style={{ color: colors.gold, animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
+            <p style={{ color: colors.muted }}>Analyzing your recitation...</p>
+            <p style={{ color: colors.faded, fontSize: '0.85rem', marginTop: '0.5rem' }}>Transcribing and comparing with the original</p>
+          </div>
+        )}
+
+        {/* Results */}
+        {reciteResult && !reciteResult.error && (
+          <div style={{ ...cardStyle, maxWidth: '36rem' }}>
+            {/* Stats */}
+            <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.forest }}>{reciteResult.stats?.matched || 0}</div>
+                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Exact</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.gold }}>{reciteResult.stats?.fuzzy || 0}</div>
+                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Close</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.crimson }}>{reciteResult.stats?.missed || 0}</div>
+                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Missed</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.ink }}>{reciteResult.stats?.totalExpected || 0}</div>
+                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Total</div>
+              </div>
+            </div>
+
+            {/* Accuracy bar */}
+            {reciteResult.stats && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ height: '6px', background: 'rgba(0,0,0,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.round((reciteResult.stats.matched / reciteResult.stats.totalExpected) * 100)}%`, background: colors.forest, borderRadius: '3px', transition: 'width 0.5s' }} />
+                </div>
+                <p style={{ textAlign: 'center', color: colors.faded, fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                  {Math.round((reciteResult.stats.matched / reciteResult.stats.totalExpected) * 100)}% exact accuracy
+                </p>
+              </div>
+            )}
+
+            {/* Transcript */}
+            <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.75rem', color: colors.faded, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Recitation</div>
+              <p style={{ color: colors.ink, lineHeight: 1.6, fontSize: '0.9rem', fontStyle: 'italic' }}>"{reciteResult.transcript}"</p>
+            </div>
+
+            {/* Trouble spots */}
+            {reciteResult.troubleSpots?.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', color: colors.faded, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Trouble Spots ({reciteResult.stats?.stops || 0} stops, {reciteResult.stats?.struggles || 0} struggles)
+                </div>
+                <div style={{ maxHeight: '12rem', overflowY: 'auto' }}>
+                  {reciteResult.troubleSpots.slice(0, 20).map((spot, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.85rem' }}>
+                      <span style={{ color: spot.type === 'stop' ? colors.crimson : '#d4860a', fontWeight: 600, width: '1.2rem', flexShrink: 0 }}>
+                        {spot.type === 'stop' ? '||' : '~'}
+                      </span>
+                      <span style={{ color: colors.muted }}>
+                        {spot.type === 'stop'
+                          ? `Paused ${spot.gapSeconds}s before "${spot.beforeWord}" (line ${spot.chunkIdx + 1})`
+                          : `"${spot.expected}" → "${spot.heard || '(skipped)'}" (line ${spot.chunkIdx + 1})`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={() => setReciteResult(null)} style={btnPrimary}>
+                <RotateCcw size={16} /> Try Again
+              </button>
+              <Link to={`/visualize/${authorId}/${workId}`} style={{ ...btnSecondary, textDecoration: 'none' }}>
+                <Map size={16} /> View Trouble Map
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {reciteResult?.error && (
+          <div style={{ ...cardStyle, textAlign: 'center' }}>
+            <p style={{ color: colors.crimson, marginBottom: '1rem' }}>{reciteResult.error}</p>
+            <button onClick={() => setReciteResult(null)} style={btnSecondary}>Try Again</button>
+          </div>
+        )}
       </div>
     )
   }
