@@ -33,17 +33,23 @@ async function validateKey(req, res, next) {
   }
 }
 
-// Helper: Get first letter of each sentence (not each word)
-const getFirstLettersOfSentences = (text) => {
-  // Split by sentence-ending punctuation, including semicolons and colons for Shakespeare
-  const sentences = text.split(/[.!?;:]+/).filter(s => s.trim());
-
-  return sentences.map(sentence => {
-    const trimmed = sentence.trim();
-    // Get first alphabetic character
-    const match = trimmed.match(/[a-zA-Z]/);
-    return match ? match[0].toUpperCase() : '';
-  }).filter(l => l).join('');
+// Helper: Build 2D grid of word initials from chunks
+// Each row = one chunk (front + back). Each cell = first letter + trailing punctuation.
+const getWordInitialGrid = (chunks) => {
+  return chunks.map(chunk => {
+    const fullLine = `${chunk.front} ${chunk.back}`;
+    // Split on whitespace, then extract first alpha char + trailing punctuation per token
+    const tokens = fullLine.split(/\s+/).filter(t => t);
+    return tokens.map(token => {
+      const alphaMatch = token.match(/[a-zA-Z]/);
+      if (!alphaMatch) return token; // pure punctuation like em-dashes
+      const idx = alphaMatch.index;
+      const firstChar = alphaMatch[0];
+      const leadingPunct = token.slice(0, idx); // e.g. opening quote '
+      const trailingPunct = token.slice(idx + 1).replace(/[a-zA-Z'']/g, ''); // strip remaining letters, keep punct
+      return leadingPunct + firstChar + trailingPunct;
+    });
+  });
 };
 
 // Helper: Get full text from chunks
@@ -200,8 +206,7 @@ router.get('/word-pictures/:authorId/:workId', validateKey, async (req, res) => 
       return res.status(404).json({ error: 'Work not found' });
     }
 
-    const fullText = getFullText(work.chunks);
-    const firstLetters = getFirstLettersOfSentences(fullText);
+    const wordInitialGrid = getWordInitialGrid(work.chunks);
 
     // Load existing word pictures from analytics
     const content = await fs.readFile(req.analyticsPath, 'utf-8');
@@ -222,7 +227,7 @@ router.get('/word-pictures/:authorId/:workId', validateKey, async (req, res) => 
         front: chunk.front,
         back: chunk.back
       })),
-      firstLetters,
+      wordInitialGrid,
       wordPictures: existingWordPictures
     });
   } catch (err) {
@@ -454,7 +459,7 @@ router.get('/analyze/:authorId/:workId', (req, res) => {
         act: work.act
       },
       soliloquy: {
-        firstLetters: getFirstLettersOfSentences(fullText),
+        wordInitialGrid: getWordInitialGrid(work.chunks),
         wordCount: fullText.trim().split(/\s+/).length,
         chunkCount: work.chunks.length
       },
@@ -462,7 +467,6 @@ router.get('/analyze/:authorId/:workId', (req, res) => {
         index: idx,
         front: chunk.front,
         back: chunk.back,
-        firstLetters: getFirstLettersOfSentences(`${chunk.front} ${chunk.back}`),
         wordCount: `${chunk.front} ${chunk.back}`.trim().split(/\s+/).length
       })),
       fullText

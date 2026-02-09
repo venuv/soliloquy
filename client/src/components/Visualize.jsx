@@ -28,7 +28,7 @@ export default function Visualize() {
 
   const [work, setWork] = useState(null)
   const [chunks, setChunks] = useState([])
-  const [firstLetters, setFirstLetters] = useState('')
+  const [wordInitialGrid, setWordInitialGrid] = useState([])
 
   const [generatedPictures, setGeneratedPictures] = useState({})
   const [selectedPictures, setSelectedPictures] = useState({})
@@ -46,7 +46,7 @@ export default function Visualize() {
       .then(data => {
         setWork(data.work)
         setChunks(data.chunks)
-        setFirstLetters(data.firstLetters)
+        setWordInitialGrid(data.wordInitialGrid || [])
 
         if (data.wordPictures?.generated) {
           setGeneratedPictures(data.wordPictures.generated)
@@ -182,14 +182,32 @@ export default function Visualize() {
           Review your complete journey. Build mnemonics chunk-by-chunk in Practice → Advanced tab.
         </p>
 
-        {/* First Letters */}
-        <div style={{ background: 'rgba(196,163,90,0.08)', border: '1px solid rgba(196,163,90,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-          <div style={{ color: colors.muted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>First Letters (by sentence)</div>
-          <div style={{ fontFamily: 'monospace', color: colors.gold, fontSize: '1.1rem', letterSpacing: '0.1em' }}>
-            {firstLetters || 'N/A'}
+        {/* Word-Initial Grid */}
+        <div style={{ background: 'rgba(196,163,90,0.08)', border: '1px solid rgba(196,163,90,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', overflowX: 'auto' }}>
+          <div style={{ color: colors.muted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Word Initials</div>
+          <div style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: '0.95rem', lineHeight: '1.8' }}>
+            {wordInitialGrid.map((row, chunkIdx) => (
+              <div key={chunkIdx} style={{ display: 'flex', whiteSpace: 'nowrap' }}>
+                <span style={{
+                  color: colors.faded,
+                  width: '2rem',
+                  flexShrink: 0,
+                  textAlign: 'right',
+                  marginRight: '0.75rem',
+                  fontSize: '0.75rem',
+                  lineHeight: '1.8',
+                  userSelect: 'none'
+                }}>
+                  {chunkIdx + 1}
+                </span>
+                <span style={{ color: colors.gold, letterSpacing: '0.15em' }}>
+                  {row.join(' ')}
+                </span>
+              </div>
+            ))}
           </div>
-          <div style={{ color: colors.faded, fontSize: '0.75rem', marginTop: '0.25rem' }}>
-            {firstLetters.length} sentences - memorize this sequence!
+          <div style={{ color: colors.faded, fontSize: '0.75rem', marginTop: '0.5rem' }}>
+            {wordInitialGrid.length} lines — the shape mirrors the poem's cadence
           </div>
         </div>
 
