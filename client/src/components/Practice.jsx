@@ -781,44 +781,60 @@ export default function Practice() {
           <div style={{ ...cardStyle, textAlign: 'center', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <Loader2 size={40} style={{ color: colors.gold, animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
             <p style={{ color: colors.muted }}>Analyzing your recitation...</p>
-            <p style={{ color: colors.faded, fontSize: '0.85rem', marginTop: '0.5rem' }}>Transcribing and comparing with the original</p>
+            <p style={{ color: colors.faded, fontSize: '0.85rem', marginTop: '0.5rem' }}>Three expert analysts reviewing accuracy, fluency & dramatic quality</p>
           </div>
         )}
 
         {/* Results */}
         {reciteResult && !reciteResult.error && (
           <div style={{ ...cardStyle, maxWidth: '36rem' }}>
+            {/* Drama coach summary */}
+            {reciteResult.summaries?.drama && (
+              <div style={{ background: 'rgba(196,163,90,0.08)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.25rem', borderLeft: '3px solid ' + colors.gold }}>
+                <p style={{ color: colors.ink, fontSize: '0.9rem', lineHeight: 1.5, fontStyle: 'italic' }}>{reciteResult.summaries.drama}</p>
+              </div>
+            )}
+
             {/* Stats */}
-            <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.forest }}>{reciteResult.stats?.matched || 0}</div>
-                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Exact</div>
+                <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: colors.crimson }}>{reciteResult.stats?.substitutions || 0}</div>
+                <div style={{ fontSize: '0.7rem', color: colors.faded }}>Wrong words</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.gold }}>{reciteResult.stats?.fuzzy || 0}</div>
-                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Close</div>
+                <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: colors.crimson }}>{reciteResult.stats?.omissions || 0}</div>
+                <div style={{ fontSize: '0.7rem', color: colors.faded }}>Omissions</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.crimson }}>{reciteResult.stats?.missed || 0}</div>
-                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Missed</div>
+                <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: '#d4860a' }}>{reciteResult.stats?.hesitations || 0}</div>
+                <div style={{ fontSize: '0.7rem', color: colors.faded }}>Hesitations</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: colors.ink }}>{reciteResult.stats?.totalExpected || 0}</div>
-                <div style={{ fontSize: '0.75rem', color: colors.faded }}>Total</div>
+                <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: '#d4860a' }}>{reciteResult.stats?.stumbles || 0}</div>
+                <div style={{ fontSize: '0.7rem', color: colors.faded }}>Stumbles</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: colors.ink }}>{reciteResult.stats?.totalWords || 0}</div>
+                <div style={{ fontSize: '0.7rem', color: colors.faded }}>Total words</div>
               </div>
             </div>
 
             {/* Accuracy bar */}
-            {reciteResult.stats && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ height: '6px', background: 'rgba(0,0,0,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.round((reciteResult.stats.matched / reciteResult.stats.totalExpected) * 100)}%`, background: colors.forest, borderRadius: '3px', transition: 'width 0.5s' }} />
+            {reciteResult.stats && reciteResult.stats.totalWords > 0 && (() => {
+              const spots = reciteResult.stats.troubleSpotCount || 0;
+              const total = reciteResult.stats.totalWords;
+              const pct = Math.max(0, Math.round(((total - spots) / total) * 100));
+              return (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ height: '6px', background: 'rgba(0,0,0,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: colors.forest, borderRadius: '3px', transition: 'width 0.5s' }} />
+                  </div>
+                  <p style={{ textAlign: 'center', color: colors.faded, fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                    {pct}% clean — {spots} trouble {spots === 1 ? 'spot' : 'spots'} found by consensus
+                  </p>
                 </div>
-                <p style={{ textAlign: 'center', color: colors.faded, fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                  {Math.round((reciteResult.stats.matched / reciteResult.stats.totalExpected) * 100)}% exact accuracy
-                </p>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Transcript */}
             <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
@@ -826,26 +842,57 @@ export default function Practice() {
               <p style={{ color: colors.ink, lineHeight: 1.6, fontSize: '0.9rem', fontStyle: 'italic' }}>"{reciteResult.transcript}"</p>
             </div>
 
+            {/* Dramatic pauses (positive feedback) */}
+            {reciteResult.dramaticPauses?.length > 0 && (
+              <div style={{ background: 'rgba(61,92,74,0.06)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.7rem', color: colors.forest, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Good dramatic pauses</div>
+                {reciteResult.dramaticPauses.slice(0, 5).map((dp, i) => (
+                  <div key={i} style={{ fontSize: '0.8rem', color: colors.muted, padding: '0.15rem 0' }}>
+                    <span style={{ color: colors.forest }}>&#10003;</span> {dp.note} {dp.seconds ? `(${dp.seconds}s)` : ''}
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Trouble spots */}
             {reciteResult.troubleSpots?.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.75rem', color: colors.faded, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Trouble Spots ({reciteResult.stats?.stops || 0} stops, {reciteResult.stats?.struggles || 0} struggles)
+                  Trouble Spots ({reciteResult.stats?.troubleSpotCount || 0} consensus)
                 </div>
-                <div style={{ maxHeight: '12rem', overflowY: 'auto' }}>
-                  {reciteResult.troubleSpots.slice(0, 20).map((spot, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.85rem' }}>
-                      <span style={{ color: spot.type === 'stop' ? colors.crimson : '#d4860a', fontWeight: 600, width: '1.2rem', flexShrink: 0 }}>
-                        {spot.type === 'stop' ? '||' : '~'}
-                      </span>
-                      <span style={{ color: colors.muted }}>
-                        {spot.type === 'stop'
-                          ? `Paused ${spot.gapSeconds}s before "${spot.beforeWord}" (line ${spot.chunkIdx + 1})`
-                          : `"${spot.expected}" → "${spot.heard || '(skipped)'}" (line ${spot.chunkIdx + 1})`}
-                      </span>
-                    </div>
-                  ))}
+                <div style={{ maxHeight: '14rem', overflowY: 'auto' }}>
+                  {reciteResult.troubleSpots.slice(0, 25).map((spot, i) => {
+                    const isError = spot.type === 'substitution' || spot.type === 'omission';
+                    const icon = spot.type === 'substitution' ? '\u2717'
+                      : spot.type === 'omission' ? '\u2205'
+                      : spot.type === 'hesitation' ? '||'
+                      : '~';
+                    return (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', padding: '0.3rem 0', fontSize: '0.82rem', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                        <span style={{ color: isError ? colors.crimson : '#d4860a', fontWeight: 600, width: '1.2rem', flexShrink: 0, textAlign: 'center' }}>
+                          {icon}
+                        </span>
+                        <span style={{ color: colors.muted, flex: 1 }}>
+                          {spot.type === 'substitution' && `"${spot.expected}" \u2192 "${spot.heard}" (line ${spot.chunkIdx + 1})`}
+                          {spot.type === 'omission' && `Skipped "${spot.expected}" (line ${spot.chunkIdx + 1})`}
+                          {spot.type === 'hesitation' && `Hesitated${spot.gapSeconds ? ` ${spot.gapSeconds}s` : ''} before "${spot.expected}" (line ${spot.chunkIdx + 1})`}
+                          {(spot.type === 'stumble' || spot.type === 'filler') && `Stumbled on "${spot.expected}" (line ${spot.chunkIdx + 1})`}
+                          {spot.note && <span style={{ display: 'block', fontSize: '0.75rem', color: colors.faded, fontStyle: 'italic' }}>{spot.note}</span>}
+                        </span>
+                        {spot.confidence >= 1 && <span style={{ fontSize: '0.65rem', color: colors.faded, flexShrink: 0 }} title="All analysts agreed">3/3</span>}
+                      </div>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
+
+            {/* Analyst summaries */}
+            {reciteResult.summaries && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.7rem', color: colors.faded, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Analysis Notes</div>
+                {reciteResult.summaries.accuracy && <p style={{ fontSize: '0.78rem', color: colors.muted, marginBottom: '0.2rem' }}><strong>Accuracy:</strong> {reciteResult.summaries.accuracy}</p>}
+                {reciteResult.summaries.fluency && <p style={{ fontSize: '0.78rem', color: colors.muted, marginBottom: '0.2rem' }}><strong>Fluency:</strong> {reciteResult.summaries.fluency}</p>}
               </div>
             )}
 

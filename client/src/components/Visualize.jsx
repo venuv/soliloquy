@@ -233,14 +233,15 @@ export default function Visualize() {
                     return (
                       <span
                         key={wordIdx}
-                        title={trouble ? `${trouble.dominantType} (${trouble.count}x in last ${troubleSpots.length > 0 ? 'attempts' : ''})` : ''}
+                        title={trouble ? `${trouble.dominantType}: "${trouble.word}" (${trouble.count}x)${trouble.notes?.length ? ' — ' + trouble.notes[0] : ''}` : ''}
                         style={{
                           color: trouble
-                            ? trouble.dominantType === 'stop' ? colors.crimson : '#d4860a'
+                            ? (trouble.dominantType === 'substitution' || trouble.dominantType === 'omission' || trouble.dominantType === 'stop')
+                              ? colors.crimson : '#d4860a'
                             : colors.gold,
                           opacity: trouble ? 0.5 + trouble.severity * 0.5 : 1,
                           fontWeight: trouble ? 700 : 400,
-                          textDecoration: trouble?.dominantType === 'stop' ? 'underline' : 'none',
+                          textDecoration: (trouble?.dominantType === 'substitution' || trouble?.dominantType === 'omission') ? 'underline' : 'none',
                           cursor: trouble ? 'help' : 'default',
                           padding: '0 0.08em'
                         }}
@@ -259,8 +260,8 @@ export default function Visualize() {
             </div>
             {troubleSpots.length > 0 && showTroubleOverlay && (
               <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.7rem' }}>
-                <span style={{ color: colors.crimson }}>&#9632; stop</span>
-                <span style={{ color: '#d4860a' }}>&#9632; struggle</span>
+                <span style={{ color: colors.crimson }}>&#9632; wrong/skipped</span>
+                <span style={{ color: '#d4860a' }}>&#9632; hesitation/stumble</span>
               </div>
             )}
           </div>
