@@ -50,7 +50,8 @@ export default function Practice() {
   const [userAnswer, setUserAnswer] = useState('')
   const [showResult, setShowResult] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
-  const [score, setScore] = useState({ correct: 0, total: 0 })
+  const [score, setScore] = useState({ points: 0, total: 0 })
+  const [lastLikert, setLastLikert] = useState(0)
   const [isListening, setIsListening] = useState(false)
 
   // Advanced mode state (word pictures)
@@ -132,7 +133,7 @@ export default function Practice() {
         body: JSON.stringify({
           authorId, workId, mode, duration,
           chunksReviewed: mode === 'memorize' ? currentIndex + 1 : testOrder.length,
-          correct: sessionScore?.correct || 0,
+          correct: sessionScore?.points || 0,
           total: sessionScore?.total || 0
         })
       })
@@ -152,12 +153,18 @@ export default function Practice() {
     }
   }
 
+  const toLikert = (raw) => Math.round(raw * 5) / 5  // snaps to 0, 0.2, 0.4, 0.6, 0.8, 1.0
+
+  const likertColor = (l) =>
+    l >= 1.0 ? colors.forest : l >= 0.8 ? colors.blue : l >= 0.6 ? colors.gold : colors.crimson
+
   const startMode = (m) => {
     setMode(m)
     setStartTime(Date.now())
     setCurrentIndex(0)
     setFlipped(false)
-    setScore({ correct: 0, total: 0 })
+    setScore({ points: 0, total: 0 })
+    setLastLikert(0)
     if (m === 'test') {
       const order = [...Array(work.chunks.length).keys()].sort(() => Math.random() - 0.5)
       setTestOrder(order)
@@ -313,10 +320,12 @@ export default function Practice() {
     const chunk = work.chunks[testOrder[testIndex]]
     const similarity = similarityScore(userAnswer, chunk.back)
     const hasExpected = containsExpected(userAnswer, chunk.back)
-    const correct = similarity >= 0.5 || hasExpected
+    const likert = hasExpected ? 1.0 : toLikert(similarity)
+    const correct = likert >= 1.0
     setIsCorrect(correct)
+    setLastLikert(likert)
     setShowResult(true)
-    const newScore = { correct: score.correct + (correct ? 1 : 0), total: score.total + 1 }
+    const newScore = { points: Math.round((score.points + likert) * 100) / 100, total: score.total + 1 }
     setScore(newScore)
     recordAttempt(testOrder[testIndex], correct, userAnswer, chunk.back)
   }
@@ -663,7 +672,7 @@ export default function Practice() {
           <ArrowLeft size={18} /> Exit
         </button>
         <div style={{ position: 'absolute', top: '1rem', right: '1rem', color: colors.muted, fontSize: '0.9rem' }}>
-          Score: {score.correct}/{score.total}
+          {score.points} / {score.total}
         </div>
 
         <h2 style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>"{work.title}" • Test</h2>
@@ -719,9 +728,14 @@ export default function Practice() {
             </>
           ) : (
             <>
-              <div style={{ padding: '1rem', borderRadius: '8px', marginBottom: '1rem', background: isCorrect ? 'rgba(61,92,74,0.1)' : 'rgba(155,45,48,0.1)', border: `1px solid ${isCorrect ? 'rgba(61,92,74,0.3)' : 'rgba(155,45,48,0.3)'}` }}>
-                <p style={{ fontWeight: 500, color: isCorrect ? colors.forest : colors.crimson }}>{isCorrect ? '✓ Correct!' : '✗ Not quite'}</p>
-                <p style={{ color: colors.muted, marginTop: '0.5rem', fontSize: '0.9rem' }}>Your answer: "{userAnswer}"</p>
+              <div style={{ padding: '1rem', borderRadius: '8px', marginBottom: '1rem', background: isCorrect ? 'rgba(61,92,74,0.1)' : 'rgba(155,45,48,0.06)', border: `1px solid ${isCorrect ? 'rgba(61,92,74,0.3)' : 'rgba(155,45,48,0.15)'}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <p style={{ fontWeight: 500, color: likertColor(lastLikert) }}>
+                    {lastLikert >= 1.0 ? 'Perfect' : lastLikert >= 0.8 ? 'Almost' : lastLikert >= 0.6 ? 'Partial' : lastLikert >= 0.4 ? 'Rough' : 'Needs work'}
+                  </p>
+                  <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 600, color: likertColor(lastLikert) }}>{lastLikert.toFixed(1)}</span>
+                </div>
+                <p style={{ color: colors.muted, fontSize: '0.9rem' }}>Your answer: "{userAnswer}"</p>
                 <p style={{ color: colors.ink, marginTop: '0.5rem', fontSize: '0.9rem' }}>Correct: <span style={{ color: colors.crimson, fontWeight: 500 }}>{chunk.back}</span></p>
               </div>
               <button onClick={nextTest} style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }}>
@@ -921,15 +935,16 @@ export default function Practice() {
 
   // Results
   if (mode === 'results') {
-    const pct = Math.round((score.correct / score.total) * 100)
+    const maxPoints = score.total
+    const pct = maxPoints > 0 ? Math.round((score.points / maxPoints) * 100) : 0
 
     return (
       <div style={baseStyle}>
         <h2 style={{ fontFamily: "'Cormorant', serif", fontSize: '2rem', color: colors.ink, fontWeight: 400, marginBottom: '0.5rem' }}>Test Complete!</h2>
         <p style={{ color: colors.muted, marginBottom: '1.5rem' }}>"{work.title}"</p>
 
-        <div style={{ fontFamily: "'Cormorant', serif", fontSize: '4rem', color: colors.crimson, marginBottom: '0.5rem' }}>{pct}%</div>
-        <p style={{ color: colors.muted, marginBottom: '2rem' }}>{score.correct} of {score.total} correct</p>
+        <div style={{ fontFamily: "'Cormorant', serif", fontSize: '4rem', color: likertColor(score.points / maxPoints), marginBottom: '0.5rem' }}>{pct}%</div>
+        <p style={{ color: colors.muted, marginBottom: '2rem' }}>{score.points} / {maxPoints} points</p>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           <button onClick={() => startMode('test')} style={btnPrimary}>

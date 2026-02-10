@@ -37,10 +37,14 @@ export const similarityScore = (str1, str2) => {
   const s1 = normalizeText(str1)
   const s2 = normalizeText(str2)
   const words1 = s1.split(' ')
-  const words2 = s2.split(' ')
+  const words2 = s2.split(' ').slice() // copy for consumption
   let matches = 0
   words1.forEach(w1 => {
-    if (words2.some(w2 => w2.includes(w1) || w1.includes(w2))) matches++
+    const idx = words2.indexOf(w1)
+    if (idx !== -1) {
+      matches++
+      words2.splice(idx, 1) // consume so duplicates aren't double-counted
+    }
   })
   return matches / Math.max(words1.length, words2.length)
 }
