@@ -128,6 +128,7 @@ export default function AuthorWorks() {
   const [author, setAuthor] = useState(null)
   const [progress, setProgress] = useState({})
   const [loading, setLoading] = useState(true)
+  const [playFilter, setPlayFilter] = useState(null)
 
   useEffect(() => {
     Promise.all([
@@ -251,11 +252,49 @@ export default function AuthorWorks() {
             <div style={{ fontSize: '0.75rem', color: '#9a9a9a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plays</div>
           </div>
         </div>
+
+        {/* Play filter */}
+        <div style={{ marginTop: '1.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+          <button
+            onClick={() => setPlayFilter(null)}
+            style={{
+              padding: '0.4rem 0.85rem',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              border: 'none',
+              cursor: 'pointer',
+              background: playFilter === null ? '#5a4a6a' : 'rgba(0,0,0,0.03)',
+              color: playFilter === null ? '#fdfcf8' : '#4a4a4a'
+            }}
+          >
+            All Plays
+          </button>
+          {plays.map(play => {
+            const colors = PLAY_COLORS[play] || DEFAULT_COLOR
+            return (
+              <button
+                key={play}
+                onClick={() => setPlayFilter(play)}
+                style={{
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: playFilter === play ? colors.accent : 'rgba(0,0,0,0.03)',
+                  color: playFilter === play ? '#fdfcf8' : '#4a4a4a'
+                }}
+              >
+                {play}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Works grouped by play */}
       <div style={{ maxWidth: '42rem', margin: '0 auto' }}>
-        {plays.map((play, playIndex) => {
+        {plays.filter(play => !playFilter || play === playFilter).map((play, playIndex) => {
           const works = worksByPlay[play]
           const colors = PLAY_COLORS[play] || DEFAULT_COLOR
 
