@@ -236,6 +236,13 @@ const PERFORMANCES = [
     play: 'As You Like It',
     videos: [
       {
+        youtubeId: '0178jo7Mka0',
+        title: 'Benedict Cumberbatch - The Seven Ages of Man',
+        performer: 'Benedict Cumberbatch',
+        duration: '3:30',
+        description: "Cumberbatch's evocative performance of Jacques' Seven Ages of Man speech."
+      },
+      {
         youtubeId: 'rOHhUUWeKN8',
         title: 'The Seven Ages of Man',
         performer: 'RedFrost Motivation',

@@ -27,7 +27,9 @@ const SOURCES = {
   'youtube': {
     name: 'YouTube',
     buildEmbedUrl: (videoId, start, end) => {
-      let url = `https://www.youtube.com/embed/${videoId}`
+      // Strip youtube- prefix if present (data files use prefixed IDs for consistency)
+      const actualId = videoId.startsWith('youtube-') ? videoId.slice(8) : videoId
+      let url = `https://www.youtube.com/embed/${actualId}`
       const params = []
       if (start) params.push(`start=${start}`)
       if (end) params.push(`end=${end}`)
