@@ -87,6 +87,30 @@ curl -X POST -H "X-Admin-Key: your-secret" \
   keys.json          # User keys + fingerprints
 ```
 
+## Adding Video Performances
+
+Use the `add-video` script to add YouTube performances to the corpus:
+
+```bash
+# Interactive - prompts for soliloquy, performer, etc.
+node scripts/add-video.mjs https://youtube.com/watch?v=VIDEO_ID
+
+# With flags - no prompts, auto-ship
+node scripts/add-video.mjs VIDEO_ID \
+  --soliloquy=to-be-or-not-to-be \
+  --performer="Kenneth Branagh" \
+  --title="Hamlet Film" \
+  --duration="4:15" \
+  --ship
+```
+
+Run without arguments to see available soliloquy IDs:
+```bash
+node scripts/add-video.mjs
+```
+
+See [scripts/README.md](scripts/README.md) for all utility scripts.
+
 ## Adding Authors/Works
 
 Create a new JSON file in `server/data/authors/`:
