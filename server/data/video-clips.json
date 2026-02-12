@@ -113,6 +113,20 @@
       "notes": "Paul Czinner film. Olivier plays Orlando but delivers Jacques' famous speech."
     },
     {
+      "id": "ayli-worlds-stage-cumberbatch",
+      "soliloquyId": "all-the-worlds-a-stage",
+      "title": "Benedict Cumberbatch - All the world's a stage",
+      "actor": "Benedict Cumberbatch",
+      "production": "The Seven Ages of Man",
+      "year": null,
+      "source": "youtube",
+      "videoId": "youtube-0178jo7Mka0",
+      "startSeconds": null,
+      "endSeconds": null,
+      "status": "clip",
+      "notes": "Performance of Jacques' Seven Ages of Man speech from As You Like It"
+    },
+    {
       "id": "richard3-winter-olivier-1955-audio",
       "soliloquyId": "now-is-the-winter",
       "title": "Laurence Olivier - Now is the winter (Audio)",

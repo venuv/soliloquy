@@ -105,6 +105,32 @@
       "notes": "Film runtime 96 minutes. The 'Seven Ages of Man' speech was retained in full despite other cuts."
     },
     {
+      "videoId": "youtube-0178jo7Mka0",
+      "soliloquyId": "all-the-worlds-a-stage",
+      "title": "All the world's a stage",
+      "actor": "Benedict Cumberbatch",
+      "production": "The Seven Ages of Man",
+      "year": null,
+      "startSeconds": 0,
+      "endSeconds": null,
+      "confidence": "verified",
+      "source": "YouTube clip - standalone performance of the soliloquy.",
+      "notes": "Benedict Cumberbatch performs Jacques' Seven Ages of Man speech from As You Like It."
+    },
+    {
+      "videoId": "lp_richard-iii-highlights_laurence-olivier-william-shakespeare",
+      "soliloquyId": "now-is-the-winter",
+      "title": "Now is the winter of our discontent",
+      "actor": "Laurence Olivier",
+      "production": "Richard III Audio Highlights",
+      "year": 1955,
+      "startSeconds": 0,
+      "endSeconds": 2484,
+      "confidence": "estimated",
+      "source": "As You Like It 1936 is 96 minutes. Act 2 Scene 7 at ~40% runtime places it around 38:24. Olivier's first Shakespeare film.",
+      "notes": "Film runtime 96 minutes. The 'Seven Ages of Man' speech was retained in full despite other cuts."
+    },
+    {
       "videoId": "lp_richard-iii-highlights_laurence-olivier-william-shakespeare",
       "soliloquyId": "now-is-the-winter",
       "title": "Now is the winter of our discontent",

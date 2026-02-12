@@ -4,7 +4,7 @@ import { api } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
-  Sparkles, Loader2, Check, Edit3, Map, Square
+  Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target
 } from 'lucide-react'
 import { similarityScore, containsExpected, wordCount } from '../utils/memoryCard'
 
@@ -54,8 +54,18 @@ export default function Practice() {
   const [lastLikert, setLastLikert] = useState(0)
   const [isListening, setIsListening] = useState(false)
 
-  // Advanced mode state (word pictures)
-  const [memTab, setMemTab] = useState('memorize') // 'memorize' | 'advanced'
+  // Tab state within memorize mode
+  const [memTab, setMemTab] = useState('learn') // 'learn' | 'drill' | 'tools'
+
+  // Drill mode state
+  const [drillChunks, setDrillChunks] = useState([]) // weighted queue of chunk indices
+  const [drillIndex, setDrillIndex] = useState(0)
+  const [drillRevealed, setDrillRevealed] = useState(false)
+  const [drillStats, setDrillStats] = useState({}) // { chunkIndex: { attempts, errors, lastSeen } }
+  const [drillScore, setDrillScore] = useState({ correct: 0, struggled: 0, missed: 0 })
+  const [drillAnswer, setDrillAnswer] = useState('')
+  const [drillListening, setDrillListening] = useState(false)
+  const drillRecognitionRef = useRef(null)
   const [wordPictures, setWordPictures] = useState({ generated: {}, selected: {}, rooms: {} })
   const [generatingPicture, setGeneratingPicture] = useState(false)
   const [editingPicture, setEditingPicture] = useState(false)
@@ -113,6 +123,101 @@ export default function Practice() {
       recognitionRef.current.onend = () => setIsListening(false)
     }
   }, [])
+
+  // Compute drill stats from attempts when work loads
+  useEffect(() => {
+    if (!work) return
+    api('/analytics/progress').then(analytics => {
+      const key = `${authorId}/${workId}`
+      const workProgress = analytics.progress?.[key]
+      if (!workProgress?.attempts) return
+
+      // Build stats per chunk
+      const stats = {}
+      for (let i = 0; i < work.chunks.length; i++) {
+        stats[i] = { attempts: 0, errors: 0, lastSeen: null }
+      }
+      workProgress.attempts.forEach(a => {
+        if (stats[a.chunkIndex]) {
+          stats[a.chunkIndex].attempts++
+          if (!a.correct) stats[a.chunkIndex].errors++
+          stats[a.chunkIndex].lastSeen = a.timestamp
+        }
+      })
+      setDrillStats(stats)
+    }).catch(console.error)
+  }, [work, authorId, workId])
+
+  // Initialize drill queue with weighted selection
+  const initDrillQueue = () => {
+    if (!work) return
+    const now = Date.now()
+    const weights = work.chunks.map((_, idx) => {
+      const stat = drillStats[idx] || { attempts: 0, errors: 0, lastSeen: null }
+      // Error rate: higher = more weight
+      const errorRate = stat.attempts > 0 ? stat.errors / stat.attempts : 0.5
+      // Recency: older = more weight (days since last seen, max 30)
+      const daysSince = stat.lastSeen
+        ? Math.min(30, (now - new Date(stat.lastSeen).getTime()) / (1000 * 60 * 60 * 24))
+        : 15 // never seen = moderate weight
+      // Coverage: unseen chunks get boost
+      const coverageBoost = stat.attempts === 0 ? 1 : 0
+      // Combined weight
+      return (errorRate * 2) + (daysSince / 30) + coverageBoost + 0.1 // baseline 0.1
+    })
+
+    // Weighted shuffle: pick chunks proportional to weight
+    const queue = []
+    const available = work.chunks.map((_, i) => i)
+    const totalRounds = Math.min(work.chunks.length, 10) // max 10 per drill session
+
+    for (let r = 0; r < totalRounds; r++) {
+      const totalWeight = available.reduce((sum, i) => sum + weights[i], 0)
+      let rand = Math.random() * totalWeight
+      for (const i of available) {
+        rand -= weights[i]
+        if (rand <= 0) {
+          queue.push(i)
+          // Reduce weight after selection to promote variety
+          weights[i] *= 0.3
+          break
+        }
+      }
+    }
+    setDrillChunks(queue)
+    setDrillIndex(0)
+    setDrillRevealed(false)
+    setDrillScore({ correct: 0, struggled: 0, missed: 0 })
+    setDrillAnswer('')
+  }
+
+  // Speech recognition for drill
+  const startDrillListening = () => {
+    if (!SpeechRecognition) return
+    if (!drillRecognitionRef.current) {
+      drillRecognitionRef.current = new SpeechRecognition()
+      drillRecognitionRef.current.continuous = false
+      drillRecognitionRef.current.interimResults = false
+      drillRecognitionRef.current.lang = 'en-US'
+      drillRecognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript
+        setDrillAnswer(transcript)
+        setDrillListening(false)
+      }
+      drillRecognitionRef.current.onerror = () => setDrillListening(false)
+      drillRecognitionRef.current.onend = () => setDrillListening(false)
+    }
+    setDrillAnswer('')
+    setDrillListening(true)
+    drillRecognitionRef.current.start()
+  }
+
+  const stopDrillListening = () => {
+    if (drillRecognitionRef.current && drillListening) {
+      drillRecognitionRef.current.stop()
+      setDrillListening(false)
+    }
+  }
 
   const saveMastered = async (newMastered) => {
     try {
@@ -498,33 +603,45 @@ export default function Practice() {
         {/* Tab Selector */}
         <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', padding: '0.25rem', marginBottom: '1rem', maxWidth: '32rem', width: '100%' }}>
           <button
-            onClick={() => setMemTab('memorize')}
+            onClick={() => setMemTab('learn')}
             style={{
               flex: 1, padding: '0.5rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
-              background: memTab === 'memorize' ? colors.crimson : 'transparent',
-              color: memTab === 'memorize' ? colors.paper : colors.muted,
+              background: memTab === 'learn' ? colors.crimson : 'transparent',
+              color: memTab === 'learn' ? colors.paper : colors.muted,
               fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
             }}
           >
-            <BookOpen size={16} /> Memorize
+            <BookOpen size={16} /> Learn
           </button>
           <button
-            onClick={() => setMemTab('advanced')}
+            onClick={() => { setMemTab('drill'); initDrillQueue() }}
             style={{
               flex: 1, padding: '0.5rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
-              background: memTab === 'advanced' ? '#5a4a6a' : 'transparent',
-              color: memTab === 'advanced' ? colors.paper : colors.muted,
+              background: memTab === 'drill' ? colors.forest : 'transparent',
+              color: memTab === 'drill' ? colors.paper : colors.muted,
               fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
             }}
           >
-            <Sparkles size={16} /> Advanced
+            <Target size={16} /> Drill
+          </button>
+          <button
+            onClick={() => setMemTab('tools')}
+            style={{
+              flex: 1, padding: '0.5rem', borderRadius: '6px', border: 'none', cursor: 'pointer',
+              background: memTab === 'tools' ? '#5a4a6a' : 'transparent',
+              color: memTab === 'tools' ? colors.paper : colors.muted,
+              fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+            }}
+          >
+            <Sparkles size={16} /> Tools
           </button>
         </div>
 
-        {/* Memorize Tab - Flashcard */}
-        {memTab === 'memorize' && (
+        {/* Learn Tab - Flashcard */}
+        {memTab === 'learn' && (
           <>
             <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(0,0,0,0.08)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(0,0,0,0.02)' }}>
               {!flipped ? (
@@ -562,8 +679,221 @@ export default function Practice() {
           </>
         )}
 
-        {/* Advanced Tab - Word Pictures */}
-        {memTab === 'advanced' && (
+        {/* Drill Tab - Adaptive Quiz */}
+        {memTab === 'drill' && (
+          <>
+            {drillChunks.length === 0 ? (
+              <div style={{ ...cardStyle, textAlign: 'center', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <Shuffle size={40} style={{ color: colors.forest, marginBottom: '1rem' }} />
+                <p style={{ color: colors.muted, marginBottom: '1rem' }}>Adaptive drill targets your weak spots</p>
+                <button onClick={initDrillQueue} style={{ ...btnPrimary, background: colors.forest }}>
+                  <Target size={16} /> Start Drill
+                </button>
+              </div>
+            ) : drillIndex >= drillChunks.length ? (
+              // Drill complete
+              <div style={{ ...cardStyle, textAlign: 'center', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle2 size={48} style={{ color: colors.forest, marginBottom: '1rem' }} />
+                <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.ink, marginBottom: '0.5rem' }}>Drill Complete!</h3>
+                <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontFamily: "'Cormorant', serif", color: colors.forest }}>{drillScore.correct}</div>
+                    <div style={{ fontSize: '0.75rem', color: colors.faded }}>Got it</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontFamily: "'Cormorant', serif", color: colors.gold }}>{drillScore.struggled}</div>
+                    <div style={{ fontSize: '0.75rem', color: colors.faded }}>Struggled</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontFamily: "'Cormorant', serif", color: colors.crimson }}>{drillScore.missed}</div>
+                    <div style={{ fontSize: '0.75rem', color: colors.faded }}>Missed</div>
+                  </div>
+                </div>
+                <button onClick={initDrillQueue} style={{ ...btnPrimary, background: colors.forest }}>
+                  <RotateCcw size={16} /> Drill Again
+                </button>
+              </div>
+            ) : (
+              // Active drill
+              <div style={{ ...cardStyle, minHeight: '16rem' }}>
+                {(() => {
+                  const chunkIdx = drillChunks[drillIndex]
+                  const chunk = work.chunks[chunkIdx]
+                  const stat = drillStats[chunkIdx]
+                  const errorRate = stat?.attempts > 0 ? Math.round((stat.errors / stat.attempts) * 100) : null
+
+                  return (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: colors.faded }}>
+                          {drillIndex + 1} / {drillChunks.length}
+                        </span>
+                        {errorRate !== null && (
+                          <span style={{ fontSize: '0.75rem', color: errorRate > 50 ? colors.crimson : errorRate > 25 ? colors.gold : colors.forest }}>
+                            {errorRate}% error rate
+                          </span>
+                        )}
+                      </div>
+
+                      <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Complete this line:</p>
+                      <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.4 }}>
+                        "{chunk.front}..."
+                      </h3>
+
+                      {!drillRevealed ? (
+                        <>
+                          <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                            <textarea
+                              value={drillAnswer}
+                              onChange={(e) => setDrillAnswer(e.target.value)}
+                              placeholder="Type or speak your answer..."
+                              style={{
+                                width: '100%',
+                                padding: '1rem',
+                                paddingRight: '3.5rem',
+                                background: 'rgba(0,0,0,0.03)',
+                                border: '1px solid rgba(0,0,0,0.1)',
+                                borderRadius: '8px',
+                                resize: 'none',
+                                height: '5rem',
+                                fontFamily: "'IBM Plex Sans', sans-serif",
+                                fontSize: '0.95rem',
+                                color: colors.ink,
+                                boxSizing: 'border-box'
+                              }}
+                            />
+                            <button
+                              onClick={drillListening ? stopDrillListening : startDrillListening}
+                              style={{
+                                position: 'absolute',
+                                right: '0.75rem',
+                                top: '0.75rem',
+                                padding: '0.5rem',
+                                borderRadius: '50%',
+                                border: 'none',
+                                background: drillListening ? '#d64545' : colors.forest,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {drillListening ? <MicOff size={18} style={{ color: 'white' }} /> : <Mic size={18} style={{ color: 'white' }} />}
+                            </button>
+                          </div>
+                          {drillListening && <p style={{ color: colors.forest, textAlign: 'center', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Listening...</p>}
+                          <button
+                            onClick={() => setDrillRevealed(true)}
+                            style={{ ...btnPrimary, width: '100%', justifyContent: 'center', background: colors.forest }}
+                          >
+                            Check Answer
+                          </button>
+                        </>
+                      ) : (
+                        (() => {
+                          const similarity = similarityScore(drillAnswer, chunk.back)
+                          const hasExpected = containsExpected(drillAnswer, chunk.back)
+                          const likert = hasExpected ? 1.0 : toLikert(similarity)
+                          const isCorrect = likert >= 0.8
+
+                          return (
+                            <>
+                              {/* Score display */}
+                              <div style={{
+                                padding: '0.75rem 1rem',
+                                borderRadius: '8px',
+                                marginBottom: '1rem',
+                                background: isCorrect ? 'rgba(61,92,74,0.1)' : likert >= 0.5 ? 'rgba(196,163,90,0.1)' : 'rgba(155,45,48,0.08)',
+                                border: `1px solid ${isCorrect ? 'rgba(61,92,74,0.3)' : likert >= 0.5 ? 'rgba(196,163,90,0.3)' : 'rgba(155,45,48,0.2)'}`
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                  <p style={{ fontWeight: 500, color: likertColor(likert), margin: 0 }}>
+                                    {likert >= 1.0 ? 'Perfect!' : likert >= 0.8 ? 'Great!' : likert >= 0.6 ? 'Close' : likert >= 0.4 ? 'Partial' : 'Keep practicing'}
+                                  </p>
+                                  <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 600, color: likertColor(likert) }}>
+                                    {Math.round(likert * 100)}%
+                                  </span>
+                                </div>
+                                {drillAnswer && (
+                                  <p style={{ color: colors.muted, fontSize: '0.85rem', margin: 0 }}>You said: "{drillAnswer}"</p>
+                                )}
+                              </div>
+
+                              {/* Correct answer */}
+                              <div style={{ background: 'rgba(61,92,74,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center' }}>
+                                <p style={{ fontSize: '0.7rem', color: colors.faded, marginBottom: '0.25rem', textTransform: 'uppercase' }}>Correct answer</p>
+                                <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.3rem', color: colors.forest, fontWeight: 500, margin: 0 }}>
+                                  {chunk.back}
+                                </p>
+                              </div>
+
+                              <p style={{ color: colors.muted, fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.75rem' }}>Rate yourself:</p>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => {
+                                    setDrillScore(s => ({ ...s, correct: s.correct + 1 }))
+                                    recordAttempt(chunkIdx, true, drillAnswer, chunk.back)
+                                    setDrillIndex(i => i + 1)
+                                    setDrillRevealed(false)
+                                    setDrillAnswer('')
+                                  }}
+                                  style={{ ...btnPrimary, flex: 1, justifyContent: 'center', background: colors.forest }}
+                                >
+                                  Got it
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setDrillScore(s => ({ ...s, struggled: s.struggled + 1 }))
+                                    recordAttempt(chunkIdx, likert >= 0.5, drillAnswer, chunk.back)
+                                    setDrillIndex(i => i + 1)
+                                    setDrillRevealed(false)
+                                    setDrillAnswer('')
+                                  }}
+                                  style={{ ...btnSecondary, flex: 1, justifyContent: 'center', borderColor: colors.gold, color: colors.gold }}
+                                >
+                                  Struggled
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setDrillScore(s => ({ ...s, missed: s.missed + 1 }))
+                                    recordAttempt(chunkIdx, false, drillAnswer, chunk.back)
+                                    setDrillIndex(i => i + 1)
+                                    setDrillRevealed(false)
+                                    setDrillAnswer('')
+                                  }}
+                                  style={{ ...btnSecondary, flex: 1, justifyContent: 'center', borderColor: colors.crimson, color: colors.crimson }}
+                                >
+                                  Missed
+                                </button>
+                              </div>
+                            </>
+                          )
+                        })()
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
+            )}
+
+            {/* Drill progress indicator */}
+            {drillChunks.length > 0 && drillIndex < drillChunks.length && (
+              <div style={{ display: 'flex', gap: '3px', marginTop: '1rem', maxWidth: '32rem', width: '100%' }}>
+                {drillChunks.map((_, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      height: '4px',
+                      flex: 1,
+                      borderRadius: '2px',
+                      background: idx < drillIndex ? colors.forest : idx === drillIndex ? colors.gold : 'rgba(0,0,0,0.1)'
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Tools Tab - Word Pictures */}
+        {memTab === 'tools' && (
           <>
             <div style={{ ...cardStyle, minHeight: '16rem' }}>
               {/* Chunk text */}
