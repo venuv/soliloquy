@@ -1772,6 +1772,47 @@
       ]
     },
     {
+      "id": "pericles-death-remembered",
+      "title": "For death remember'd should be like a mirror",
+      "source": "Pericles",
+      "character": "Pericles",
+      "act": "Act 1, Scene 1",
+      "chunks": [
+        {
+          "front": "For death remember'd",
+          "back": "should be like a mirror,"
+        },
+        {
+          "front": "Who tells us life's but breath,",
+          "back": "to trust it error."
+        },
+        {
+          "front": "I'll make my will then,",
+          "back": "and, as sick men do"
+        },
+        {
+          "front": "Who know the world, see heaven,",
+          "back": "but, feeling woe,"
+        },
+        {
+          "front": "Gripe not at earthly joys",
+          "back": "as erst they did;"
+        },
+        {
+          "front": "So I bequeath",
+          "back": "a happy peace to you"
+        },
+        {
+          "front": "And all good men,",
+          "back": "as every prince should do;"
+        },
+        {
+          "front": "My riches to the earth",
+          "back": "from whence they came;"
+        }
+      ]
+    },
+    {
       "id": "pericles-marina-recognition",
       "title": "My name is Marina",
       "source": "Pericles",
@@ -1882,6 +1923,63 @@
         {
           "front": "As thunder threatens us:",
           "back": "this is Marina."
+        }
+      ]
+    },
+    {
+      "id": "pericles-death-remembered",
+      "title": "For death remembered should be like a mirror",
+      "source": "Pericles",
+      "character": "Pericles",
+      "act": "Act 1, Scene 1",
+      "chunks": [
+        {
+          "front": "Antiochus, I thank thee,",
+          "back": "who hath taught"
+        },
+        {
+          "front": "My frail mortality",
+          "back": "to know itself,"
+        },
+        {
+          "front": "And by those fearful objects",
+          "back": "to prepare"
+        },
+        {
+          "front": "This body, like to them,",
+          "back": "to what I must."
+        },
+        {
+          "front": "For death remembered should",
+          "back": "be like a mirror"
+        },
+        {
+          "front": "Who tells us life's but breath,",
+          "back": "to trust it error."
+        },
+        {
+          "front": "I'll make my will then,",
+          "back": "and as sick men do"
+        },
+        {
+          "front": "Who know the world,",
+          "back": "see heaven but, feeling woe,"
+        },
+        {
+          "front": "Gripe not at earthly joys",
+          "back": "as erst they did;"
+        },
+        {
+          "front": "So I bequeath a happy peace",
+          "back": "to you"
+        },
+        {
+          "front": "And all good men,",
+          "back": "as every prince should do;"
+        },
+        {
+          "front": "My riches to the earth",
+          "back": "from whence they came."
         }
       ]
     },
