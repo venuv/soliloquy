@@ -59,15 +59,17 @@ export default function Home() {
       <header style={{
         padding: isMobile ? '1rem' : '1.5rem 2.5rem',
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: isMobile ? 'flex-start' : 'center',
+        gap: isMobile ? '0.75rem' : 0
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
           <div
             className="globe-theatre-icon"
             style={{
-              width: '52px',
-              height: '52px',
+              width: isMobile ? '40px' : '52px',
+              height: isMobile ? '40px' : '52px',
               borderRadius: '50%',
               overflow: 'hidden',
               flexShrink: 0,
