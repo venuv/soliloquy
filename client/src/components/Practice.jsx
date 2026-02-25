@@ -6,7 +6,8 @@ import {
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
   Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target
 } from 'lucide-react'
-import { similarityScore, containsExpected, wordCount } from '../utils/memoryCard'
+import { similarityScore, containsExpected, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
+import BeatEditor from './BeatEditor'
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 
@@ -71,6 +72,14 @@ export default function Practice() {
   const [editingPicture, setEditingPicture] = useState(false)
   const [editText, setEditText] = useState('')
 
+  // Beat mode state
+  const [practiceUnit, setPracticeUnit] = useState('lines') // 'lines' | 'beats'
+  const [beats, setBeats] = useState([]) // resolved beats array
+  const [defaultBeats, setDefaultBeats] = useState([]) // from work data (for reset)
+  const [showBeatEditor, setShowBeatEditor] = useState(false)
+  const [generatingBeats, setGeneratingBeats] = useState(false)
+  const [masteredBeats, setMasteredBeats] = useState(new Set())
+
   // Recite mode state
   const [recording, setRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
@@ -86,14 +95,19 @@ export default function Practice() {
     Promise.all([
       api(`/authors/${authorId}/works/${workId}`),
       api('/analytics/progress'),
-      api(`/visualize/word-pictures/${authorId}/${workId}`)
+      api(`/visualize/word-pictures/${authorId}/${workId}`),
+      api(`/beats/${authorId}/${workId}`),
+      api('/analytics/preferences')
     ])
-      .then(([workData, progressData, vizData]) => {
+      .then(([workData, progressData, vizData, beatsData, prefs]) => {
         setWork(workData)
         const key = `${authorId}/${workId}`
         const savedProgress = progressData.progress?.[key]
         if (savedProgress?.mastered) {
           setMastered(new Set(savedProgress.mastered))
+        }
+        if (savedProgress?.masteredBeats) {
+          setMasteredBeats(new Set(savedProgress.masteredBeats))
         }
         // Load word pictures
         if (vizData.wordPictures) {
@@ -102,6 +116,21 @@ export default function Practice() {
             selected: vizData.wordPictures.selected || {},
             rooms: vizData.wordPictures.rooms || {}
           })
+        }
+        // Load beats
+        if (beatsData.beats) {
+          setBeats(beatsData.beats)
+          // Store defaults from work data (not user overrides)
+          if (beatsData.source === 'user' && workData.beats) {
+            setDefaultBeats(workData.beats)
+          } else {
+            setDefaultBeats(beatsData.beats)
+          }
+        }
+        // Load practice unit preference
+        const unitPref = prefs?.practiceUnit?.[key]
+        if (unitPref && (beatsData.beats || unitPref === 'lines')) {
+          setPracticeUnit(unitPref)
         }
       })
       .catch(console.error)
@@ -152,39 +181,75 @@ export default function Practice() {
   const initDrillQueue = () => {
     if (!work) return
     const now = Date.now()
-    const weights = work.chunks.map((_, idx) => {
-      const stat = drillStats[idx] || { attempts: 0, errors: 0, lastSeen: null }
-      // Error rate: higher = more weight
-      const errorRate = stat.attempts > 0 ? stat.errors / stat.attempts : 0.5
-      // Recency: older = more weight (days since last seen, max 30)
-      const daysSince = stat.lastSeen
-        ? Math.min(30, (now - new Date(stat.lastSeen).getTime()) / (1000 * 60 * 60 * 24))
-        : 15 // never seen = moderate weight
-      // Coverage: unseen chunks get boost
-      const coverageBoost = stat.attempts === 0 ? 1 : 0
-      // Combined weight
-      return (errorRate * 2) + (daysSince / 30) + coverageBoost + 0.1 // baseline 0.1
-    })
 
-    // Weighted shuffle: pick chunks proportional to weight
-    const queue = []
-    const available = work.chunks.map((_, i) => i)
-    const totalRounds = Math.min(work.chunks.length, 10) // max 10 per drill session
+    if (practiceUnit === 'beats' && beats.length > 0) {
+      // Beat-mode drill: weight per beat (aggregate chunk stats)
+      const weights = beats.map((beat) => {
+        let totalAttempts = 0, totalErrors = 0, oldestSeen = null
+        for (let c = beat.startChunk; c <= beat.endChunk; c++) {
+          const stat = drillStats[c] || { attempts: 0, errors: 0, lastSeen: null }
+          totalAttempts += stat.attempts
+          totalErrors += stat.errors
+          if (stat.lastSeen && (!oldestSeen || new Date(stat.lastSeen) < oldestSeen)) {
+            oldestSeen = new Date(stat.lastSeen)
+          }
+        }
+        const errorRate = totalAttempts > 0 ? totalErrors / totalAttempts : 0.5
+        const daysSince = oldestSeen
+          ? Math.min(30, (now - oldestSeen.getTime()) / (1000 * 60 * 60 * 24))
+          : 15
+        const coverageBoost = totalAttempts === 0 ? 1 : 0
+        return (errorRate * 2) + (daysSince / 30) + coverageBoost + 0.1
+      })
 
-    for (let r = 0; r < totalRounds; r++) {
-      const totalWeight = available.reduce((sum, i) => sum + weights[i], 0)
-      let rand = Math.random() * totalWeight
-      for (const i of available) {
-        rand -= weights[i]
-        if (rand <= 0) {
-          queue.push(i)
-          // Reduce weight after selection to promote variety
-          weights[i] *= 0.3
-          break
+      const queue = []
+      const totalRounds = Math.min(beats.length, 10)
+      const weightsCopy = [...weights]
+
+      for (let r = 0; r < totalRounds; r++) {
+        const totalWeight = weightsCopy.reduce((sum, w) => sum + w, 0)
+        let rand = Math.random() * totalWeight
+        for (let i = 0; i < weightsCopy.length; i++) {
+          rand -= weightsCopy[i]
+          if (rand <= 0) {
+            queue.push(i)
+            weightsCopy[i] *= 0.3
+            break
+          }
         }
       }
+      setDrillChunks(queue)
+    } else {
+      // Line-mode drill (existing logic)
+      const weights = work.chunks.map((_, idx) => {
+        const stat = drillStats[idx] || { attempts: 0, errors: 0, lastSeen: null }
+        const errorRate = stat.attempts > 0 ? stat.errors / stat.attempts : 0.5
+        const daysSince = stat.lastSeen
+          ? Math.min(30, (now - new Date(stat.lastSeen).getTime()) / (1000 * 60 * 60 * 24))
+          : 15
+        const coverageBoost = stat.attempts === 0 ? 1 : 0
+        return (errorRate * 2) + (daysSince / 30) + coverageBoost + 0.1
+      })
+
+      const queue = []
+      const available = work.chunks.map((_, i) => i)
+      const totalRounds = Math.min(work.chunks.length, 10)
+
+      for (let r = 0; r < totalRounds; r++) {
+        const totalWeight = available.reduce((sum, i) => sum + weights[i], 0)
+        let rand = Math.random() * totalWeight
+        for (const i of available) {
+          rand -= weights[i]
+          if (rand <= 0) {
+            queue.push(i)
+            weights[i] *= 0.3
+            break
+          }
+        }
+      }
+      setDrillChunks(queue)
     }
-    setDrillChunks(queue)
+
     setDrillIndex(0)
     setDrillRevealed(false)
     setDrillScore({ correct: 0, struggled: 0, missed: 0 })
@@ -236,7 +301,7 @@ export default function Practice() {
       await api('/analytics/session', {
         method: 'POST',
         body: JSON.stringify({
-          authorId, workId, mode, duration,
+          authorId, workId, mode, duration, practiceUnit,
           chunksReviewed: mode === 'memorize' ? currentIndex + 1 : testOrder.length,
           correct: sessionScore?.points || 0,
           total: sessionScore?.total || 0
@@ -247,18 +312,26 @@ export default function Practice() {
     }
   }
 
-  const recordAttempt = async (chunkIndex, correct, userAns, expected) => {
+  const recordAttempt = async (index, correct, userAns, expected) => {
+    const payload = { authorId, workId, correct, userAnswer: userAns, expectedAnswer: expected }
+    if (practiceUnit === 'beats') {
+      payload.beatIndex = index
+    } else {
+      payload.chunkIndex = index
+    }
     try {
       await api('/analytics/attempt', {
         method: 'POST',
-        body: JSON.stringify({ authorId, workId, chunkIndex, correct, userAnswer: userAns, expectedAnswer: expected })
+        body: JSON.stringify(payload)
       })
     } catch (err) {
       console.error('Failed to record attempt:', err)
     }
   }
 
-  const toLikert = (raw) => Math.round(raw * 5) / 5  // snaps to 0, 0.2, 0.4, 0.6, 0.8, 1.0
+  const toLikert = (raw, fine) => fine
+    ? Math.round(raw * 10) / 10   // beats: 0.1 steps — 1.0 requires ≥0.95
+    : Math.round(raw * 5) / 5     // lines: 0.2 steps — 0, 0.2, 0.4, 0.6, 0.8, 1.0
 
   const likertColor = (l) =>
     l >= 1.0 ? colors.forest : l >= 0.8 ? colors.blue : l >= 0.6 ? colors.gold : colors.crimson
@@ -271,12 +344,77 @@ export default function Practice() {
     setScore({ points: 0, total: 0 })
     setLastLikert(0)
     if (m === 'test') {
-      const order = [...Array(work.chunks.length).keys()].sort(() => Math.random() - 0.5)
+      const itemCount = practiceUnit === 'beats' ? beats.length : work.chunks.length
+      const order = [...Array(itemCount).keys()].sort(() => Math.random() - 0.5)
       setTestOrder(order)
       setTestIndex(0)
       setUserAnswer('')
       setShowResult(false)
     }
+  }
+
+  // Beat-specific helpers
+  const generateBeatsForWork = async () => {
+    setGeneratingBeats(true)
+    try {
+      const result = await api(`/beats/generate/${authorId}/${workId}`, { method: 'POST' })
+      if (result.success && result.beats) {
+        setBeats(result.beats)
+        setDefaultBeats(result.beats)
+      }
+    } catch (err) {
+      console.error('Failed to generate beats:', err)
+    } finally {
+      setGeneratingBeats(false)
+    }
+  }
+
+  const saveBeatOverrides = async (newBeats) => {
+    setBeats(newBeats)
+    setShowBeatEditor(false)
+    try {
+      await api('/analytics/beat-overrides', {
+        method: 'POST',
+        body: JSON.stringify({ authorId, workId, beats: newBeats })
+      })
+    } catch (err) {
+      console.error('Failed to save beat overrides:', err)
+    }
+  }
+
+  const togglePracticeUnit = async (unit) => {
+    setPracticeUnit(unit)
+    const key = `${authorId}/${workId}`
+    try {
+      await api('/analytics/preferences', {
+        method: 'POST',
+        body: JSON.stringify({ key: `practiceUnit.${key}`, value: unit })
+      })
+    } catch (err) {
+      console.error('Failed to save preference:', err)
+    }
+  }
+
+  const saveMasteredBeatsToServer = async (newMasteredBeats) => {
+    try {
+      await api('/analytics/mastered', {
+        method: 'POST',
+        body: JSON.stringify({ authorId, workId, masteredBeats: Array.from(newMasteredBeats) })
+      })
+    } catch (err) {
+      console.error('Failed to save mastered beats:', err)
+    }
+  }
+
+  const toggleMasteredBeat = () => {
+    const newMasteredBeats = new Set(masteredBeats)
+    if (newMasteredBeats.has(currentIndex)) {
+      newMasteredBeats.delete(currentIndex)
+    } else {
+      newMasteredBeats.add(currentIndex)
+    }
+    setMasteredBeats(newMasteredBeats)
+    saveMasteredBeatsToServer(newMasteredBeats)
   }
 
   const toggleMastered = () => {
@@ -422,17 +560,23 @@ export default function Practice() {
   }
 
   const checkAnswer = () => {
-    const chunk = work.chunks[testOrder[testIndex]]
-    const similarity = similarityScore(userAnswer, chunk.back)
-    const hasExpected = containsExpected(userAnswer, chunk.back)
-    const likert = hasExpected ? 1.0 : toLikert(similarity)
+    const itemIdx = testOrder[testIndex]
+    let expected
+    if (practiceUnit === 'beats') {
+      expected = getBeatText(work.chunks, beats[itemIdx])
+    } else {
+      expected = work.chunks[itemIdx].back
+    }
+    const similarity = similarityScore(userAnswer, expected)
+    const hasExpected = practiceUnit === 'beats' ? false : containsExpected(userAnswer, expected)
+    const likert = hasExpected ? 1.0 : toLikert(similarity, practiceUnit === 'beats')
     const correct = likert >= 1.0
     setIsCorrect(correct)
     setLastLikert(likert)
     setShowResult(true)
     const newScore = { points: Math.round((score.points + likert) * 100) / 100, total: score.total + 1 }
     setScore(newScore)
-    recordAttempt(testOrder[testIndex], correct, userAnswer, chunk.back)
+    recordAttempt(itemIdx, correct, userAnswer, expected)
   }
 
   const nextTest = () => {
@@ -528,7 +672,63 @@ export default function Practice() {
 
         <h2 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.75rem', color: colors.ink, fontWeight: 400, marginBottom: '0.5rem' }}>"{work.title}"</h2>
         <p style={{ color: colors.muted, marginBottom: '0.25rem' }}>{work.character} • {work.source}</p>
-        <p style={{ color: colors.faded, marginBottom: '2rem' }}>{work.act} • {work.chunks.length} chunks</p>
+        <p style={{ color: colors.faded, marginBottom: '1rem' }}>{work.act} • {work.chunks.length} chunks</p>
+
+        {/* Practice Unit Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <span style={{ fontSize: '0.8rem', color: colors.faded }}>Practice by:</span>
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '6px', padding: '0.2rem' }}>
+            <button
+              onClick={() => togglePracticeUnit('lines')}
+              style={{
+                padding: '0.35rem 0.75rem', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                background: practiceUnit === 'lines' ? colors.crimson : 'transparent',
+                color: practiceUnit === 'lines' ? colors.paper : colors.muted,
+                fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.8rem'
+              }}
+            >
+              Lines
+            </button>
+            {beats.length > 0 ? (
+              <button
+                onClick={() => togglePracticeUnit('beats')}
+                style={{
+                  padding: '0.35rem 0.75rem', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                  background: practiceUnit === 'beats' ? colors.blue : 'transparent',
+                  color: practiceUnit === 'beats' ? colors.paper : colors.muted,
+                  fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.8rem'
+                }}
+              >
+                Beats ({beats.length})
+              </button>
+            ) : (
+              <button
+                onClick={generateBeatsForWork}
+                disabled={generatingBeats}
+                style={{
+                  padding: '0.35rem 0.75rem', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                  background: 'transparent', color: colors.faded,
+                  fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.8rem',
+                  opacity: generatingBeats ? 0.5 : 1
+                }}
+              >
+                {generatingBeats ? 'Generating...' : 'Generate Beats'}
+              </button>
+            )}
+          </div>
+          {beats.length > 0 && (
+            <button
+              onClick={() => setShowBeatEditor(true)}
+              style={{
+                background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px',
+                padding: '0.35rem 0.5rem', cursor: 'pointer', color: colors.faded,
+                fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.75rem'
+              }}
+            >
+              Edit Beats
+            </button>
+          )}
+        </div>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           <button onClick={() => startMode('memorize')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(155,45,48,0.15)', background: 'rgba(155,45,48,0.03)' }}>
@@ -553,10 +753,25 @@ export default function Practice() {
           </Link>
         </div>
 
-        {mastered.size > 0 && (
+        {practiceUnit === 'lines' && mastered.size > 0 && (
           <div style={{ marginTop: '2rem', color: colors.faded, fontSize: '0.9rem' }}>
             {mastered.size} of {work.chunks.length} chunks mastered
           </div>
+        )}
+        {practiceUnit === 'beats' && masteredBeats.size > 0 && (
+          <div style={{ marginTop: '2rem', color: colors.faded, fontSize: '0.9rem' }}>
+            {masteredBeats.size} of {beats.length} beats mastered
+          </div>
+        )}
+
+        {showBeatEditor && (
+          <BeatEditor
+            work={work}
+            beats={beats}
+            defaultBeats={defaultBeats}
+            onSave={saveBeatOverrides}
+            onClose={() => setShowBeatEditor(false)}
+          />
         )}
       </div>
     )
@@ -564,11 +779,14 @@ export default function Practice() {
 
   // Memorize Mode
   if (mode === 'memorize') {
-    const chunk = work.chunks[currentIndex]
-    const isMastered = mastered.has(currentIndex)
-    const currentOptions = wordPictures.generated[currentIndex] || []
-    const currentSelected = wordPictures.selected[currentIndex]
-    const currentRoom = wordPictures.rooms[currentIndex] || ROOMS[currentIndex % ROOMS.length]
+    const inBeatsMode = practiceUnit === 'beats' && beats.length > 0
+    const totalItems = inBeatsMode ? beats.length : work.chunks.length
+    const chunk = inBeatsMode ? null : work.chunks[currentIndex]
+    const beat = inBeatsMode ? beats[currentIndex] : null
+    const isMastered = inBeatsMode ? masteredBeats.has(currentIndex) : mastered.has(currentIndex)
+    const currentOptions = inBeatsMode ? [] : (wordPictures.generated[currentIndex] || [])
+    const currentSelected = inBeatsMode ? null : wordPictures.selected[currentIndex]
+    const currentRoom = inBeatsMode ? null : (wordPictures.rooms[currentIndex] || ROOMS[currentIndex % ROOMS.length])
 
     return (
       <div style={baseStyle}>
@@ -580,11 +798,19 @@ export default function Practice() {
           <Map size={16} /> Floor Plan
         </Link>
 
-        <h2 style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1rem' }}>"{work.title}"</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <h2 style={{ color: inBeatsMode ? colors.blue : colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', margin: 0 }}>"{work.title}"</h2>
+          {beats.length > 0 && (
+            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: '4px', padding: '0.15rem' }}>
+              <button onClick={() => { togglePracticeUnit('lines'); setCurrentIndex(0); setFlipped(false) }} style={{ padding: '0.2rem 0.5rem', borderRadius: '3px', border: 'none', cursor: 'pointer', background: practiceUnit === 'lines' ? colors.crimson : 'transparent', color: practiceUnit === 'lines' ? colors.paper : colors.faded, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.7rem' }}>Lines</button>
+              <button onClick={() => { togglePracticeUnit('beats'); setCurrentIndex(0); setFlipped(false) }} style={{ padding: '0.2rem 0.5rem', borderRadius: '3px', border: 'none', cursor: 'pointer', background: practiceUnit === 'beats' ? colors.blue : 'transparent', color: practiceUnit === 'beats' ? colors.paper : colors.faded, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.7rem' }}>Beats</button>
+            </div>
+          )}
+        </div>
 
         {/* Progress */}
         <div style={{ display: 'flex', gap: '3px', marginBottom: '1rem', maxWidth: '32rem', width: '100%' }}>
-          {work.chunks.map((_, idx) => (
+          {Array.from({ length: totalItems }).map((_, idx) => (
             <div
               key={idx}
               onClick={() => { setCurrentIndex(idx); setFlipped(false); setEditingPicture(false) }}
@@ -593,7 +819,13 @@ export default function Practice() {
                 flex: 1,
                 borderRadius: '3px',
                 cursor: 'pointer',
-                background: idx === currentIndex ? colors.crimson : mastered.has(idx) ? colors.forest : wordPictures.selected[idx] ? 'rgba(90,74,106,0.5)' : 'rgba(0,0,0,0.1)',
+                background: idx === currentIndex
+                  ? (inBeatsMode ? colors.blue : colors.crimson)
+                  : (inBeatsMode ? masteredBeats.has(idx) : mastered.has(idx))
+                    ? colors.forest
+                    : (!inBeatsMode && wordPictures.selected[idx])
+                      ? 'rgba(90,74,106,0.5)'
+                      : 'rgba(0,0,0,0.1)',
                 transition: 'all 0.2s'
               }}
             />
@@ -643,39 +875,83 @@ export default function Practice() {
         {/* Learn Tab - Flashcard */}
         {memTab === 'learn' && (
           <>
-            <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(0,0,0,0.08)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(0,0,0,0.02)' }}>
-              {!flipped ? (
-                <>
-                  <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem' }}>What comes next?</p>
-                  <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.ink, lineHeight: 1.4 }}>"{chunk.front}..."</h3>
-                  <p style={{ color: colors.faded, marginTop: 'auto', fontSize: '0.8rem' }}>Click to reveal</p>
-                </>
-              ) : (
-                <>
-                  <p style={{ color: colors.muted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{chunk.front}</p>
-                  <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.crimson, fontWeight: 500, lineHeight: 1.4 }}>{chunk.back}</h3>
-                  {currentSelected && (
-                    <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(90,74,106,0.08)', borderRadius: '8px', width: '100%' }}>
-                      <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.25rem' }}>{currentRoom}</p>
-                      <p style={{ fontSize: '0.85rem', color: colors.muted, fontStyle: 'italic' }}>{currentSelected}</p>
-                    </div>
+            {inBeatsMode && beat ? (
+              /* Beats mode flashcard */
+              <>
+                <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(42,74,94,0.15)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(42,74,94,0.03)' }}>
+                  {!flipped ? (
+                    <>
+                      <p style={{ color: colors.blue, fontSize: '0.75rem', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Beat {currentIndex + 1}</p>
+                      <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, lineHeight: 1.4, marginBottom: '0.5rem' }}>{beat.label}</h3>
+                      <p style={{ color: colors.muted, fontSize: '0.85rem', fontStyle: 'italic', marginBottom: '1rem' }}>{beat.intention}</p>
+                      <p style={{ fontFamily: "'Cormorant', serif", color: colors.ink, fontSize: '1.05rem', opacity: 0.7 }}>
+                        "{getBeatCue(work.chunks, beat)}"
+                      </p>
+                      <p style={{ color: colors.faded, marginTop: 'auto', fontSize: '0.8rem' }}>Click to reveal full text</p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ color: colors.blue, fontSize: '0.75rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{beat.label}</p>
+                      <div style={{ textAlign: 'left', width: '100%' }}>
+                        {work.chunks.slice(beat.startChunk, beat.endChunk + 1).map((c, i) => (
+                          <p key={i} style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: colors.ink, lineHeight: 1.6, margin: '0.15rem 0' }}>
+                            {c.front} <span style={{ color: colors.blue }}>{c.back}</span>
+                          </p>
+                        ))}
+                      </div>
+                    </>
                   )}
-                </>
-              )}
-            </div>
+                </div>
 
-            {/* Controls */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-              <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
-                <ChevronLeft size={22} />
-              </button>
-              <button onClick={toggleMastered} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.crimson }}>
-                <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
-              </button>
-              <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
-                <ChevronRight size={22} />
-              </button>
-            </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                  <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button onClick={toggleMasteredBeat} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.blue }}>
+                    <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
+                  </button>
+                  <button onClick={() => { setCurrentIndex(Math.min(totalItems - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === totalItems - 1} style={{ ...btnSecondary, opacity: currentIndex === totalItems - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+                    <ChevronRight size={22} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Lines mode flashcard (existing) */
+              <>
+                <div onClick={() => setFlipped(!flipped)} style={{ ...cardStyle, cursor: 'pointer', minHeight: '16rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', borderColor: isMastered ? 'rgba(61,92,74,0.3)' : 'rgba(0,0,0,0.08)', background: isMastered ? 'rgba(61,92,74,0.04)' : 'rgba(0,0,0,0.02)' }}>
+                  {!flipped ? (
+                    <>
+                      <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem' }}>What comes next?</p>
+                      <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.ink, lineHeight: 1.4 }}>"{chunk.front}..."</h3>
+                      <p style={{ color: colors.faded, marginTop: 'auto', fontSize: '0.8rem' }}>Click to reveal</p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ color: colors.muted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{chunk.front}</p>
+                      <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.5rem', color: colors.crimson, fontWeight: 500, lineHeight: 1.4 }}>{chunk.back}</h3>
+                      {currentSelected && (
+                        <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(90,74,106,0.08)', borderRadius: '8px', width: '100%' }}>
+                          <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.25rem' }}>{currentRoom}</p>
+                          <p style={{ fontSize: '0.85rem', color: colors.muted, fontStyle: 'italic' }}>{currentSelected}</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                  <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button onClick={toggleMastered} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.crimson }}>
+                    <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
+                  </button>
+                  <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+                    <ChevronRight size={22} />
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -717,10 +993,25 @@ export default function Practice() {
               // Active drill
               <div style={{ ...cardStyle, minHeight: '16rem' }}>
                 {(() => {
-                  const chunkIdx = drillChunks[drillIndex]
-                  const chunk = work.chunks[chunkIdx]
-                  const stat = drillStats[chunkIdx]
-                  const errorRate = stat?.attempts > 0 ? Math.round((stat.errors / stat.attempts) * 100) : null
+                  const itemIdx = drillChunks[drillIndex]
+                  const isDrillBeats = inBeatsMode
+                  const drillBeat = isDrillBeats ? beats[itemIdx] : null
+                  const chunk = isDrillBeats ? null : work.chunks[itemIdx]
+                  const drillExpected = isDrillBeats ? getBeatText(work.chunks, drillBeat) : chunk.back
+
+                  // Error rate for display
+                  let errorRate = null
+                  if (isDrillBeats && drillBeat) {
+                    let totalA = 0, totalE = 0
+                    for (let c = drillBeat.startChunk; c <= drillBeat.endChunk; c++) {
+                      const s = drillStats[c]
+                      if (s) { totalA += s.attempts; totalE += s.errors }
+                    }
+                    if (totalA > 0) errorRate = Math.round((totalE / totalA) * 100)
+                  } else {
+                    const stat = drillStats[itemIdx]
+                    errorRate = stat?.attempts > 0 ? Math.round((stat.errors / stat.attempts) * 100) : null
+                  }
 
                   return (
                     <>
@@ -735,10 +1026,24 @@ export default function Practice() {
                         )}
                       </div>
 
-                      <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Complete this line:</p>
-                      <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.4 }}>
-                        "{chunk.front}..."
-                      </h3>
+                      {isDrillBeats ? (
+                        <>
+                          <p style={{ color: colors.blue, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Recite this beat:</p>
+                          <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '0.25rem', lineHeight: 1.4 }}>
+                            {drillBeat.label}
+                          </h3>
+                          <p style={{ color: colors.muted, fontSize: '0.85rem', textAlign: 'center', fontStyle: 'italic', marginBottom: '0.5rem' }}>{drillBeat.intention}</p>
+                          <p style={{ fontFamily: "'Cormorant', serif", color: colors.ink, fontSize: '1.05rem', textAlign: 'center', marginBottom: '0.5rem', opacity: 0.7 }}>"{getBeatCue(work.chunks, drillBeat)}"</p>
+                          <p style={{ color: colors.faded, fontSize: '0.8rem', textAlign: 'center', marginBottom: '1rem' }}>({wordCount(drillExpected)} words)</p>
+                        </>
+                      ) : (
+                        <>
+                          <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Complete this line:</p>
+                          <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.4 }}>
+                            "{chunk.front}..."
+                          </h3>
+                        </>
+                      )}
 
                       {!drillRevealed ? (
                         <>
@@ -746,7 +1051,7 @@ export default function Practice() {
                             <textarea
                               value={drillAnswer}
                               onChange={(e) => setDrillAnswer(e.target.value)}
-                              placeholder="Type or speak your answer..."
+                              placeholder={isDrillBeats ? "Type or speak the full beat..." : "Type or speak your answer..."}
                               style={{
                                 width: '100%',
                                 padding: '1rem',
@@ -755,7 +1060,7 @@ export default function Practice() {
                                 border: '1px solid rgba(0,0,0,0.1)',
                                 borderRadius: '8px',
                                 resize: 'none',
-                                height: '5rem',
+                                height: isDrillBeats ? '10rem' : '5rem',
                                 fontFamily: "'IBM Plex Sans', sans-serif",
                                 fontSize: '0.95rem',
                                 color: colors.ink,
@@ -788,9 +1093,9 @@ export default function Practice() {
                         </>
                       ) : (
                         (() => {
-                          const similarity = similarityScore(drillAnswer, chunk.back)
-                          const hasExpected = containsExpected(drillAnswer, chunk.back)
-                          const likert = hasExpected ? 1.0 : toLikert(similarity)
+                          const similarity = similarityScore(drillAnswer, drillExpected)
+                          const hasExpected = isDrillBeats ? false : containsExpected(drillAnswer, drillExpected)
+                          const likert = hasExpected ? 1.0 : toLikert(similarity, isDrillBeats)
                           const isCorrect = likert >= 0.8
 
                           return (
@@ -817,11 +1122,21 @@ export default function Practice() {
                               </div>
 
                               {/* Correct answer */}
-                              <div style={{ background: 'rgba(61,92,74,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center' }}>
+                              <div style={{ background: 'rgba(61,92,74,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', textAlign: isDrillBeats ? 'left' : 'center' }}>
                                 <p style={{ fontSize: '0.7rem', color: colors.faded, marginBottom: '0.25rem', textTransform: 'uppercase' }}>Correct answer</p>
-                                <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.3rem', color: colors.forest, fontWeight: 500, margin: 0 }}>
-                                  {chunk.back}
-                                </p>
+                                {isDrillBeats ? (
+                                  <div>
+                                    {work.chunks.slice(drillBeat.startChunk, drillBeat.endChunk + 1).map((c, i) => (
+                                      <p key={i} style={{ fontFamily: "'Cormorant', serif", fontSize: '1.05rem', color: colors.forest, lineHeight: 1.6, margin: '0.1rem 0' }}>
+                                        {c.front} {c.back}
+                                      </p>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.3rem', color: colors.forest, fontWeight: 500, margin: 0 }}>
+                                    {drillExpected}
+                                  </p>
+                                )}
                               </div>
 
                               <p style={{ color: colors.muted, fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.75rem' }}>Rate yourself:</p>
@@ -829,7 +1144,7 @@ export default function Practice() {
                                 <button
                                   onClick={() => {
                                     setDrillScore(s => ({ ...s, correct: s.correct + 1 }))
-                                    recordAttempt(chunkIdx, true, drillAnswer, chunk.back)
+                                    recordAttempt(itemIdx, true, drillAnswer, drillExpected)
                                     setDrillIndex(i => i + 1)
                                     setDrillRevealed(false)
                                     setDrillAnswer('')
@@ -841,7 +1156,7 @@ export default function Practice() {
                                 <button
                                   onClick={() => {
                                     setDrillScore(s => ({ ...s, struggled: s.struggled + 1 }))
-                                    recordAttempt(chunkIdx, likert >= 0.5, drillAnswer, chunk.back)
+                                    recordAttempt(itemIdx, likert >= 0.5, drillAnswer, drillExpected)
                                     setDrillIndex(i => i + 1)
                                     setDrillRevealed(false)
                                     setDrillAnswer('')
@@ -853,7 +1168,7 @@ export default function Practice() {
                                 <button
                                   onClick={() => {
                                     setDrillScore(s => ({ ...s, missed: s.missed + 1 }))
-                                    recordAttempt(chunkIdx, false, drillAnswer, chunk.back)
+                                    recordAttempt(itemIdx, false, drillAnswer, drillExpected)
                                     setDrillIndex(i => i + 1)
                                     setDrillRevealed(false)
                                     setDrillAnswer('')
@@ -987,14 +1302,18 @@ export default function Practice() {
           </>
         )}
 
-        <p style={{ color: colors.faded, marginTop: '1rem', fontSize: '0.9rem' }}>{currentIndex + 1} / {work.chunks.length}</p>
+        <p style={{ color: colors.faded, marginTop: '1rem', fontSize: '0.9rem' }}>{currentIndex + 1} / {totalItems}{inBeatsMode ? ' beats' : ''}</p>
       </div>
     )
   }
 
   // Test Mode
   if (mode === 'test') {
-    const chunk = work.chunks[testOrder[testIndex]]
+    const itemIdx = testOrder[testIndex]
+    const isTestBeats = practiceUnit === 'beats' && beats.length > 0
+    const testBeat = isTestBeats ? beats[itemIdx] : null
+    const chunk = isTestBeats ? null : work.chunks[itemIdx]
+    const testExpected = isTestBeats ? getBeatText(work.chunks, testBeat) : chunk.back
 
     return (
       <div style={baseStyle}>
@@ -1005,12 +1324,24 @@ export default function Practice() {
           {score.points} / {score.total}
         </div>
 
-        <h2 style={{ color: colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>"{work.title}" • Test</h2>
+        <h2 style={{ color: isTestBeats ? colors.blue : colors.crimson, fontFamily: "'Cormorant', serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>"{work.title}" • Test ({isTestBeats ? 'Beats' : 'Lines'})</h2>
 
         <div style={{ ...cardStyle }}>
-          <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Complete this line:</p>
-          <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '0.5rem', lineHeight: 1.4 }}>"{chunk.front}..."</h3>
-          <p style={{ color: colors.faded, fontSize: '0.8rem', textAlign: 'center', marginBottom: '1rem' }}>({wordCount(chunk.back)} words expected)</p>
+          {isTestBeats ? (
+            <>
+              <p style={{ color: colors.blue, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Recite this beat:</p>
+              <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '0.25rem', lineHeight: 1.4 }}>{testBeat.label}</h3>
+              <p style={{ color: colors.muted, fontSize: '0.85rem', textAlign: 'center', fontStyle: 'italic', marginBottom: '0.5rem' }}>{testBeat.intention}</p>
+              <p style={{ fontFamily: "'Cormorant', serif", color: colors.ink, fontSize: '1.05rem', textAlign: 'center', marginBottom: '0.5rem', opacity: 0.7 }}>"{getBeatCue(work.chunks, testBeat)}"</p>
+              <p style={{ color: colors.faded, fontSize: '0.8rem', textAlign: 'center', marginBottom: '1rem' }}>({wordCount(testExpected)} words)</p>
+            </>
+          ) : (
+            <>
+              <p style={{ color: colors.crimson, fontSize: '0.85rem', marginBottom: '0.5rem', textAlign: 'center' }}>Complete this line:</p>
+              <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, textAlign: 'center', marginBottom: '0.5rem', lineHeight: 1.4 }}>"{chunk.front}..."</h3>
+              <p style={{ color: colors.faded, fontSize: '0.8rem', textAlign: 'center', marginBottom: '1rem' }}>({wordCount(chunk.back)} words expected)</p>
+            </>
+          )}
 
           {!showResult ? (
             <>
@@ -1027,7 +1358,7 @@ export default function Practice() {
                     border: '1px solid rgba(0,0,0,0.1)',
                     borderRadius: '8px',
                     resize: 'none',
-                    height: '6rem',
+                    height: isTestBeats ? '10rem' : '6rem',
                     fontFamily: "'IBM Plex Sans', sans-serif",
                     fontSize: '0.95rem',
                     color: colors.ink,
@@ -1043,14 +1374,14 @@ export default function Practice() {
                     padding: '0.5rem',
                     borderRadius: '50%',
                     border: 'none',
-                    background: isListening ? '#d64545' : colors.crimson,
+                    background: isListening ? '#d64545' : (isTestBeats ? colors.blue : colors.crimson),
                     cursor: 'pointer'
                   }}
                 >
                   {isListening ? <MicOff size={18} style={{ color: 'white' }} /> : <Mic size={18} style={{ color: 'white' }} />}
                 </button>
               </div>
-              {isListening && <p style={{ color: colors.crimson, textAlign: 'center', marginTop: '0.5rem', fontSize: '0.9rem' }}>Listening...</p>}
+              {isListening && <p style={{ color: isTestBeats ? colors.blue : colors.crimson, textAlign: 'center', marginTop: '0.5rem', fontSize: '0.9rem' }}>Listening...</p>}
               {!SpeechRecognition && <p style={{ color: colors.gold, textAlign: 'center', marginTop: '0.5rem', fontSize: '0.85rem' }}>Voice input not available</p>}
               <button onClick={checkAnswer} disabled={!userAnswer.trim()} style={{ ...btnPrimary, width: '100%', justifyContent: 'center', marginTop: '1rem', opacity: !userAnswer.trim() ? 0.5 : 1 }}>
                 Check Answer
@@ -1066,7 +1397,18 @@ export default function Practice() {
                   <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 600, color: likertColor(lastLikert) }}>{lastLikert.toFixed(1)}</span>
                 </div>
                 <p style={{ color: colors.muted, fontSize: '0.9rem' }}>Your answer: "{userAnswer}"</p>
-                <p style={{ color: colors.ink, marginTop: '0.5rem', fontSize: '0.9rem' }}>Correct: <span style={{ color: colors.crimson, fontWeight: 500 }}>{chunk.back}</span></p>
+                {isTestBeats ? (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <p style={{ fontSize: '0.8rem', color: colors.faded, marginBottom: '0.25rem' }}>Correct:</p>
+                    {work.chunks.slice(testBeat.startChunk, testBeat.endChunk + 1).map((c, i) => (
+                      <p key={i} style={{ fontSize: '0.85rem', color: colors.ink, lineHeight: 1.5, margin: '0.1rem 0' }}>
+                        {c.front} <span style={{ color: colors.blue, fontWeight: 500 }}>{c.back}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: colors.ink, marginTop: '0.5rem', fontSize: '0.9rem' }}>Correct: <span style={{ color: colors.crimson, fontWeight: 500 }}>{testExpected}</span></p>
+                )}
               </div>
               <button onClick={nextTest} style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }}>
                 {testIndex < testOrder.length - 1 ? 'Next Question' : 'See Results'}

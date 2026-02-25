@@ -112,3 +112,42 @@ export const calculatePercentage = (correct, total) => {
   if (total === 0) return 0
   return Math.round((correct / total) * 100)
 }
+
+/**
+ * Concatenates all chunk text within a beat into a single string.
+ *
+ * @param {Array} chunks - The work's chunks array
+ * @param {object} beat - Beat object with startChunk and endChunk (inclusive)
+ * @returns {string} The full text of all lines in the beat
+ */
+export const getBeatText = (chunks, beat) => {
+  return chunks.slice(beat.startChunk, beat.endChunk + 1)
+    .map(c => `${c.front} ${c.back}`)
+    .join(' ')
+}
+
+/**
+ * Returns a display prompt for a beat.
+ *
+ * @param {object} beat - Beat object with label and intention
+ * @returns {string} Formatted prompt string
+ */
+export const getBeatPrompt = (beat) => {
+  return `${beat.label}: ${beat.intention}`
+}
+
+/**
+ * Returns the first few words of a beat's opening line as a text cue.
+ *
+ * @param {Array} chunks - The work's chunks array
+ * @param {object} beat - Beat object with startChunk
+ * @param {number} [wordLimit=5] - Max words to include
+ * @returns {string} Opening words followed by "..."
+ */
+export const getBeatCue = (chunks, beat, wordLimit = 5) => {
+  const firstChunk = chunks[beat.startChunk]
+  const fullLine = `${firstChunk.front} ${firstChunk.back}`
+  const words = fullLine.split(/\s+/)
+  if (words.length <= wordLimit) return fullLine
+  return words.slice(0, wordLimit).join(' ') + '...'
+}

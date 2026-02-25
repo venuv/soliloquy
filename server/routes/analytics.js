@@ -42,16 +42,17 @@ router.get('/progress', validateKey, async (req, res) => {
 // Record a practice session
 router.post('/session', validateKey, async (req, res) => {
   try {
-    const { authorId, workId, mode, duration, chunksReviewed, correct, total } = req.body;
-    
+    const { authorId, workId, mode, duration, chunksReviewed, correct, total, practiceUnit } = req.body;
+
     const content = await fs.readFile(req.analyticsPath, 'utf-8');
     const analytics = JSON.parse(content);
-    
+
     const session = {
       timestamp: new Date().toISOString(),
       authorId,
       workId,
       mode, // 'memorize' or 'test'
+      practiceUnit: practiceUnit || 'lines', // 'lines' or 'beats'
       duration, // seconds
       chunksReviewed,
       correct,
@@ -77,17 +78,22 @@ router.post('/session', validateKey, async (req, res) => {
 // Update mastered chunks for a work
 router.post('/mastered', validateKey, async (req, res) => {
   try {
-    const { authorId, workId, masteredChunks } = req.body;
+    const { authorId, workId, masteredChunks, masteredBeats } = req.body;
     const workKey = `${authorId}/${workId}`;
-    
+
     const content = await fs.readFile(req.analyticsPath, 'utf-8');
     const analytics = JSON.parse(content);
-    
+
     if (!analytics.progress[workKey]) {
       analytics.progress[workKey] = { mastered: [], attempts: [] };
     }
-    
-    analytics.progress[workKey].mastered = masteredChunks;
+
+    if (masteredChunks !== undefined) {
+      analytics.progress[workKey].mastered = masteredChunks;
+    }
+    if (masteredBeats !== undefined) {
+      analytics.progress[workKey].masteredBeats = masteredBeats;
+    }
     analytics.progress[workKey].lastUpdated = new Date().toISOString();
     
     await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
@@ -101,23 +107,26 @@ router.post('/mastered', validateKey, async (req, res) => {
 // Record individual attempt (for detailed analytics)
 router.post('/attempt', validateKey, async (req, res) => {
   try {
-    const { authorId, workId, chunkIndex, correct, userAnswer, expectedAnswer } = req.body;
+    const { authorId, workId, chunkIndex, beatIndex, correct, userAnswer, expectedAnswer } = req.body;
     const workKey = `${authorId}/${workId}`;
-    
+
     const content = await fs.readFile(req.analyticsPath, 'utf-8');
     const analytics = JSON.parse(content);
-    
+
     if (!analytics.progress[workKey]) {
       analytics.progress[workKey] = { mastered: [], attempts: [] };
     }
-    
-    analytics.progress[workKey].attempts.push({
+
+    const attempt = {
       timestamp: new Date().toISOString(),
-      chunkIndex,
       correct,
-      userAnswer: userAnswer?.substring(0, 200), // Truncate for storage
-      expectedAnswer: expectedAnswer?.substring(0, 200)
-    });
+      userAnswer: userAnswer?.substring(0, 500), // Beats need more space
+      expectedAnswer: expectedAnswer?.substring(0, 500)
+    };
+    if (chunkIndex != null) attempt.chunkIndex = chunkIndex;
+    if (beatIndex != null) attempt.beatIndex = beatIndex;
+
+    analytics.progress[workKey].attempts.push(attempt);
     
     // Keep only last 100 attempts per work
     if (analytics.progress[workKey].attempts.length > 100) {
@@ -129,6 +138,71 @@ router.post('/attempt', validateKey, async (req, res) => {
   } catch (err) {
     console.error('Error recording attempt:', err);
     res.status(500).json({ error: 'Failed to record attempt' });
+  }
+});
+
+// Save user's custom beat boundaries
+router.post('/beat-overrides', validateKey, async (req, res) => {
+  try {
+    const { authorId, workId, beats } = req.body;
+    const workKey = `${authorId}/${workId}`;
+
+    const content = await fs.readFile(req.analyticsPath, 'utf-8');
+    const analytics = JSON.parse(content);
+
+    if (!analytics.progress[workKey]) {
+      analytics.progress[workKey] = { mastered: [], attempts: [] };
+    }
+
+    analytics.progress[workKey].beatOverrides = beats;
+    analytics.progress[workKey].lastUpdated = new Date().toISOString();
+
+    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving beat overrides:', err);
+    res.status(500).json({ error: 'Failed to save beat overrides' });
+  }
+});
+
+// Get user preferences
+router.get('/preferences', validateKey, async (req, res) => {
+  try {
+    const content = await fs.readFile(req.analyticsPath, 'utf-8');
+    const analytics = JSON.parse(content);
+    res.json(analytics.preferences || {});
+  } catch (err) {
+    console.error('Error fetching preferences:', err);
+    res.status(500).json({ error: 'Failed to fetch preferences' });
+  }
+});
+
+// Update user preferences
+router.post('/preferences', validateKey, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+
+    const content = await fs.readFile(req.analyticsPath, 'utf-8');
+    const analytics = JSON.parse(content);
+
+    if (!analytics.preferences) {
+      analytics.preferences = {};
+    }
+
+    // Support nested keys like "practiceUnit.shakespeare/to-be-or-not-to-be"
+    const parts = key.split('.');
+    let obj = analytics.preferences;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!obj[parts[i]]) obj[parts[i]] = {};
+      obj = obj[parts[i]];
+    }
+    obj[parts[parts.length - 1]] = value;
+
+    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error updating preferences:', err);
+    res.status(500).json({ error: 'Failed to update preferences' });
   }
 });
 

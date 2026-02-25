@@ -15,6 +15,7 @@ import museRoutes from './routes/muse.js';
 import newsRoutes from './routes/news.js';
 import videosRoutes from './routes/videos.js';
 import reciteRoutes from './routes/recite.js';
+import beatsRoutes from './routes/beats.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +43,7 @@ app.use('/api/muse', museRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/videos', videosRoutes);
 app.use('/api/recite', reciteRoutes);
+app.use('/api/beats', beatsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

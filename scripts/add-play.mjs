@@ -54,6 +54,35 @@ async function loadPlayData(playName) {
   }
 }
 
+function validateBeats(beats, chunkCount, solId) {
+  if (!Array.isArray(beats) || beats.length === 0) {
+    throw new Error(`Soliloquy '${solId}' beats array is empty`);
+  }
+
+  const sorted = [...beats].sort((a, b) => a.startChunk - b.startChunk);
+
+  if (sorted[0].startChunk !== 0) {
+    throw new Error(`Soliloquy '${solId}' first beat must start at chunk 0`);
+  }
+  if (sorted[sorted.length - 1].endChunk !== chunkCount - 1) {
+    throw new Error(`Soliloquy '${solId}' last beat must end at chunk ${chunkCount - 1}`);
+  }
+
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i].startChunk !== sorted[i - 1].endChunk + 1) {
+      throw new Error(`Soliloquy '${solId}' beats have gap/overlap between beat ${i - 1} and ${i}`);
+    }
+  }
+
+  for (const b of sorted) {
+    if (!b.label || !b.intention) {
+      throw new Error(`Soliloquy '${solId}' beat missing label or intention`);
+    }
+  }
+
+  return sorted.map((b, i) => ({ id: i, label: b.label, intention: b.intention, startChunk: b.startChunk, endChunk: b.endChunk }));
+}
+
 function validateSoliloquy(sol, playName) {
   const required = ['id', 'title', 'character', 'act', 'chunks'];
   for (const field of required) {
@@ -72,7 +101,7 @@ function validateSoliloquy(sol, playName) {
     }
   }
 
-  return {
+  const result = {
     id: sol.id,
     title: sol.title,
     source: playName,
@@ -80,6 +109,14 @@ function validateSoliloquy(sol, playName) {
     act: sol.act,
     chunks: sol.chunks
   };
+
+  // Validate and include beats if provided
+  if (sol.beats) {
+    result.beats = validateBeats(sol.beats, sol.chunks.length, sol.id);
+    console.log(`    Beats: ${result.beats.length} (validated)`);
+  }
+
+  return result;
 }
 
 async function addPlay(playName) {

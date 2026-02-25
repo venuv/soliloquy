@@ -4,9 +4,14 @@ Memorize Shakespeare's soliloquies through flashcard practice and voice-enabled 
 
 ## Features
 
-- **25 Shakespeare Soliloquies** with logical chunk breakdowns
-- **Memorize Mode** - Walk through chunks sequentially, mark as mastered
+- **34 Shakespeare Soliloquies** with logical chunk breakdowns
+- **Lines or Beats** - Practice by half-line chunks or dramatic beats (actor's units of intention)
+- **Memorize Mode** - Walk through chunks/beats sequentially, mark as mastered
+- **Drill Mode** - Adaptive spaced repetition targeting weak spots
 - **Test Mode** - Random prompts with voice input (Web Speech API) or typing
+- **Recite Mode** - Full soliloquy recording with AI analysis (accuracy, fluency, dramatic coaching)
+- **Beat Editor** - Adjust beat boundaries per-user; shared defaults generated via LLM
+- **Word Pictures** - AI-generated phonetic mnemonics with memory palace rooms
 - **Progress Tracking** - Per-user analytics stored in JSON files
 - **Simple Auth** - Numeric token (no passwords), cookie fingerprinting for abuse detection
 
@@ -111,6 +116,23 @@ node scripts/add-video.mjs
 
 See [scripts/README.md](scripts/README.md) for all utility scripts.
 
+## Generating Beats
+
+Beats are dramatic units that group lines by the character's active intention (Stanislavski method). They're generated via a two-pass LLM pipeline: a generator segments the soliloquy, then a Stanislavski-trained critic verifies actioning, boundaries, and proportions.
+
+```bash
+# Generate beats for a single soliloquy
+GROQ_API_KEY=your-key node scripts/generate-beats.mjs to-be-or-not-to-be
+
+# Generate for all soliloquies that don't have beats yet
+GROQ_API_KEY=your-key node scripts/generate-beats.mjs --all
+
+# Preview without saving
+GROQ_API_KEY=your-key node scripts/generate-beats.mjs --all --dry-run
+```
+
+Beats are saved as shared defaults in `shakespeare.json`. Individual users can customize beat boundaries via the Beat Editor in the UI — their overrides are stored in their own analytics file and don't affect other users.
+
 ## Adding Authors/Works
 
 Create a new JSON file in `server/data/authors/`:
@@ -131,11 +153,26 @@ Create a new JSON file in `server/data/authors/`:
       "chunks": [
         { "front": "We cannot know his legendary head", "back": "with eyes like ripening fruit." },
         ...
+      ],
+      "beats": [
+        { "id": 0, "label": "Encounter", "intention": "To confront the sculpture's power", "startChunk": 0, "endChunk": 3 },
+        ...
       ]
     }
   ]
 }
 ```
+
+Beats are optional in the data file — if omitted, they can be generated later via the CLI or the "Generate Beats" button in the UI (requires `GROQ_API_KEY`).
+
+## Adding Plays (Batch)
+
+```bash
+# Add all soliloquies from a play file (with optional beats)
+node scripts/add-play.mjs hamlet
+```
+
+Play files live in `scripts/plays/{name}.json`. Beats in play files are validated for contiguity and full chunk coverage.
 
 ## Tech Stack
 

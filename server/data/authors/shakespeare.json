@@ -144,6 +144,64 @@
           "front": "And lose the",
           "back": "name of action."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Question Existence",
+          "intention": "To ponder the value of life",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Consider Alternative",
+          "intention": "To consider the alternative to life",
+          "startChunk": 1,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Weigh Death",
+          "intention": "To weigh the pros of dying",
+          "startChunk": 5,
+          "endChunk": 12
+        },
+        {
+          "id": 3,
+          "label": "List Life's Troubles",
+          "intention": "To catalogue life's injustices",
+          "startChunk": 13,
+          "endChunk": 18
+        },
+        {
+          "id": 4,
+          "label": "Realize Impact",
+          "intention": "To realize the impact of life's troubles",
+          "startChunk": 19,
+          "endChunk": 20
+        },
+        {
+          "id": 5,
+          "label": "Weigh Options",
+          "intention": "To compare the pain of life with the fear of death",
+          "startChunk": 21,
+          "endChunk": 24
+        },
+        {
+          "id": 6,
+          "label": "Conclude Comparison",
+          "intention": "To conclude the comparison between life and death",
+          "startChunk": 25,
+          "endChunk": 26
+        },
+        {
+          "id": 7,
+          "label": "Realize Cowardice",
+          "intention": "To acknowledge the paralyzing effect of fear",
+          "startChunk": 27,
+          "endChunk": 32
+        }
       ]
     },
     {
@@ -192,6 +250,29 @@
         {
           "front": "Signifying",
           "back": "nothing."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Condemn Fate",
+          "intention": "To condemn the passage of time",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Scorn Mortality and Human Existence",
+          "intention": "To scorn and demean the inevitability of death and human existence",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Declare Life's Futility",
+          "intention": "To declare life's narrative as empty and futile",
+          "startChunk": 7,
+          "endChunk": 9
         }
       ]
     },
@@ -330,6 +411,43 @@
           "front": "That summons thee to heaven",
           "back": "or to hell."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Questioning Reality and Confronting Illusion",
+          "intention": "To understand the nature of the vision",
+          "startChunk": 0,
+          "endChunk": 12
+        },
+        {
+          "id": 1,
+          "label": "Grasping the Truth",
+          "intention": "To accept the reality of the task",
+          "startChunk": 13,
+          "endChunk": 14
+        },
+        {
+          "id": 2,
+          "label": "Rationalizing the Vision",
+          "intention": "To explain the source of the vision",
+          "startChunk": 15,
+          "endChunk": 16
+        },
+        {
+          "id": 3,
+          "label": "Imagining the Consequences and Seeking Stealth",
+          "intention": "To envision and prepare for the darkness of the deed",
+          "startChunk": 17,
+          "endChunk": 26
+        },
+        {
+          "id": 4,
+          "label": "Steeling for Action",
+          "intention": "To overcome fear and take action",
+          "startChunk": 27,
+          "endChunk": 31
+        }
       ]
     },
     {
@@ -450,6 +568,57 @@
         {
           "front": "Sans teeth, sans eyes,",
           "back": "sans taste, sans everything."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Introduce Metaphor",
+          "intention": "To frame life as a stage",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "id": 1,
+          "label": "Describe Infancy and Childhood",
+          "intention": "To illustrate the early stages of human development",
+          "startChunk": 5,
+          "endChunk": 8
+        },
+        {
+          "id": 2,
+          "label": "Describe Adolescence",
+          "intention": "To portray the challenges of growing up",
+          "startChunk": 9,
+          "endChunk": 10
+        },
+        {
+          "id": 3,
+          "label": "Explore Adulthood",
+          "intention": "To portray the various roles of adulthood",
+          "startChunk": 11,
+          "endChunk": 14
+        },
+        {
+          "id": 4,
+          "label": "Describe Middle Age",
+          "intention": "To satirize the pretensions of middle age",
+          "startChunk": 15,
+          "endChunk": 18
+        },
+        {
+          "id": 5,
+          "label": "Depict Old Age",
+          "intention": "To show the decline of human vitality",
+          "startChunk": 19,
+          "endChunk": 24
+        },
+        {
+          "id": 6,
+          "label": "Conclude Mortality",
+          "intention": "To lament the loss of all human faculties",
+          "startChunk": 25,
+          "endChunk": 27
         }
       ]
     },
@@ -584,6 +753,43 @@
           "front": "And hate the idle pleasures",
           "back": "of these days."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Describe Current State",
+          "intention": "To observe the current state of affairs",
+          "startChunk": 0,
+          "endChunk": 7
+        },
+        {
+          "id": 1,
+          "label": "Contrast with Past",
+          "intention": "To contrast the present with the glorious past",
+          "startChunk": 8,
+          "endChunk": 12
+        },
+        {
+          "id": 2,
+          "label": "Bemoan Personal Inadequacies",
+          "intention": "To lament his own physical and social inadequacies",
+          "startChunk": 13,
+          "endChunk": 20
+        },
+        {
+          "id": 3,
+          "label": "Mock His Own Appearance",
+          "intention": "To mock his own deformity",
+          "startChunk": 21,
+          "endChunk": 22
+        },
+        {
+          "id": 4,
+          "label": "Decry the Times and Choose Villainy",
+          "intention": "To reject the current times and decide to prove himself a villain",
+          "startChunk": 23,
+          "endChunk": 30
+        }
       ]
     },
     {
@@ -717,6 +923,57 @@
           "front": "Follow your spirit, and upon this charge",
           "back": "Cry 'God for Harry, England, and Saint George!'"
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Rally the troops",
+          "intention": "To inspire his men to action",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "id": 1,
+          "label": "Contrast war and peace",
+          "intention": "To juxtapose the nature of war and peace",
+          "startChunk": 5,
+          "endChunk": 9
+        },
+        {
+          "id": 2,
+          "label": "Prepare for battle",
+          "intention": "To ready himself and his men for combat",
+          "startChunk": 10,
+          "endChunk": 14
+        },
+        {
+          "id": 3,
+          "label": "Invoke heritage",
+          "intention": "To remind his men of their noble lineage",
+          "startChunk": 15,
+          "endChunk": 20
+        },
+        {
+          "id": 4,
+          "label": "Shame and motivate",
+          "intention": "To motivate his men through pride and shame",
+          "startChunk": 21,
+          "endChunk": 26
+        },
+        {
+          "id": 5,
+          "label": "Boost morale",
+          "intention": "To boost his men's confidence and pride",
+          "startChunk": 27,
+          "endChunk": 28
+        },
+        {
+          "id": 6,
+          "label": "Final exhortation",
+          "intention": "To unleash his men into battle with fervor",
+          "startChunk": 29,
+          "endChunk": 30
+        }
       ]
     },
     {
@@ -770,6 +1027,29 @@
           "front": "This blessed plot, this earth,",
           "back": "this realm, this England."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Introduce England",
+          "intention": "To introduce England's virtues",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Describe England's defenses",
+          "intention": "To describe England's natural defenses",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Protect England",
+          "intention": "To safeguard England from threats",
+          "startChunk": 7,
+          "endChunk": 10
+        }
       ]
     },
     {
@@ -819,6 +1099,36 @@
           "front": "That he should weep",
           "back": "for her?"
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Self Lament",
+          "intention": "To berate himself for inaction",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Observing Actor",
+          "intention": "To marvel at the actor's emotional depth",
+          "startChunk": 1,
+          "endChunk": 5
+        },
+        {
+          "id": 2,
+          "label": "Comparing Emotion",
+          "intention": "To compare his own emotional response to the actor's",
+          "startChunk": 6,
+          "endChunk": 6
+        },
+        {
+          "id": 3,
+          "label": "Questioning Motive",
+          "intention": "To question the actor's emotional investment",
+          "startChunk": 7,
+          "endChunk": 9
+        }
       ]
     },
     {
@@ -867,6 +1177,43 @@
         {
           "front": "O, that she knew",
           "back": "she were!"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Notice and Marvel at the Light",
+          "intention": "To behold the source of light in wonder",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Idolize Juliet",
+          "intention": "To elevate Juliet to a divine status",
+          "startChunk": 2,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Dismiss the Moon",
+          "intention": "To reject the moon as a rival to Juliet's beauty",
+          "startChunk": 5,
+          "endChunk": 6
+        },
+        {
+          "id": 3,
+          "label": "Free from Rivalry",
+          "intention": "To liberate Juliet from the moon's envy",
+          "startChunk": 7,
+          "endChunk": 7
+        },
+        {
+          "id": 4,
+          "label": "Claim the Beloved",
+          "intention": "To claim Juliet as his own love and express longing",
+          "startChunk": 8,
+          "endChunk": 9
         }
       ]
     },
@@ -920,6 +1267,57 @@
         {
           "front": "By any other name would",
           "back": "smell as sweet."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Invoke and Lament",
+          "intention": "To summon and lament Romeo's absence",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Disavow Family Ties",
+          "intention": "To persuade Romeo to abandon his family name",
+          "startChunk": 1,
+          "endChunk": 2
+        },
+        {
+          "id": 2,
+          "label": "Offer Alternative",
+          "intention": "To offer an alternative to abandoning his name",
+          "startChunk": 3,
+          "endChunk": 3
+        },
+        {
+          "id": 3,
+          "label": "Clarify the Enemy",
+          "intention": "To clarify that the name is the enemy, not Romeo",
+          "startChunk": 4,
+          "endChunk": 4
+        },
+        {
+          "id": 4,
+          "label": "Separate Name from Identity",
+          "intention": "To distinguish Romeo's name from his true self",
+          "startChunk": 5,
+          "endChunk": 7
+        },
+        {
+          "id": 5,
+          "label": "Reject the Name",
+          "intention": "To discard the hated family name",
+          "startChunk": 8,
+          "endChunk": 8
+        },
+        {
+          "id": 6,
+          "label": "Redefine Meaning",
+          "intention": "To illustrate that a name does not define the thing itself",
+          "startChunk": 9,
+          "endChunk": 10
         }
       ]
     },
@@ -1006,6 +1404,43 @@
           "front": "to render the deeds",
           "back": "of mercy."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Define Mercy",
+          "intention": "To illustrate",
+          "startChunk": 0,
+          "endChunk": 3
+        },
+        {
+          "id": 1,
+          "label": "Emphasize Mercy",
+          "intention": "To emphasize",
+          "startChunk": 4,
+          "endChunk": 8
+        },
+        {
+          "id": 2,
+          "label": "Exalt Mercy",
+          "intention": "To elevate",
+          "startChunk": 9,
+          "endChunk": 11
+        },
+        {
+          "id": 3,
+          "label": "Relate Mercy to God",
+          "intention": "To show",
+          "startChunk": 12,
+          "endChunk": 12
+        },
+        {
+          "id": 4,
+          "label": "Apply and Plead for Mercy",
+          "intention": "To persuade",
+          "startChunk": 13,
+          "endChunk": 18
+        }
       ]
     },
     {
@@ -1046,6 +1481,36 @@
         {
           "front": "Enough; no more:",
           "back": "'Tis not so sweet now as it was before."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Indulge in love",
+          "intention": "To satiate himself with music",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Request the melody",
+          "intention": "To request the strain again",
+          "startChunk": 3,
+          "endChunk": 3
+        },
+        {
+          "id": 2,
+          "label": "Savor the sound",
+          "intention": "To describe the captivating melody",
+          "startChunk": 4,
+          "endChunk": 5
+        },
+        {
+          "id": 3,
+          "label": "Disillusioned",
+          "intention": "To reject the music",
+          "startChunk": 6,
+          "endChunk": 7
         }
       ]
     },
@@ -1180,6 +1645,57 @@
           "front": "And I must pause till it",
           "back": "come back to me."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Seeking Attention",
+          "intention": "To engage the crowd's attention",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Preparing the Crowd",
+          "intention": "To prepare the crowd for the eulogy",
+          "startChunk": 1,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Questioning Ambition",
+          "intention": "To challenge the notion of Caesar's ambition",
+          "startChunk": 5,
+          "endChunk": 10
+        },
+        {
+          "id": 3,
+          "label": "Providing Counter-Examples",
+          "intention": "To provide counter-examples to Brutus' claims",
+          "startChunk": 11,
+          "endChunk": 19
+        },
+        {
+          "id": 4,
+          "label": "Presenting Evidence",
+          "intention": "To provide evidence of Caesar's humility",
+          "startChunk": 20,
+          "endChunk": 22
+        },
+        {
+          "id": 5,
+          "label": "Speaking from the Heart",
+          "intention": "To express genuine emotions and thoughts",
+          "startChunk": 23,
+          "endChunk": 26
+        },
+        {
+          "id": 6,
+          "label": "Lamenting Reason's Loss",
+          "intention": "To mourn the loss of reason and Caesar's death",
+          "startChunk": 27,
+          "endChunk": 30
+        }
       ]
     },
     {
@@ -1220,6 +1736,36 @@
         {
           "front": "That make",
           "back": "ingrateful man!"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Summon Storm",
+          "intention": "To unleash fury",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Drown the World",
+          "intention": "To drown",
+          "startChunk": 1,
+          "endChunk": 2
+        },
+        {
+          "id": 2,
+          "label": "Invoke Destruction",
+          "intention": "To conjure",
+          "startChunk": 3,
+          "endChunk": 4
+        },
+        {
+          "id": 3,
+          "label": "Demand Annihilation and Curse Humanity",
+          "intention": "To command destruction and condemn",
+          "startChunk": 5,
+          "endChunk": 7
         }
       ]
     },
@@ -1270,6 +1816,36 @@
           "front": "And our little life is",
           "back": "rounded with a sleep."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Reveal the Truth",
+          "intention": "To expose",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Compare to Reality",
+          "intention": "To contrast",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Reflect on Human Nature",
+          "intention": "To ponder",
+          "startChunk": 7,
+          "endChunk": 7
+        },
+        {
+          "id": 3,
+          "label": "Accept Mortality",
+          "intention": "To acknowledge",
+          "startChunk": 8,
+          "endChunk": 9
+        }
       ]
     },
     {
@@ -1311,6 +1887,29 @@
           "front": "Possess it merely.",
           "back": "That it should come to this!"
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Escape Mortal Coil",
+          "intention": "To wish for escape from his body",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Bemoan Life's Futility",
+          "intention": "To express disillusionment with the world",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Denounce World's Decay and Resign to Despair",
+          "intention": "To condemn the world's corruption and surrender to despair",
+          "startChunk": 7,
+          "endChunk": 7
+        }
       ]
     },
     {
@@ -1351,6 +1950,29 @@
         {
           "front": "Man delights not me:",
           "back": "no, nor woman neither."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Marvel at Human Reason and Faculty",
+          "intention": "To extol",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Admire Human Form and Action",
+          "intention": "To admire",
+          "startChunk": 2,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Express Disillusionment with Human Nature",
+          "intention": "To lament",
+          "startChunk": 5,
+          "endChunk": 7
         }
       ]
     },
@@ -1397,6 +2019,50 @@
           "front": "Oh, oh, oh!",
           "back": "What's done cannot be undone."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Confronting Guilt",
+          "intention": "To expel her guilt",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Condemning Her Lord",
+          "intention": "To condemn her lord",
+          "startChunk": 1,
+          "endChunk": 2
+        },
+        {
+          "id": 2,
+          "label": "Rationalizing Fear",
+          "intention": "To convince herself of her courage",
+          "startChunk": 3,
+          "endChunk": 4
+        },
+        {
+          "id": 3,
+          "label": "Recalling The Crime",
+          "intention": "To recall the crime",
+          "startChunk": 5,
+          "endChunk": 5
+        },
+        {
+          "id": 4,
+          "label": "Lamenting The Consequences",
+          "intention": "To lament the consequences",
+          "startChunk": 6,
+          "endChunk": 6
+        },
+        {
+          "id": 5,
+          "label": "Despairing Of Redemption",
+          "intention": "To acknowledge her irredeemable state",
+          "startChunk": 7,
+          "endChunk": 8
+        }
       ]
     },
     {
@@ -1437,6 +2103,22 @@
         {
           "front": "That fought with us upon",
           "back": "Saint Crispin's day."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Establish Brotherhood",
+          "intention": "To unite",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Contrast with Cowards",
+          "intention": "To shame",
+          "startChunk": 3,
+          "endChunk": 7
         }
       ]
     },
@@ -1487,6 +2169,43 @@
           "front": "And it must follow, as the night the day,",
           "back": "Thou canst not then be false to any man."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Offer Wisdom on Interactions",
+          "intention": "To advise on social interactions",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Advise on Appearance",
+          "intention": "To counsel on modesty in dress",
+          "startChunk": 2,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Warn of Finances",
+          "intention": "To caution against financial recklessness",
+          "startChunk": 5,
+          "endChunk": 7
+        },
+        {
+          "id": 3,
+          "label": "Impart Core Principle",
+          "intention": "To emphasize the importance of self-honesty",
+          "startChunk": 8,
+          "endChunk": 8
+        },
+        {
+          "id": 4,
+          "label": "Explain the Consequence",
+          "intention": "To explain the outcome of being true to oneself",
+          "startChunk": 9,
+          "endChunk": 9
+        }
       ]
     },
     {
@@ -1531,6 +2250,29 @@
         {
           "front": "Ding-dong,",
           "back": "bell."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Describe Father's Physical State",
+          "intention": "To inform Prospero of his father's physical transformation",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Reveal Transformation",
+          "intention": "To convey the magical change his father underwent",
+          "startChunk": 3,
+          "endChunk": 5
+        },
+        {
+          "id": 2,
+          "label": "Mournful Serenade",
+          "intention": "To evoke the haunting sound of the sea-nymphs' lament",
+          "startChunk": 6,
+          "endChunk": 8
         }
       ]
     },
@@ -1577,6 +2319,29 @@
           "front": "I cried to dream",
           "back": "again."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Describe the Isle's Noises",
+          "intention": "To reassure himself by describing the isle's noises",
+          "startChunk": 0,
+          "endChunk": 3
+        },
+        {
+          "id": 1,
+          "label": "Envision Heavenly Voices and Dream Riches",
+          "intention": "To imagine the voices and riches that bring him delight",
+          "startChunk": 4,
+          "endChunk": 7
+        },
+        {
+          "id": 2,
+          "label": "Yearn for Dream Return",
+          "intention": "To long to return to his dream state",
+          "startChunk": 8,
+          "endChunk": 8
+        }
       ]
     },
     {
@@ -1618,6 +2383,36 @@
           "front": "To fust in us",
           "back": "unused."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Lamenting Fate",
+          "intention": "To accuse fate",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Questioning Humanity",
+          "intention": "To define the purpose of human existence",
+          "startChunk": 2,
+          "endChunk": 3
+        },
+        {
+          "id": 2,
+          "label": "Asserting Divine Intent",
+          "intention": "To claim a higher purpose for mankind",
+          "startChunk": 4,
+          "endChunk": 5
+        },
+        {
+          "id": 3,
+          "label": "Decrying Wasted Potential",
+          "intention": "To condemn the waste of human capability",
+          "startChunk": 6,
+          "endChunk": 7
+        }
       ]
     },
     {
@@ -1658,6 +2453,29 @@
         {
           "front": "Untalked of",
           "back": "and unseen."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Summon Night",
+          "intention": "To hasten the arrival of night",
+          "startChunk": 0,
+          "endChunk": 3
+        },
+        {
+          "id": 1,
+          "label": "Invoke Privacy",
+          "intention": "To envelop herself in secrecy",
+          "startChunk": 4,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Imagine Romeo's Arrival",
+          "intention": "To envision Romeo leaping into her arms",
+          "startChunk": 5,
+          "endChunk": 7
         }
       ]
     },
@@ -1707,6 +2525,36 @@
         {
           "front": "Fire burn,",
           "back": "and cauldron bubble."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Incanting Chaos",
+          "intention": "To conjure dark magic",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Gathering Ingredients",
+          "intention": "To collect poisonous elements",
+          "startChunk": 2,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Brewing Hell-Broth",
+          "intention": "To mix a potent spell",
+          "startChunk": 7,
+          "endChunk": 7
+        },
+        {
+          "id": 3,
+          "label": "Repeating Incantation",
+          "intention": "To reinforce the dark spell",
+          "startChunk": 8,
+          "endChunk": 9
         }
       ]
     },
@@ -1769,6 +2617,43 @@
           "front": "Waste it for you",
           "back": "like taper-light."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Invoke Tradition",
+          "intention": "To establish a historical context",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Share History",
+          "intention": "To inform the audience of past performances",
+          "startChunk": 3,
+          "endChunk": 5
+        },
+        {
+          "id": 2,
+          "label": "Justify Purpose",
+          "intention": "To explain the benefits of the story",
+          "startChunk": 6,
+          "endChunk": 7
+        },
+        {
+          "id": 3,
+          "label": "Address Audience",
+          "intention": "To persuade the audience to listen",
+          "startChunk": 8,
+          "endChunk": 10
+        },
+        {
+          "id": 4,
+          "label": "Offer Devotion",
+          "intention": "To dedicate his performance to the audience's pleasure",
+          "startChunk": 11,
+          "endChunk": 12
+        }
       ]
     },
     {
@@ -1809,6 +2694,29 @@
         {
           "front": "My riches to the earth",
           "back": "from whence they came;"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Confront Mortality",
+          "intention": "To warn himself of death's reality",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Prepare for Death",
+          "intention": "To prepare himself for the inevitability of death",
+          "startChunk": 2,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Bequeath Legacy",
+          "intention": "To bequeath a sense of peace and wealth to others",
+          "startChunk": 5,
+          "endChunk": 7
         }
       ]
     },
@@ -1862,6 +2770,29 @@
         {
           "front": "Yet kept my virtue",
           "back": "pure and clean."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Introduce Self",
+          "intention": "To inform",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "id": 1,
+          "label": "Recount Life Events",
+          "intention": "To recount",
+          "startChunk": 5,
+          "endChunk": 9
+        },
+        {
+          "id": 2,
+          "label": "Affirm Virtue",
+          "intention": "To affirm",
+          "startChunk": 10,
+          "endChunk": 10
         }
       ]
     },
@@ -1924,6 +2855,50 @@
           "front": "As thunder threatens us:",
           "back": "this is Marina."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Question Reality",
+          "intention": "To question the source of the music",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Confirm Identity",
+          "intention": "To confirm Marina's identity to others",
+          "startChunk": 1,
+          "endChunk": 2
+        },
+        {
+          "id": 2,
+          "label": "Express Amazement",
+          "intention": "To express amazement at the situation",
+          "startChunk": 3,
+          "endChunk": 4
+        },
+        {
+          "id": 3,
+          "label": "Investigate the Music",
+          "intention": "To investigate the source of the music",
+          "startChunk": 5,
+          "endChunk": 6
+        },
+        {
+          "id": 4,
+          "label": "Address Marina's Origins",
+          "intention": "To address Marina's miraculous origins",
+          "startChunk": 7,
+          "endChunk": 9
+        },
+        {
+          "id": 5,
+          "label": "Express Gratitude",
+          "intention": "To thank the gods for Marina's return",
+          "startChunk": 10,
+          "endChunk": 12
+        }
       ]
     },
     {
@@ -1980,6 +2955,43 @@
         {
           "front": "My riches to the earth",
           "back": "from whence they came."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Acknowledge Teacher",
+          "intention": "To thank",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Confront Mortality",
+          "intention": "To confront",
+          "startChunk": 2,
+          "endChunk": 3
+        },
+        {
+          "id": 2,
+          "label": "Prepare for Death",
+          "intention": "To warn himself",
+          "startChunk": 4,
+          "endChunk": 5
+        },
+        {
+          "id": 3,
+          "label": "Reevaluate Life",
+          "intention": "To reassess",
+          "startChunk": 6,
+          "endChunk": 8
+        },
+        {
+          "id": 4,
+          "label": "Let Go",
+          "intention": "To release",
+          "startChunk": 9,
+          "endChunk": 11
         }
       ]
     },
@@ -2054,6 +3066,43 @@
           "front": "There is a",
           "back": "world elsewhere."
         }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Scorn the People",
+          "intention": "To condemn the people's influence",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "id": 1,
+          "label": "Wish Them Fear",
+          "intention": "To wish fear upon the people",
+          "startChunk": 5,
+          "endChunk": 7
+        },
+        {
+          "id": 2,
+          "label": "Expose Their Vulnerability",
+          "intention": "To expose the people's vulnerability to their enemies",
+          "startChunk": 8,
+          "endChunk": 9
+        },
+        {
+          "id": 3,
+          "label": "Predict Their Downfall",
+          "intention": "To predict the people's downfall due to their ignorance",
+          "startChunk": 10,
+          "endChunk": 12
+        },
+        {
+          "id": 4,
+          "label": "Disdain and Depart",
+          "intention": "To reject the city and turn away in disgust",
+          "startChunk": 13,
+          "endChunk": 15
+        }
       ]
     },
     {
@@ -2106,6 +3155,29 @@
         {
           "front": "that his fen Makes fear'd",
           "back": "and talk'd of more than seen."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Dismiss and Confront Maternal Weakness",
+          "intention": "To challenge his mother's lack of courage",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "id": 1,
+          "label": "Recall Past Virtues and Contrast Fortunes",
+          "intention": "To remind his mother of her past strength and the impact of fortune",
+          "startChunk": 5,
+          "endChunk": 8
+        },
+        {
+          "id": 2,
+          "label": "Embrace Solitary Fate",
+          "intention": "To steel himself for a solitary, feared existence",
+          "startChunk": 9,
+          "endChunk": 10
         }
       ]
     },
@@ -2167,6 +3239,43 @@
         {
           "front": "to be Whoop'd out",
           "back": "of Rome."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Introduce Himself",
+          "intention": "To assert his identity",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Establish Reputation",
+          "intention": "To claim his surname as witness",
+          "startChunk": 1,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Recall Service",
+          "intention": "To remind of his sacrifices",
+          "startChunk": 5,
+          "endChunk": 6
+        },
+        {
+          "id": 3,
+          "label": "Lament Ingratitude",
+          "intention": "To lament the lack of gratitude",
+          "startChunk": 7,
+          "endChunk": 8
+        },
+        {
+          "id": 4,
+          "label": "Condemn Betrayal",
+          "intention": "To denounce the cruelty of the people and nobles",
+          "startChunk": 9,
+          "endChunk": 12
         }
       ]
     },
@@ -2232,6 +3341,36 @@
         {
           "front": "with Your colder reasons.",
           "back": "O no more, no more!"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Expressing Incredulity",
+          "intention": "To express shock",
+          "startChunk": 0,
+          "endChunk": 0
+        },
+        {
+          "id": 1,
+          "label": "Rejecting Supplication",
+          "intention": "To reject their submission",
+          "startChunk": 1,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Warning Against Refusal",
+          "intention": "To warn them against refusing his terms",
+          "startChunk": 5,
+          "endChunk": 11
+        },
+        {
+          "id": 3,
+          "label": "Refusing Pacification",
+          "intention": "To resist their attempts to calm him",
+          "startChunk": 12,
+          "endChunk": 13
         }
       ]
     }
