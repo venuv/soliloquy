@@ -127,17 +127,20 @@ export default function AuthorWorks() {
   const { authorId } = useParams()
   const [author, setAuthor] = useState(null)
   const [progress, setProgress] = useState({})
+  const [preferences, setPreferences] = useState({})
   const [loading, setLoading] = useState(true)
   const [playFilter, setPlayFilter] = useState(null)
 
   useEffect(() => {
     Promise.all([
       api(`/authors/${authorId}`),
-      api('/analytics/progress')
+      api('/analytics/progress'),
+      api('/analytics/preferences')
     ])
-      .then(([authorData, progressData]) => {
+      .then(([authorData, progressData, prefsData]) => {
         setAuthor(authorData)
         setProgress(progressData.progress || {})
+        setPreferences(prefsData.practiceUnit || {})
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -159,17 +162,24 @@ export default function AuthorWorks() {
     )
   }
 
-  // Get claimed mastery percentage
+  // Get claimed mastery percentage — respects active practice unit
   const getMasteryProgress = (workId) => {
     const key = `${authorId}/${workId}`
     const workProgress = progress[key]
-    if (!workProgress || !workProgress.mastered) return 0
+    if (!workProgress) return 0
     const work = author.works.find(w => w.id === workId)
     if (!work) return 0
+    const unit = preferences[key] || 'lines'
+    if (unit === 'beats' && workProgress.masteredBeats) {
+      const beatCount = work.beats?.length || 0
+      if (beatCount === 0) return 0
+      return Math.min(100, Math.round((workProgress.masteredBeats.length / beatCount) * 100))
+    }
+    if (!workProgress.mastered) return 0
     return Math.min(100, Math.round((workProgress.mastered.length / work.chunks.length) * 100))
   }
 
-  // Get test performance percentage (chunks with 2+ attempts, weighted by success rate)
+  // Get test performance percentage — respects active practice unit
   const getTestProgress = (workId) => {
     const key = `${authorId}/${workId}`
     const workProgress = progress[key]
@@ -178,29 +188,31 @@ export default function AuthorWorks() {
     const work = author.works.find(w => w.id === workId)
     if (!work) return 0
 
-    // Group attempts by chunk index
-    const chunkAttempts = {}
+    const unit = preferences[key] || 'lines'
+    const useBeats = unit === 'beats' && work.beats?.length > 0
+    const totalItems = useBeats ? work.beats.length : work.chunks.length
+
+    // Group attempts by the relevant index
+    const itemAttempts = {}
     workProgress.attempts.forEach(attempt => {
-      const idx = attempt.chunkIndex
-      if (!chunkAttempts[idx]) chunkAttempts[idx] = []
-      chunkAttempts[idx].push(attempt.correct)
+      const idx = useBeats ? attempt.beatIndex : attempt.chunkIndex
+      if (idx == null) return
+      if (!itemAttempts[idx]) itemAttempts[idx] = []
+      itemAttempts[idx].push(attempt.correct)
     })
 
-    // Calculate score for chunks with 1+ attempts
-    let testedChunks = 0
+    let testedItems = 0
     let totalScore = 0
-    Object.values(chunkAttempts).forEach(attempts => {
+    Object.values(itemAttempts).forEach(attempts => {
       if (attempts.length >= 1) {
-        testedChunks++
+        testedItems++
         const correctCount = attempts.filter(c => c).length
         totalScore += correctCount / attempts.length
       }
     })
 
-    if (testedChunks === 0) return 0
-    // Return percentage of chunks that are "tested" (2+ attempts with good performance)
-    // Cap at 100%
-    return Math.min(100, Math.round((totalScore / work.chunks.length) * 100))
+    if (testedItems === 0) return 0
+    return Math.min(100, Math.round((totalScore / totalItems) * 100))
   }
 
   // Group works by play (source)
