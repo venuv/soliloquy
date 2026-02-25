@@ -18,7 +18,9 @@
  */
 export const normalizeText = (text) => {
   return text.toLowerCase()
-    .replace(/[''\']/g, '')  // Remove all apostrophes for comparison
+    .replace(/[''']d\b/g, 'ed')   // Archaic: lin'd → lined, remember'd → remembered
+    .replace(/[''']st\b/g, 'est') // Archaic: know'st → knowest
+    .replace(/[''\']/g, '')  // Remove remaining apostrophes
     .replace(/[—–-]/g, '-')  // Normalize all dash types
     .replace(/[^\w\s-]/g, '') // Remove punctuation except dashes
     .replace(/\s+/g, ' ')    // Collapse multiple spaces

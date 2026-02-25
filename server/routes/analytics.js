@@ -107,7 +107,7 @@ router.post('/mastered', validateKey, async (req, res) => {
 // Record individual attempt (for detailed analytics)
 router.post('/attempt', validateKey, async (req, res) => {
   try {
-    const { authorId, workId, chunkIndex, beatIndex, correct, userAnswer, expectedAnswer } = req.body;
+    const { authorId, workId, chunkIndex, beatIndex, correct, likert, userAnswer, expectedAnswer } = req.body;
     const workKey = `${authorId}/${workId}`;
 
     const content = await fs.readFile(req.analyticsPath, 'utf-8');
@@ -125,6 +125,7 @@ router.post('/attempt', validateKey, async (req, res) => {
     };
     if (chunkIndex != null) attempt.chunkIndex = chunkIndex;
     if (beatIndex != null) attempt.beatIndex = beatIndex;
+    if (likert != null) attempt.likert = likert;
 
     analytics.progress[workKey].attempts.push(attempt);
     

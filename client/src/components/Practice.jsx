@@ -312,8 +312,9 @@ export default function Practice() {
     }
   }
 
-  const recordAttempt = async (index, correct, userAns, expected) => {
+  const recordAttempt = async (index, correct, userAns, expected, likertScore) => {
     const payload = { authorId, workId, correct, userAnswer: userAns, expectedAnswer: expected }
+    if (likertScore != null) payload.likert = likertScore
     if (practiceUnit === 'beats') {
       payload.beatIndex = index
     } else {
@@ -570,13 +571,13 @@ export default function Practice() {
     const similarity = similarityScore(userAnswer, expected)
     const hasExpected = practiceUnit === 'beats' ? false : containsExpected(userAnswer, expected)
     const likert = hasExpected ? 1.0 : toLikert(similarity, practiceUnit === 'beats')
-    const correct = likert >= 1.0
+    const correct = practiceUnit === 'beats' ? likert >= 0.8 : likert >= 1.0
     setIsCorrect(correct)
     setLastLikert(likert)
     setShowResult(true)
     const newScore = { points: Math.round((score.points + likert) * 100) / 100, total: score.total + 1 }
     setScore(newScore)
-    recordAttempt(itemIdx, correct, userAnswer, expected)
+    recordAttempt(itemIdx, correct, userAnswer, expected, likert)
   }
 
   const nextTest = () => {

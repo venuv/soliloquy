@@ -198,7 +198,11 @@ export default function AuthorWorks() {
       const idx = useBeats ? attempt.beatIndex : attempt.chunkIndex
       if (idx == null) return
       if (!itemAttempts[idx]) itemAttempts[idx] = []
-      itemAttempts[idx].push(attempt.correct)
+      // Use stored likert with appropriate threshold, fall back to stored correct
+      const passed = attempt.likert != null
+        ? attempt.likert >= (useBeats ? 0.8 : 1.0)
+        : attempt.correct
+      itemAttempts[idx].push(passed)
     })
 
     let testedItems = 0
@@ -407,7 +411,9 @@ export default function AuthorWorks() {
                             {work.character} • {work.act}
                           </p>
                           <p style={{ color: '#9a9a9a', fontSize: '0.75rem', margin: '0.15rem 0 0' }}>
-                            {work.chunks.length} lines to master
+                            {(preferences[`${authorId}/${work.id}`] === 'beats' && work.beats?.length)
+                              ? `${work.beats.length} beats to master`
+                              : `${work.chunks.length} lines to master`}
                           </p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
