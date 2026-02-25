@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth, api } from '../App'
 import { LogOut, BarChart2, KeyRound } from 'lucide-react'
+import useIsMobile from '../hooks/useIsMobile'
 import './Home.css'
 
 export default function Home() {
   const { userKey, logout } = useAuth()
+  const isMobile = useIsMobile()
   const [authors, setAuthors] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -55,7 +57,7 @@ export default function Home() {
 
       {/* Header */}
       <header style={{
-        padding: '1.5rem 2.5rem',
+        padding: isMobile ? '1rem' : '1.5rem 2.5rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center'
@@ -106,7 +108,7 @@ export default function Home() {
             Soliloquy Master
           </span>
         </div>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '1rem' : '2rem', flexWrap: 'wrap' }}>
           <Link to="/live" style={{
             fontSize: '0.8rem',
             color: '#4a4a4a',
@@ -164,9 +166,9 @@ export default function Home() {
       {/* Hero */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1.4fr',
-        minHeight: '75vh',
-        padding: '2rem 2.5rem',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1.4fr',
+        minHeight: isMobile ? 'auto' : '75vh',
+        padding: isMobile ? '2rem 1rem' : '2rem 2.5rem',
         gap: '2rem'
       }}>
         <div style={{
@@ -178,7 +180,7 @@ export default function Home() {
           <h1 style={{
             fontFamily: "'Cormorant', serif",
             fontWeight: 300,
-            fontSize: '2.7rem',
+            fontSize: isMobile ? '2rem' : '2.7rem',
             lineHeight: 1.18,
             color: '#1a1a1a',
             marginBottom: '1.5rem'
@@ -312,7 +314,7 @@ export default function Home() {
         </div>
 
         {/* Playful Photo Collage */}
-        <div style={{
+        {!isMobile && <div style={{
           position: 'relative',
           width: '480px',
           height: '420px'
@@ -426,14 +428,14 @@ export default function Home() {
               }}
             />
           </div>
-        </div>
+        </div>}
       </section>
 
       {/* Ink Band */}
       <section className="ink-band" style={{
         position: 'relative',
         margin: '3rem 0',
-        padding: '3rem 2.5rem',
+        padding: isMobile ? '3rem 1rem' : '3rem 2.5rem',
         overflow: 'hidden'
       }}>
         {/* Crimson background with texture */}
@@ -461,8 +463,8 @@ export default function Home() {
           maxWidth: '900px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '3rem'
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: isMobile ? '1.5rem' : '3rem'
         }}>
           {/* Memorize - Active Link */}
           <Link
@@ -494,7 +496,7 @@ export default function Home() {
       </section>
 
       {/* Gold Stroke */}
-      <div style={{ margin: '0 2.5rem', height: '8px', overflow: 'visible' }}>
+      <div style={{ margin: isMobile ? '0 1rem' : '0 2.5rem', height: '8px', overflow: 'visible' }}>
         <svg viewBox="0 0 800 40" preserveAspectRatio="none" style={{ width: '100%', height: '40px', marginTop: '-16px' }}>
           <path
             d="M0 20 Q50 15 100 22 Q200 28 300 18 Q400 12 500 24 Q600 30 700 19 Q750 16 800 21"
@@ -518,7 +520,7 @@ export default function Home() {
       </div>
 
       {/* Quote */}
-      <section style={{ padding: '3rem 2.5rem', maxWidth: '650px', margin: '0 auto' }}>
+      <section style={{ padding: isMobile ? '3rem 1rem' : '3rem 2.5rem', maxWidth: '650px', margin: '0 auto' }}>
         <blockquote style={{
           fontFamily: "'Cormorant', serif",
           fontWeight: 300,
@@ -526,8 +528,7 @@ export default function Home() {
           fontSize: '1.3rem',
           lineHeight: 1.5,
           color: '#1a1a1a',
-          textAlign: 'center',
-          whiteSpace: 'nowrap'
+          textAlign: 'center'
         }}>
           "Speak the speech, I pray you, as I pronounced it to you, trippingly on the tongue."
         </blockquote>
@@ -545,8 +546,8 @@ export default function Home() {
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        gap: '5rem',
-        padding: '2rem 2.5rem 3rem'
+        gap: isMobile ? '2rem' : '5rem',
+        padding: isMobile ? '2rem 1rem 3rem' : '2rem 2.5rem 3rem'
       }}>
         {/* Stat 1 - Crimson with stronger halo */}
         <div className="stat-card">
@@ -597,7 +598,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer style={{
-        padding: '1.5rem 2.5rem',
+        padding: isMobile ? '1.5rem 1rem' : '1.5rem 2.5rem',
         borderTop: '1px solid rgba(0,0,0,0.06)',
         display: 'flex',
         justifyContent: 'space-between',

@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../App'
 import { Home, Clock, Target, BookOpen, Trophy, Calendar } from 'lucide-react'
+import useIsMobile from '../hooks/useIsMobile'
 
 export default function Stats() {
+  const isMobile = useIsMobile()
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -27,7 +29,7 @@ export default function Stats() {
       minHeight: '100vh',
       background: '#fdfcf8',
       fontFamily: "'IBM Plex Sans', sans-serif",
-      padding: '1.5rem'
+      padding: isMobile ? '1rem' : '1.5rem'
     }}>
       <div style={{ maxWidth: '40rem', margin: '0 auto' }}>
         {/* Header */}
@@ -42,8 +44,8 @@ export default function Stats() {
         </div>
 
         {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ background: 'rgba(155, 45, 48, 0.06)', border: '1px solid rgba(155, 45, 48, 0.15)', borderRadius: '8px', padding: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ background: 'rgba(155, 45, 48, 0.06)', border: '1px solid rgba(155, 45, 48, 0.15)', borderRadius: '8px', padding: isMobile ? '1rem' : '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <BookOpen size={22} style={{ color: '#9b2d30' }} />
               <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Total Sessions</span>
@@ -51,7 +53,7 @@ export default function Stats() {
             <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>{summary?.totalSessions || 0}</div>
           </div>
 
-          <div style={{ background: 'rgba(42, 74, 94, 0.06)', border: '1px solid rgba(42, 74, 94, 0.15)', borderRadius: '8px', padding: '1.5rem' }}>
+          <div style={{ background: 'rgba(42, 74, 94, 0.06)', border: '1px solid rgba(42, 74, 94, 0.15)', borderRadius: '8px', padding: isMobile ? '1rem' : '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <Clock size={22} style={{ color: '#2a4a5e' }} />
               <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Time Practiced</span>
@@ -59,7 +61,7 @@ export default function Stats() {
             <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>{summary?.totalTimeMinutes || 0} min</div>
           </div>
 
-          <div style={{ background: 'rgba(61, 92, 74, 0.06)', border: '1px solid rgba(61, 92, 74, 0.15)', borderRadius: '8px', padding: '1.5rem' }}>
+          <div style={{ background: 'rgba(61, 92, 74, 0.06)', border: '1px solid rgba(61, 92, 74, 0.15)', borderRadius: '8px', padding: isMobile ? '1rem' : '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <Target size={22} style={{ color: '#3d5c4a' }} />
               <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Tests Taken</span>
@@ -67,7 +69,7 @@ export default function Stats() {
             <div style={{ fontSize: '2rem', fontFamily: "'Cormorant', serif", color: '#1a1a1a' }}>{summary?.testSessions || 0}</div>
           </div>
 
-          <div style={{ background: 'rgba(196, 163, 90, 0.08)', border: '1px solid rgba(196, 163, 90, 0.2)', borderRadius: '8px', padding: '1.5rem' }}>
+          <div style={{ background: 'rgba(196, 163, 90, 0.08)', border: '1px solid rgba(196, 163, 90, 0.2)', borderRadius: '8px', padding: isMobile ? '1rem' : '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <Trophy size={22} style={{ color: '#c4a35a' }} />
               <span style={{ color: '#4a4a4a', fontSize: '0.85rem' }}>Avg Test Score</span>
@@ -92,7 +94,7 @@ export default function Stats() {
         </div>
 
         {/* Member Info */}
-        <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '1.5rem' }}>
+        <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: isMobile ? '1rem' : '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Calendar size={18} style={{ color: '#9a9a9a' }} />
             <span style={{ color: '#4a4a4a', fontSize: '0.9rem' }}>

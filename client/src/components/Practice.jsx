@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { similarityScore, containsExpected, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
 import BeatEditor from './BeatEditor'
+import useIsMobile from '../hooks/useIsMobile'
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 
@@ -36,6 +37,7 @@ const colors = {
 export default function Practice() {
   const { authorId, workId } = useParams()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   const [work, setWork] = useState(null)
   const [mode, setMode] = useState(null)
@@ -604,7 +606,7 @@ export default function Practice() {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '1.5rem',
+    padding: isMobile ? '1rem' : '1.5rem',
     position: 'relative'
   }
 
@@ -732,22 +734,22 @@ export default function Practice() {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <button onClick={() => startMode('memorize')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(155,45,48,0.15)', background: 'rgba(155,45,48,0.03)' }}>
+          <button onClick={() => startMode('memorize')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(155,45,48,0.15)', background: 'rgba(155,45,48,0.03)' }}>
             <BookOpen size={40} style={{ color: colors.crimson, marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Memorize</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Walk through chunks</div>
           </button>
-          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(61,92,74,0.15)', background: 'rgba(61,92,74,0.03)' }}>
+          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(61,92,74,0.15)', background: 'rgba(61,92,74,0.03)' }}>
             <GraduationCap size={40} style={{ color: colors.forest, marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Test</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Voice or type answers</div>
           </button>
-          <button onClick={() => startMode('recite')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: '12rem', border: '1px solid rgba(196,163,90,0.15)', background: 'rgba(196,163,90,0.03)' }}>
+          <button onClick={() => startMode('recite')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(196,163,90,0.15)', background: 'rgba(196,163,90,0.03)' }}>
             <Mic size={40} style={{ color: colors.gold, marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Recite</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Full poem recitation</div>
           </button>
-          <Link to={`/visualize/${authorId}/${workId}`} style={{ ...cardStyle, textDecoration: 'none', textAlign: 'center', width: '12rem', border: '1px solid rgba(90,74,106,0.15)', background: 'rgba(90,74,106,0.03)' }}>
+          <Link to={`/visualize/${authorId}/${workId}`} style={{ ...cardStyle, textDecoration: 'none', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(90,74,106,0.15)', background: 'rgba(90,74,106,0.03)' }}>
             <Image size={40} style={{ color: '#5a4a6a', marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Visualize</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Text analysis & images</div>
@@ -905,13 +907,13 @@ export default function Practice() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-                  <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+                  <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
                     <ChevronLeft size={22} />
                   </button>
                   <button onClick={toggleMasteredBeat} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.blue }}>
                     <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
                   </button>
-                  <button onClick={() => { setCurrentIndex(Math.min(totalItems - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === totalItems - 1} style={{ ...btnSecondary, opacity: currentIndex === totalItems - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+                  <button onClick={() => { setCurrentIndex(Math.min(totalItems - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === totalItems - 1} style={{ ...btnSecondary, opacity: currentIndex === totalItems - 1 ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
                     <ChevronRight size={22} />
                   </button>
                 </div>
@@ -941,13 +943,13 @@ export default function Practice() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-                  <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+                  <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setFlipped(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
                     <ChevronLeft size={22} />
                   </button>
                   <button onClick={toggleMastered} style={{ ...btnPrimary, background: isMastered ? colors.forest : colors.crimson }}>
                     <CheckCircle2 size={18} /> {isMastered ? 'Mastered' : 'Mark Mastered'}
                   </button>
-                  <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+                  <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setFlipped(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
                     <ChevronRight size={22} />
                   </button>
                 </div>
@@ -1288,7 +1290,7 @@ export default function Practice() {
 
             {/* Navigation */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
-              <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setEditingPicture(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem' }}>
+              <button onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setEditingPicture(false) }} disabled={currentIndex === 0} style={{ ...btnSecondary, opacity: currentIndex === 0 ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
                 <ChevronLeft size={22} />
               </button>
               <div style={{ textAlign: 'center', flex: 1 }}>
@@ -1296,7 +1298,7 @@ export default function Practice() {
                   {Object.keys(wordPictures.selected).length} of {work.chunks.length} chunks have mnemonics
                 </p>
               </div>
-              <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setEditingPicture(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem' }}>
+              <button onClick={() => { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)); setEditingPicture(false) }} disabled={currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: currentIndex === work.chunks.length - 1 ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
                 <ChevronRight size={22} />
               </button>
             </div>

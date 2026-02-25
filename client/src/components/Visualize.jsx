@@ -5,6 +5,7 @@ import {
   ArrowLeft, Sparkles, Save, Loader2, Check, Edit3, X,
   Grid3X3, List, ChevronDown, ChevronUp, Home
 } from 'lucide-react'
+import useIsMobile from '../hooks/useIsMobile'
 
 const colors = {
   paper: '#fdfcf8',
@@ -20,6 +21,7 @@ const colors = {
 
 export default function Visualize() {
   const { authorId, workId } = useParams()
+  const isMobile = useIsMobile()
 
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -180,7 +182,7 @@ export default function Visualize() {
   const hasGenerated = Object.keys(generatedPictures).length > 0
 
   return (
-    <div style={{ minHeight: '100vh', background: colors.paper, fontFamily: "'IBM Plex Sans', sans-serif", padding: '1.5rem', paddingBottom: '6rem' }}>
+    <div style={{ minHeight: '100vh', background: colors.paper, fontFamily: "'IBM Plex Sans', sans-serif", padding: isMobile ? '1rem' : '1.5rem', paddingBottom: '6rem' }}>
       <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -566,7 +568,7 @@ export default function Visualize() {
                     className="w-full"
                     style={{
                       fontFamily: 'Georgia, "Times New Roman", serif',
-                      minWidth: '600px'
+                      minWidth: isMobile ? 'auto' : '600px'
                     }}
                   >
                     {/* Header */}

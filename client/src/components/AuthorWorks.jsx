@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../App'
 import { Home, ChevronRight } from 'lucide-react'
+import useIsMobile from '../hooks/useIsMobile'
 
 // Ink wash colors for different plays - visible but not overwhelming
 const PLAY_COLORS = {
@@ -125,6 +126,7 @@ const DualProgressBar = ({ masteryPercent, testPercent, accentColor }) => {
 
 export default function AuthorWorks() {
   const { authorId } = useParams()
+  const isMobile = useIsMobile()
   const [author, setAuthor] = useState(null)
   const [progress, setProgress] = useState({})
   const [preferences, setPreferences] = useState({})
@@ -234,7 +236,7 @@ export default function AuthorWorks() {
       minHeight: '100vh',
       background: '#fdfcf8',
       fontFamily: "'IBM Plex Sans', sans-serif",
-      padding: '1.5rem'
+      padding: isMobile ? '1rem' : '1.5rem'
     }}>
       {/* Header */}
       <div style={{ maxWidth: '42rem', margin: '0 auto 2rem' }}>
@@ -274,7 +276,7 @@ export default function AuthorWorks() {
           <button
             onClick={() => setPlayFilter(null)}
             style={{
-              padding: '0.4rem 0.85rem',
+              padding: isMobile ? '0.6rem 1rem' : '0.4rem 0.85rem', minHeight: isMobile ? '44px' : 'auto',
               borderRadius: '6px',
               fontSize: '0.8rem',
               border: 'none',
@@ -292,7 +294,7 @@ export default function AuthorWorks() {
                 key={play}
                 onClick={() => setPlayFilter(play)}
                 style={{
-                  padding: '0.4rem 0.85rem',
+                  padding: isMobile ? '0.6rem 1rem' : '0.4rem 0.85rem', minHeight: isMobile ? '44px' : 'auto',
                   borderRadius: '6px',
                   fontSize: '0.8rem',
                   border: 'none',

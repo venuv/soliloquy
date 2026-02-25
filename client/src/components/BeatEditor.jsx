@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChevronUp, ChevronDown, Plus, Trash2, X, RotateCcw, Check } from 'lucide-react'
+import useIsMobile from '../hooks/useIsMobile'
 
 const colors = {
   paper: '#fdfcf8',
@@ -25,6 +26,7 @@ const BEAT_BORDERS = [
 ]
 
 export default function BeatEditor({ work, beats: initialBeats, defaultBeats, onSave, onClose }) {
+  const isMobile = useIsMobile()
   const [beats, setBeats] = useState([])
 
   useEffect(() => {
@@ -124,10 +126,11 @@ export default function BeatEditor({ work, beats: initialBeats, defaultBeats, on
       padding: '1rem'
     }}>
       <div style={{
-        background: colors.paper, borderRadius: '12px',
-        maxWidth: '40rem', width: '100%', maxHeight: '90vh',
+        background: colors.paper, borderRadius: isMobile ? 0 : '12px',
+        maxWidth: isMobile ? '100%' : '40rem', width: '100%', maxHeight: isMobile ? '100vh' : '90vh',
+        height: isMobile ? '100vh' : 'auto',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+        boxShadow: isMobile ? 'none' : '0 20px 60px rgba(0,0,0,0.3)'
       }}>
         {/* Header */}
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -202,13 +205,13 @@ export default function BeatEditor({ work, beats: initialBeats, defaultBeats, on
                               title="Split beat here"
                               style={{
                                 background: 'none', border: 'none', cursor: 'pointer',
-                                color: colors.faded, fontSize: '0.65rem', padding: '0.1rem 0.5rem',
+                                color: colors.faded, fontSize: '0.65rem', padding: isMobile ? '0.4rem 0.6rem' : '0.1rem 0.5rem',
                                 opacity: 0.5
                               }}
                               onMouseEnter={(e) => e.target.style.opacity = 1}
                               onMouseLeave={(e) => e.target.style.opacity = 0.5}
                             >
-                              <Plus size={10} /> split
+                              <Plus size={isMobile ? 16 : 10} /> split
                             </button>
                           </div>
                         )}
@@ -224,12 +227,12 @@ export default function BeatEditor({ work, beats: initialBeats, defaultBeats, on
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   gap: '0.5rem', padding: '0.25rem 0'
                 }}>
-                  <button onClick={() => moveBoundaryUp(beat.id)} title="Move line up to this beat" style={{ background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px', cursor: 'pointer', color: colors.faded, padding: '0.15rem 0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <ChevronUp size={12} />
+                  <button onClick={() => moveBoundaryUp(beat.id)} title="Move line up to this beat" style={{ background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px', cursor: 'pointer', color: colors.faded, padding: isMobile ? '0.5rem 0.6rem' : '0.15rem 0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <ChevronUp size={isMobile ? 18 : 12} />
                   </button>
                   <span style={{ fontSize: '0.65rem', color: colors.faded }}>boundary</span>
-                  <button onClick={() => moveBoundaryDown(beat.id)} title="Move line down to next beat" style={{ background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px', cursor: 'pointer', color: colors.faded, padding: '0.15rem 0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <ChevronDown size={12} />
+                  <button onClick={() => moveBoundaryDown(beat.id)} title="Move line down to next beat" style={{ background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px', cursor: 'pointer', color: colors.faded, padding: isMobile ? '0.5rem 0.6rem' : '0.15rem 0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <ChevronDown size={isMobile ? 18 : 12} />
                   </button>
                 </div>
               )}
