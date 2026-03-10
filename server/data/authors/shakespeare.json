@@ -2147,7 +2147,11 @@
         },
         {
           "front": "For the apparel oft",
-          "back": "proclaims the man."
+          "back": "proclaims the man,"
+        },
+        {
+          "front": "And they in France of the best rank and station",
+          "back": "Are of a most select and generous chief in that."
         },
         {
           "front": "Neither a borrower",
@@ -2183,28 +2187,28 @@
           "label": "Advise on Appearance",
           "intention": "To counsel on modesty in dress",
           "startChunk": 2,
-          "endChunk": 4
+          "endChunk": 5
         },
         {
           "id": 2,
           "label": "Warn of Finances",
           "intention": "To caution against financial recklessness",
-          "startChunk": 5,
-          "endChunk": 7
+          "startChunk": 6,
+          "endChunk": 8
         },
         {
           "id": 3,
           "label": "Impart Core Principle",
           "intention": "To emphasize the importance of self-honesty",
-          "startChunk": 8,
-          "endChunk": 8
+          "startChunk": 9,
+          "endChunk": 9
         },
         {
           "id": 4,
           "label": "Explain the Consequence",
           "intention": "To explain the outcome of being true to oneself",
-          "startChunk": 9,
-          "endChunk": 9
+          "startChunk": 10,
+          "endChunk": 10
         }
       ]
     },
