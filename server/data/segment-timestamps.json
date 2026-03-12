@@ -220,11 +220,24 @@
       "confidence": "estimated",
       "source": "Zeffirelli's Romeo and Juliet is 138 minutes. Act 2 Scene 2 (balcony scene) at ~25% runtime places it around 34:30.",
       "notes": "Film runtime 138 minutes. Famous balcony scene with Leonard Whiting and Olivia Hussey."
+    },
+    {
+      "videoId": "youtube-MinnLOAWvwI",
+      "soliloquyId": "to-thine-own-self",
+      "title": "To thine own self be true",
+      "actor": "Richard Briers",
+      "production": "Hamlet (1996 Branagh)",
+      "year": 1996,
+      "startSeconds": 30,
+      "endSeconds": 120,
+      "confidence": "verified",
+      "source": "YouTube clip - standalone performance of the soliloquy.",
+      "notes": "Richard Briers performs To thine own self be true from Hamlet."
     }
   ],
   "metadata": {
-    "lastUpdated": "2026-02-06",
-    "totalSegments": 15,
+    "lastUpdated": "2026-03-12",
+    "totalSegments": 18,
     "researchNotes": "Timestamps gathered from web research. 'verified' confidence means specific timestamps were found in academic or production sources. 'estimated' means calculated based on play structure and known film runtimes.",
     "estimationMethod": {
       "to-be-or-not-to-be": "Act 3 Scene 1 - approximately 45% into Hamlet",

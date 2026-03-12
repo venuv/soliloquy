@@ -223,6 +223,20 @@
       "endSeconds": null,
       "status": "full",
       "notes": "Franco Zeffirelli film. Whiting was 17 during filming."
+    },
+    {
+      "id": "to-thine-briers-yt",
+      "soliloquyId": "to-thine-own-self",
+      "title": "Richard Briers - Hamlet (1996 Branagh)",
+      "actor": "Richard Briers",
+      "production": "Hamlet (1996 Branagh)",
+      "year": null,
+      "source": "youtube",
+      "videoId": "youtube-MinnLOAWvwI",
+      "startSeconds": 30,
+      "endSeconds": 120,
+      "status": "clip",
+      "notes": "YouTube performance: Hamlet (1996 Branagh)"
     }
   ],
   "sources": {

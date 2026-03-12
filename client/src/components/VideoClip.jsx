@@ -26,14 +26,12 @@ const SOURCES = {
   },
   'youtube': {
     name: 'YouTube',
-    buildEmbedUrl: (videoId, start, end) => {
-      // Strip youtube- prefix if present (data files use prefixed IDs for consistency)
+    embedSupported: false,
+    buildEmbedUrl: (videoId, start) => {
       const actualId = videoId.startsWith('youtube-') ? videoId.slice(8) : videoId
-      let url = `https://www.youtube.com/embed/${actualId}`
-      const params = []
-      if (start) params.push(`start=${start}`)
-      if (end) params.push(`end=${end}`)
-      return params.length ? `${url}?${params.join('&')}` : url
+      let url = `https://www.youtube.com/watch?v=${actualId}`
+      if (start) url += `&t=${start}s`
+      return url
     }
   },
   'vimeo': {
@@ -158,7 +156,10 @@ export default function VideoClip({ clip, onPlay }) {
       </div>
 
       {/* Video area */}
-      {showEmbed ? (
+      {showEmbed && !sourceConfig.embedSupported ? (
+        // External link (YouTube - embedding often restricted)
+        null
+      ) : showEmbed ? (
         <div style={{
           position: 'relative',
           paddingBottom: '56.25%', // 16:9 aspect ratio
@@ -180,51 +181,98 @@ export default function VideoClip({ clip, onPlay }) {
           />
         </div>
       ) : (
-        <button
-          onClick={() => {
-            setShowEmbed(true)
-            onPlay?.()
-          }}
-          style={{
-            width: '100%',
-            padding: '2rem',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}
-        >
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: isSegmented ? 'rgba(196, 163, 90, 0.15)' : 'rgba(0,0,0,0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'transform 0.2s'
-          }}>
-            <Play size={24} style={{ color: accentColor, marginLeft: '2px' }} />
-          </div>
-          <span style={{
-            fontSize: '0.8rem',
-            color: '#9a9a9a'
-          }}>
-            {isSegmented
-              ? `Watch clip (${formatTime(clip.startSeconds)} - ${formatTime(clip.endSeconds)})`
-              : 'Watch full video'
-            }
-          </span>
-          <span style={{
-            fontSize: '0.7rem',
-            color: '#c4c4c4'
-          }}>
-            via {sourceConfig.name}
-          </span>
-        </button>
+        sourceConfig.embedSupported === false ? (
+          <a
+            href={embedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => onPlay?.()}
+            style={{
+              width: '100%',
+              padding: '2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.75rem',
+              textDecoration: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: isSegmented ? 'rgba(196, 163, 90, 0.15)' : 'rgba(0,0,0,0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'transform 0.2s'
+            }}>
+              <Play size={24} style={{ color: accentColor, marginLeft: '2px' }} />
+            </div>
+            <span style={{
+              fontSize: '0.8rem',
+              color: '#9a9a9a'
+            }}>
+              {isSegmented
+                ? `Watch clip (${formatTime(clip.startSeconds)} - ${formatTime(clip.endSeconds)})`
+                : 'Watch full video'
+              }
+            </span>
+            <span style={{
+              fontSize: '0.7rem',
+              color: '#c4c4c4'
+            }}>
+              Opens on {sourceConfig.name} ↗
+            </span>
+          </a>
+        ) : (
+          <button
+            onClick={() => {
+              setShowEmbed(true)
+              onPlay?.()
+            }}
+            style={{
+              width: '100%',
+              padding: '2rem',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.75rem'
+            }}
+          >
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: isSegmented ? 'rgba(196, 163, 90, 0.15)' : 'rgba(0,0,0,0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'transform 0.2s'
+            }}>
+              <Play size={24} style={{ color: accentColor, marginLeft: '2px' }} />
+            </div>
+            <span style={{
+              fontSize: '0.8rem',
+              color: '#9a9a9a'
+            }}>
+              {isSegmented
+                ? `Watch clip (${formatTime(clip.startSeconds)} - ${formatTime(clip.endSeconds)})`
+                : 'Watch full video'
+              }
+            </span>
+            <span style={{
+              fontSize: '0.7rem',
+              color: '#c4c4c4'
+            }}>
+              via {sourceConfig.name}
+            </span>
+          </button>
+        )
       )}
 
       {/* Timestamp info for full videos */}

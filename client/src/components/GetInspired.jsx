@@ -293,14 +293,22 @@ const PERFORMANCES = [
       }
     ]
   },
+  {
+    id: 'to-thine-own-self',
+    soliloquy: 'To thine own self be true',
+    play: 'Hamlet',
+    videos: []
+  },
 ]
 
-function YouTubeEmbed({ videoId, title }) {
+function YouTubeEmbed({ videoId, title, start }) {
+  const params = ['rel=0', 'modestbranding=1']
+  if (start) params.push(`start=${start}`)
   return (
     <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', borderRadius: '8px', overflow: 'hidden', background: '#1a1a1a' }}>
       <iframe
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-        src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`}
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?${params.join('&')}`}
         title={title}
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -427,19 +435,23 @@ function VideoCard({ video, isExpanded, onToggle }) {
                 View on Internet Archive <ExternalLink size={12} />
               </a>
             </>
-          ) : (
-            <>
-              <YouTubeEmbed videoId={video.youtubeId} title={video.title} />
-              <a
-                href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: '#5a4a6a', textDecoration: 'none' }}
-              >
-                Watch on YouTube <ExternalLink size={12} />
-              </a>
-            </>
-          )}
+          ) : (() => {
+            const ytId = video.youtubeId || (video.videoId?.startsWith('youtube-') ? video.videoId.slice(8) : video.videoId)
+            const ytStart = video.startSeconds ? `&t=${video.startSeconds}s` : ''
+            return (
+              <>
+                <YouTubeEmbed videoId={ytId} title={video.title} start={video.startSeconds} />
+                <a
+                  href={`https://www.youtube.com/watch?v=${ytId}${ytStart}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: '#5a4a6a', textDecoration: 'none' }}
+                >
+                  Watch on YouTube <ExternalLink size={12} />
+                </a>
+              </>
+            )
+          })()}
         </div>
       )}
     </div>
