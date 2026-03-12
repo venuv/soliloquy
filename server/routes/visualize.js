@@ -65,36 +65,70 @@ const loadWork = (authorId, workId) => {
   return work;
 };
 
-// Build the LLM prompt for initial word pictures generation
-const buildWordPicturesPrompt = (work) => {
-  const chunksText = work.chunks.map((chunk, idx) =>
-    `Chunk ${idx}: "${chunk.front} ${chunk.back}"`
-  ).join('\n');
+// Helper: Find the beat containing a given chunk index
+const findBeatForChunk = (work, chunkIndex) => {
+  if (!work.beats) return null;
+  return work.beats.find(b => chunkIndex >= b.startChunk && chunkIndex <= b.endChunk) || null;
+};
 
-  return `You are a memory coach creating PHONETIC MNEMONICS for Shakespeare memorization.
+// Build prompt to generate dramatic context for the whole soliloquy
+const buildDramaticContextPrompt = (work) => {
+  const fullText = work.chunks.map(c => `${c.front} ${c.back}`).join('\n');
 
-CRITICAL RULES:
-1. SOUND-BASED HOOKS: Each key word must link to a similar-sounding image
-   - "whether" → WEATHER vane
-   - "'tis" → TISSUE paper
-   - "suffer" → SURFING
-   - "slings" → SLINGSHOT
-   - "arrows" → actual ARROWS
+  return `You are a Shakespeare dramaturg. Provide the dramatic context for this soliloquy using Stanislavski's system.
 
-2. ECONOMY OF SYMBOLS: Use 2-4 vivid images MAX per chunk. Every symbol must earn its place.
+Play: ${work.source}
+Character: ${work.character}
+Act/Scene: ${work.act}
+Soliloquy: "${work.title}"
 
-3. WORD LIMIT: Each mnemonic must be 15-25 words. No longer!
+Full text:
+${fullText}
 
-4. CHAIN THE SOUNDS: Images should connect in sequence matching word order
+Respond with valid JSON:
+{
+  "given_circumstances": "What has just happened? What event or conversation triggers this speech? (2-3 sentences)",
+  "super_objective": "What does ${work.character} desperately WANT across the whole soliloquy? State as an active verb: 'To...' (1 sentence)",
+  "who_am_i_speaking_to": "Who is the character addressing — themselves, God, the audience, an absent person? (1 sentence)",
+  "stakes": "What happens if the character fails to resolve this? What is at risk? (1 sentence)",
+  "emotional_arc": "How does the emotional state shift from beginning to end? (1 sentence)"
+}`;
+};
 
-5. ONE BIZARRE ELEMENT: Include ONE absurd/impossible detail to make it stick
+// Build the Stanislavski mnemonic prompt for all chunks
+const buildWordPicturesPrompt = (work, dramaticContext) => {
+  const chunksText = work.chunks.map((chunk, idx) => {
+    const beat = findBeatForChunk(work, idx);
+    const beatInfo = beat ? ` [Beat: "${beat.label}" — ${beat.intention}]` : '';
+    return `Chunk ${idx}: "${chunk.front} ${chunk.back}"${beatInfo}`;
+  }).join('\n');
 
-BAD EXAMPLE (too conceptual, no sound links):
-"You stand on a tightrope over chocolate pudding wondering about existence"
+  return `You are an acting coach helping an actor MEMORIZE Shakespeare using Stanislavski's method.
 
-GOOD EXAMPLE for "Whether 'tis nobler in the mind to suffer":
-"A WEATHER vane made of TISSUE spins on a NOBLE knight's helmet. Inside his glass skull, he's SURFING on brain waves."
-(weather='whether, tissue='tis, noble=nobler, skull=mind, surfing=suffer)
+THE PRINCIPLE: Each line exists because the character NEEDS something. When you feel what the character feels, the words become inevitable. Create a vivid, physically felt image that captures the EMOTIONAL INTENTION of each line, anchored to 2-3 KEY WORDS from the text.
+
+DRAMATIC CONTEXT:
+- Given circumstances: ${dramaticContext.given_circumstances}
+- Super-objective: ${dramaticContext.super_objective}
+- Speaking to: ${dramaticContext.who_am_i_speaking_to}
+- Stakes: ${dramaticContext.stakes}
+- Emotional arc: ${dramaticContext.emotional_arc}
+
+RULES:
+1. FEEL FIRST: What does ${work.character} physically FEEL saying this line? Gut-clench, chest-tightness, jaw-set, hands-shaking?
+2. ANCHOR TO KEY WORDS: Pick 2-3 words from the line. Build your image around them.
+3. SENSORY & VISCERAL: Taste, smell, temperature, muscle tension. Not abstract concepts.
+4. EXAGGERATE: Amplify the emotion 10x. If there's fear, make it terror. If there's resolve, make it volcanic.
+5. 15-25 WORDS per mnemonic. Tight, vivid, physical.
+
+BAD (too abstract, no body):
+"Hamlet contemplates the philosophical question of existence versus non-existence"
+
+GOOD for "Whether 'tis nobler in the mind to suffer":
+"Jaw clenched, holding a red-hot coal in each fist — do I SUFFER the burning or hurl them into the dark?"
+
+GOOD for "The slings and arrows of outrageous fortune":
+"Arrows thud into your back, one after another. You stagger but won't kneel. Fortune laughs from above, reloading."
 
 Soliloquy: "${work.title}" from ${work.source}
 Character: ${work.character}
@@ -103,61 +137,51 @@ ${chunksText}
 
 Respond ONLY with valid JSON:
 {
-  "0": ["option1 (15-25 words)", "option2", "option3", "option4"],
-  "1": ["option1 (15-25 words)", "option2", "option3", "option4"]
+  "0": ["option1 (15-25 words)", "option2", "option3"],
+  "1": ["option1 (15-25 words)", "option2", "option3"]
 }
 
-Create PHONETIC, ECONOMICAL mnemonics for all ${work.chunks.length} chunks.`;
+Create VISCERAL, EMOTIONALLY-ANCHORED mnemonics for all ${work.chunks.length} chunks.`;
 };
 
 // Build the reflection/improvement prompt
-const buildReflectionPrompt = (work, initialPictures) => {
-  const qualityRubric = `
-MNEMONIC QUALITY CHECKLIST:
-1. PHONETIC LINKS: Does each key word have a sound-alike image? (e.g., "suffer"→"surfing")
-2. ECONOMY: Only 2-4 images total? No unnecessary clutter?
-3. WORD COUNT: Between 15-25 words? (Not too long, not too short)
-4. SEQUENCE: Do images chain in the same order as the text?
-5. ONE ABSURDITY: Exactly one impossible/bizarre element? (Not zero, not five)
-6. CONCRETE: All images are specific objects you can visualize?
-
-FAIL if: No phonetic links, too many images, over 25 words, purely conceptual`;
-
+const buildReflectionPrompt = (work, initialPictures, dramaticContext) => {
   const picturesForReview = Object.entries(initialPictures).map(([idx, options]) => {
     const chunk = work.chunks[idx];
-    return `Chunk ${idx}: "${chunk.front} ${chunk.back}"
+    const beat = findBeatForChunk(work, parseInt(idx));
+    const beatInfo = beat ? ` [Intention: ${beat.intention}]` : '';
+    return `Chunk ${idx}: "${chunk.front} ${chunk.back}"${beatInfo}
 Options:
   A: ${options[0]}
   B: ${options[1]}
-  C: ${options[2]}
-  D: ${options[3]}`;
+  C: ${options[2]}`;
   }).join('\n\n');
 
-  return `You are a memory expert reviewing PHONETIC MNEMONICS for Shakespeare.
+  return `You are a Stanislavski-trained acting coach reviewing mnemonics for Shakespeare memorization.
 
-${qualityRubric}
+QUALITY CHECKLIST:
+1. PHYSICAL SENSATION: Does the mnemonic make you FEEL something in your body? (gut, chest, hands, jaw)
+2. KEY WORD ANCHORS: Are 2-3 actual words from the line woven into the image?
+3. EMOTIONAL TRUTH: Does it capture what ${work.character} WANTS in this moment?
+4. SPECIFICITY: Concrete sensory details, not abstract ideas?
+5. BREVITY: 15-25 words? Tight and vivid?
 
-TASK: Review each mnemonic. For ANY that fail the checklist:
-- Add missing SOUND-ALIKE links for key words
-- Cut excess images (keep only 2-4)
-- Trim to 15-25 words
-- Ensure ONE bizarre element (not more, not less)
+FAIL if: Purely intellectual, no physical sensation, no key words from the text, over 25 words.
 
-GOOD MNEMONIC PATTERN:
-"[Sound-alike 1] + [Sound-alike 2] + [ONE absurd connection] + [Sound-alike 3]"
-
-SOLILOQUY: "${work.title}" from ${work.source}
+Character's super-objective: ${dramaticContext.super_objective}
+Stakes: ${dramaticContext.stakes}
 
 MNEMONICS TO REVIEW:
 ${picturesForReview}
 
-Respond with valid JSON. Fix weak ones, keep good ones:
-{
-  "0": ["fixed_A (15-25 words)", "fixed_B", "fixed_C", "fixed_D"],
-  "1": ["fixed_A (15-25 words)", "fixed_B", "fixed_C", "fixed_D"]
-}
+For any that fail: rewrite with more BODY, more FEELING, more SPECIFICITY.
+Keep ones that already work.
 
-Remember: PHONETIC HOOKS are mandatory. Every key word needs a sound-alike image. Economy over excess.`;
+Respond with valid JSON:
+{
+  "0": ["fixed_A (15-25 words)", "fixed_B", "fixed_C"],
+  "1": ["fixed_A (15-25 words)", "fixed_B", "fixed_C"]
+}`;
 };
 
 // Call Groq API helper
@@ -194,6 +218,30 @@ const callGroqAPI = async (prompt, apiKey, fast = false) => {
   }
 
   return JSON.parse(content);
+};
+
+// Helper: Get or generate dramatic context for a work (cached in analytics)
+const getOrGenerateDramaticContext = async (work, analyticsPath, workKey, apiKey) => {
+  const content = await fs.readFile(analyticsPath, 'utf-8');
+  const analytics = JSON.parse(content);
+
+  // Check cache
+  const cached = analytics.progress?.[workKey]?.dramaticContext;
+  if (cached) return cached;
+
+  // Generate via LLM
+  console.log(`[${work.id}] Generating dramatic context...`);
+  const prompt = buildDramaticContextPrompt(work);
+  const context = await callGroqAPI(prompt, apiKey);
+
+  // Cache it
+  if (!analytics.progress[workKey]) {
+    analytics.progress[workKey] = { mastered: [], attempts: [] };
+  }
+  analytics.progress[workKey].dramaticContext = context;
+  await fs.writeFile(analyticsPath, JSON.stringify(analytics, null, 2));
+
+  return context;
 };
 
 // GET /word-pictures/:authorId/:workId - Get work analysis and existing word pictures
@@ -251,9 +299,19 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
       return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
     }
 
-    // STEP 1: Generate initial word pictures
-    console.log(`[${workId}] Step 1: Generating initial word pictures...`);
-    const initialPrompt = buildWordPicturesPrompt(work);
+    // STEP 0: Get or generate dramatic context
+    const workKey = `${authorId}/${workId}`;
+    let dramaticContext;
+    try {
+      dramaticContext = await getOrGenerateDramaticContext(work, req.analyticsPath, workKey, apiKey);
+    } catch (err) {
+      console.error('Dramatic context generation failed:', err);
+      dramaticContext = { given_circumstances: '', super_objective: '', who_am_i_speaking_to: '', stakes: '', emotional_arc: '' };
+    }
+
+    // STEP 1: Generate initial word pictures with Stanislavski method
+    console.log(`[${workId}] Step 1: Generating Stanislavski mnemonics...`);
+    const initialPrompt = buildWordPicturesPrompt(work, dramaticContext);
     let initialPictures;
     try {
       initialPictures = await callGroqAPI(initialPrompt, apiKey);
@@ -262,22 +320,20 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
       return res.status(500).json({ error: `Generation failed: ${err.message}` });
     }
 
-    // STEP 2: Reflect and improve for memorability
-    console.log(`[${workId}] Step 2: Reflecting and improving for memorability...`);
-    const reflectionPrompt = buildReflectionPrompt(work, initialPictures);
+    // STEP 2: Reflect and improve for emotional truth
+    console.log(`[${workId}] Step 2: Reflecting and improving...`);
+    const reflectionPrompt = buildReflectionPrompt(work, initialPictures, dramaticContext);
     let improvedPictures;
     try {
       improvedPictures = await callGroqAPI(reflectionPrompt, apiKey);
     } catch (err) {
       console.error('Step 2 failed, using initial pictures:', err);
-      // Fall back to initial pictures if reflection fails
       improvedPictures = initialPictures;
     }
 
     // Save generated word pictures to analytics
     const analyticsContent = await fs.readFile(req.analyticsPath, 'utf-8');
     const analytics = JSON.parse(analyticsContent);
-    const workKey = `${authorId}/${workId}`;
 
     if (!analytics.progress[workKey]) {
       analytics.progress[workKey] = { mastered: [], attempts: [] };
@@ -303,16 +359,23 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
   }
 });
 
-// Build prompt for single chunk generation - BRIEF thumbnails
-const buildSingleChunkPrompt = (work, chunkIndex, chunk) => {
-  return `Create 3 brief mnemonic thumbnails (5-10 words each) for memorizing this Shakespeare line.
+// Build prompt for single chunk generation - Stanislavski method
+const buildSingleChunkPrompt = (work, chunkIndex, chunk, dramaticContext) => {
+  const beat = findBeatForChunk(work, chunkIndex);
+  const beatInfo = beat ? `\nBeat intention: ${beat.intention}` : '';
+  const contextInfo = dramaticContext
+    ? `\n${work.character}'s objective: ${dramaticContext.super_objective}\nStakes: ${dramaticContext.stakes}\nSpeaking to: ${dramaticContext.who_am_i_speaking_to}`
+    : '';
 
-Use sound-alike images: "whether"→WEATHER, "slings"→SLINGSHOT, "suffer"→SURFING
+  return `Create 3 visceral mnemonic images (15-25 words each) for memorizing this Shakespeare line.
+
+METHOD: Feel what ${work.character} physically feels. Anchor to 2-3 KEY WORDS from the line. Exaggerate the emotion 10x. Use sensory detail — temperature, pressure, taste, muscle tension.
+${contextInfo}${beatInfo}
 
 Line: "${chunk.front} ${chunk.back}"
 
 JSON only:
-{"options":["thumb1","thumb2","thumb3"]}`;
+{"options":["image1","image2","image3"]}`;
 };
 
 // POST /generate-chunk/:authorId/:workId/:chunkIndex - Generate word picture for single chunk
@@ -336,15 +399,23 @@ router.post('/generate-chunk/:authorId/:workId/:chunkIndex', validateKey, async 
     }
 
     const chunk = work.chunks[idx];
-    console.log(`[${workId}] Generating word picture for chunk ${idx}...`);
+    const workKey = `${authorId}/${workId}`;
+    console.log(`[${workId}] Generating Stanislavski mnemonic for chunk ${idx}...`);
 
-    const prompt = buildSingleChunkPrompt(work, idx, chunk);
+    // Get dramatic context (cached)
+    let dramaticContext = null;
+    try {
+      dramaticContext = await getOrGenerateDramaticContext(work, req.analyticsPath, workKey, apiKey);
+    } catch (err) {
+      console.error('Dramatic context failed, proceeding without:', err);
+    }
+
+    const prompt = buildSingleChunkPrompt(work, idx, chunk, dramaticContext);
     const result = await callGroqAPI(prompt, apiKey, true); // Use fast model
 
     // Save to analytics
     const analyticsContent = await fs.readFile(req.analyticsPath, 'utf-8');
     const analytics = JSON.parse(analyticsContent);
-    const workKey = `${authorId}/${workId}`;
 
     if (!analytics.progress[workKey]) {
       analytics.progress[workKey] = { mastered: [], attempts: [] };
