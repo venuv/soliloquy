@@ -362,20 +362,40 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
 // Build prompt for single chunk generation - Stanislavski method
 const buildSingleChunkPrompt = (work, chunkIndex, chunk, dramaticContext) => {
   const beat = findBeatForChunk(work, chunkIndex);
-  const beatInfo = beat ? `\nBeat intention: ${beat.intention}` : '';
+  const beatInfo = beat ? `\nBeat: "${beat.label}" — ${beat.intention}` : '';
   const contextInfo = dramaticContext
-    ? `\n${work.character}'s objective: ${dramaticContext.super_objective}\nStakes: ${dramaticContext.stakes}\nSpeaking to: ${dramaticContext.who_am_i_speaking_to}`
+    ? `\nGiven circumstances: ${dramaticContext.given_circumstances}\n${work.character}'s super-objective: ${dramaticContext.super_objective}\nStakes: ${dramaticContext.stakes}\nSpeaking to: ${dramaticContext.who_am_i_speaking_to}`
     : '';
 
-  return `Create 3 visceral mnemonic images (15-25 words each) for memorizing this Shakespeare line.
+  // Get surrounding chunks for sequence context
+  const prevChunk = chunkIndex > 0 ? work.chunks[chunkIndex - 1] : null;
+  const nextChunk = chunkIndex < work.chunks.length - 1 ? work.chunks[chunkIndex + 1] : null;
+  const prevLine = prevChunk ? `Previous line: "${prevChunk.front} ${prevChunk.back}"` : 'This is the FIRST line of the speech.';
+  const nextLine = nextChunk ? `Next line: "${nextChunk.front} ${nextChunk.back}"` : 'This is the LAST line of the speech.';
 
-METHOD: Feel what ${work.character} physically feels. Anchor to 2-3 KEY WORDS from the line. Exaggerate the emotion 10x. Use sensory detail — temperature, pressure, taste, muscle tension.
+  return `You are a Stanislavski-trained acting coach helping someone MEMORIZE this Shakespeare line. You use Stanislavski's system: an actor remembers lines not by rote, but by understanding what the character NEEDS, FEELS, and DOES at each moment. The words become the only possible thing to say.
+
+DRAMATIC CONTEXT:
 ${contextInfo}${beatInfo}
 
-Line: "${chunk.front} ${chunk.back}"
+${prevLine}
+THIS LINE: "${chunk.front} ${chunk.back}"
+${nextLine}
+
+Provide two things:
+
+1. ACTION: What is ${work.character} DOING with this specific line? Not what it means — what is the character's immediate physical/emotional action? Use an active verb. Write it as a direction to the performer: "You are [doing X]." One to two sentences, visceral and specific. Include WHY this line follows the previous one — what inner need drives the character from that thought to this one.
+
+2. ANCHORS: Pick 2-3 KEY WORDS from the line that carry the most weight. For each, describe what ${work.character} physically FEELS when saying that word — not a dictionary definition, but the sensory/emotional charge the word carries IN THIS MOMENT for this character. Use Stanislavski's sense memory: temperature, texture, muscle tension, taste, pressure.
 
 JSON only:
-{"options":["image1","image2","image3"]}`;
+{
+  "action": "You are [doing what]... [why this follows the previous line]",
+  "anchors": [
+    {"word": "keyword1", "sense": "what the character physically feels saying this word (10-15 words)"},
+    {"word": "keyword2", "sense": "physical/sensory charge of this word (10-15 words)"}
+  ]
+}`;
 };
 
 // POST /generate-chunk/:authorId/:workId/:chunkIndex - Generate word picture for single chunk
@@ -411,7 +431,7 @@ router.post('/generate-chunk/:authorId/:workId/:chunkIndex', validateKey, async 
     }
 
     const prompt = buildSingleChunkPrompt(work, idx, chunk, dramaticContext);
-    const result = await callGroqAPI(prompt, apiKey, true); // Use fast model
+    const result = await callGroqAPI(prompt, apiKey); // Use full model for quality
 
     // Save to analytics
     const analyticsContent = await fs.readFile(req.analyticsPath, 'utf-8');
@@ -427,15 +447,16 @@ router.post('/generate-chunk/:authorId/:workId/:chunkIndex', validateKey, async 
       analytics.progress[workKey].wordPictures.generated = {};
     }
 
-    analytics.progress[workKey].wordPictures.generated[idx] = result.options;
+    // Store the Stanislavski action note (new format: {action, anchors})
+    analytics.progress[workKey].wordPictures.generated[idx] = result;
     await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
 
-    console.log(`[${workId}] Chunk ${idx} word picture generated`);
+    console.log(`[${workId}] Chunk ${idx} Stanislavski action note generated`);
 
     res.json({
       success: true,
       chunkIndex: idx,
-      options: result.options
+      actionNote: result
     });
   } catch (err) {
     console.error('Error generating chunk word picture:', err);

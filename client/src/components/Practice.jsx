@@ -432,21 +432,21 @@ export default function Practice() {
     saveMastered(newMastered)
   }
 
-  // Generate word picture for a given chunk index
+  // Generate Stanislavski action note for a given chunk index
   const generatePicture = async (chunkIdx = currentIndex) => {
     setGeneratingPicture(true)
     try {
       const result = await api(`/visualize/generate-chunk/${authorId}/${workId}/${chunkIdx}`, {
         method: 'POST'
       })
-      if (result.success && result.options) {
+      if (result.success && result.actionNote) {
         setWordPictures(prev => ({
           ...prev,
-          generated: { ...prev.generated, [chunkIdx]: result.options }
+          generated: { ...prev.generated, [chunkIdx]: result.actionNote }
         }))
       }
     } catch (err) {
-      console.error('Failed to generate picture:', err)
+      console.error('Failed to generate action note:', err)
     } finally {
       setGeneratingPicture(false)
     }
@@ -793,9 +793,10 @@ export default function Practice() {
     const clampedToolsChunkIndex = inBeatsMode ? Math.min(toolsChunkIndex, Math.max(toolsBeatChunkCount - 1, 0)) : 0
     const toolsActualChunkIndex = inBeatsMode ? (beat ? beat.startChunk + clampedToolsChunkIndex : 0) : currentIndex
     const toolsChunk = work.chunks[toolsActualChunkIndex] || work.chunks[0]
-    const currentOptions = wordPictures.generated[toolsActualChunkIndex] || []
+    const currentActionNote = wordPictures.generated[toolsActualChunkIndex] || null // {action, anchors} or legacy array
     const currentSelected = wordPictures.selected[toolsActualChunkIndex]
     const currentRoom = wordPictures.rooms[toolsActualChunkIndex] || ROOMS[toolsActualChunkIndex % ROOMS.length]
+    const isStanislavskiNote = currentActionNote && !Array.isArray(currentActionNote) && currentActionNote.action
 
     return (
       <div style={baseStyle}>
@@ -877,7 +878,7 @@ export default function Practice() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
             }}
           >
-            <Sparkles size={16} /> Tools
+            <Target size={16} /> Coach
           </button>
         </div>
 
@@ -1216,7 +1217,7 @@ export default function Practice() {
           </>
         )}
 
-        {/* Tools Tab - Word Pictures */}
+        {/* Tools Tab - Stanislavski Action Notes */}
         {memTab === 'tools' && (
           <>
             <div style={{ ...cardStyle, minHeight: '16rem' }}>
@@ -1224,6 +1225,7 @@ export default function Practice() {
               {inBeatsMode && beat && (
                 <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(42,74,94,0.15)' }}>
                   <p style={{ color: colors.blue, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Beat {currentIndex + 1}: {beat.label}</p>
+                  {beat.intention && <p style={{ color: colors.muted, fontSize: '0.8rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>{beat.intention}</p>}
                   <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.5rem' }}>
                     {Array.from({ length: toolsBeatChunkCount }, (_, i) => (
                       <button
@@ -1236,7 +1238,7 @@ export default function Practice() {
                           color: i === clampedToolsChunkIndex ? colors.paper : colors.muted,
                         }}
                       >
-                        Line {i + 1}{wordPictures.selected[beat.startChunk + i] ? ' ✓' : ''}
+                        Line {i + 1}{wordPictures.generated[beat.startChunk + i]?.action ? ' ✓' : ''}
                       </button>
                     ))}
                   </div>
@@ -1245,74 +1247,57 @@ export default function Practice() {
 
               {/* Chunk text */}
               <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
-                <p style={{ fontSize: '0.75rem', color: colors.faded, marginBottom: '0.25rem' }}>Chunk {toolsActualChunkIndex + 1} • {currentRoom}</p>
-                <p style={{ color: colors.muted }}>{toolsChunk.front} <span style={{ color: inBeatsMode ? colors.blue : colors.crimson, fontWeight: 500 }}>{toolsChunk.back}</span></p>
+                <p style={{ fontSize: '0.75rem', color: colors.faded, marginBottom: '0.25rem' }}>Line {toolsActualChunkIndex + 1} of {work.chunks.length}</p>
+                <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: colors.ink, lineHeight: 1.5 }}>
+                  {toolsChunk.front} <span style={{ color: inBeatsMode ? colors.blue : colors.crimson, fontWeight: 600 }}>{toolsChunk.back}</span>
+                </p>
               </div>
 
-              {/* Word Picture Section */}
-              {currentSelected && !editingPicture ? (
+              {/* Stanislavski Action Note */}
+              {isStanislavskiNote ? (
                 <div>
-                  <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Word Picture</p>
-                  <div style={{ background: 'rgba(90,74,106,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-                    <p style={{ color: colors.ink, lineHeight: 1.5 }}>{currentSelected}</p>
+                  {/* Action */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <p style={{ fontSize: '0.7rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Action</p>
+                    <div style={{ background: 'rgba(90,74,106,0.06)', padding: '0.75rem 1rem', borderRadius: '8px', borderLeft: '3px solid #5a4a6a' }}>
+                      <p style={{ color: colors.ink, lineHeight: 1.6, fontSize: '0.9rem' }}>{currentActionNote.action}</p>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => { setEditingPicture(true); setEditText(currentSelected) }} style={{ ...btnSecondary, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
-                      <Edit3 size={14} /> Edit
-                    </button>
+
+                  {/* Anchors */}
+                  {currentActionNote.anchors && currentActionNote.anchors.length > 0 && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <p style={{ fontSize: '0.7rem', color: colors.crimson, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Anchors</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {currentActionNote.anchors.map((anchor, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'baseline' }}>
+                            <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.1rem', fontWeight: 700, color: colors.crimson, minWidth: '5rem', flexShrink: 0 }}>
+                              {anchor.word}
+                            </span>
+                            <span style={{ color: colors.muted, fontSize: '0.85rem', lineHeight: 1.5, fontStyle: 'italic' }}>
+                              {anchor.sense}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
                     <button onClick={() => generatePicture(toolsActualChunkIndex)} disabled={generatingPicture} style={{ ...btnSecondary, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
-                      <Sparkles size={14} /> Regenerate
+                      {generatingPicture ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Regenerating...</> : <><Sparkles size={14} /> Regenerate</>}
                     </button>
                   </div>
-                </div>
-              ) : editingPicture ? (
-                <div>
-                  <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edit Word Picture</p>
-                  <textarea
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                    placeholder="Write your mnemonic..."
-                    style={{ width: '100%', height: '5rem', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', resize: 'none', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem', color: colors.ink, boxSizing: 'border-box' }}
-                  />
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <button onClick={() => saveEditedPicture(toolsActualChunkIndex)} style={{ ...btnPrimary, background: colors.forest, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
-                      <Check size={14} /> Save
-                    </button>
-                    <button onClick={() => { setEditingPicture(false); setEditText('') }} style={{ ...btnSecondary, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : currentOptions.length > 0 ? (
-                <div>
-                  <p style={{ fontSize: '0.75rem', color: '#5a4a6a', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Choose a Word Picture</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {currentOptions.map((option, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => selectPicture(option, toolsActualChunkIndex)}
-                        style={{ width: '100%', textAlign: 'left', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', cursor: 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.85rem', color: colors.ink }}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                  <button onClick={() => setEditingPicture(true)} style={{ ...btnSecondary, marginTop: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}>
-                    <Edit3 size={14} /> Write my own
-                  </button>
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                  <Sparkles size={32} style={{ color: colors.faded, marginBottom: '0.75rem' }} />
-                  <p style={{ color: colors.muted, marginBottom: '1rem' }}>Create a vivid mnemonic image for this chunk</p>
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                    <button onClick={() => generatePicture(toolsActualChunkIndex)} disabled={generatingPicture} style={{ ...btnPrimary, background: '#5a4a6a' }}>
-                      {generatingPicture ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Generating...</> : <><Sparkles size={16} /> Generate Ideas</>}
-                    </button>
-                    <button onClick={() => setEditingPicture(true)} style={btnSecondary}>
-                      <Edit3 size={16} /> Write my own
-                    </button>
-                  </div>
+                  <Target size={32} style={{ color: colors.faded, marginBottom: '0.75rem' }} />
+                  <p style={{ color: colors.muted, marginBottom: '0.25rem', fontSize: '0.95rem' }}>Stanislavski coaching</p>
+                  <p style={{ color: colors.faded, marginBottom: '1rem', fontSize: '0.8rem' }}>Understand what the character feels and needs — the words follow</p>
+                  <button onClick={() => generatePicture(toolsActualChunkIndex)} disabled={generatingPicture} style={{ ...btnPrimary, background: '#5a4a6a' }}>
+                    {generatingPicture ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Generating...</> : <><Target size={16} /> Generate Action Note</>}
+                  </button>
                 </div>
               )}
             </div>
@@ -1324,7 +1309,7 @@ export default function Practice() {
               </button>
               <div style={{ textAlign: 'center', flex: 1 }}>
                 <p style={{ color: colors.faded, fontSize: '0.85rem' }}>
-                  {Object.keys(wordPictures.selected).length} of {work.chunks.length} chunks have mnemonics
+                  {Object.values(wordPictures.generated).filter(v => v && v.action).length} of {work.chunks.length} lines coached
                 </p>
               </div>
               <button onClick={() => { if (inBeatsMode) { setCurrentIndex(Math.min(totalItems - 1, currentIndex + 1)); setToolsChunkIndex(0) } else { setCurrentIndex(Math.min(work.chunks.length - 1, currentIndex + 1)) } setEditingPicture(false) }} disabled={inBeatsMode ? currentIndex === totalItems - 1 : currentIndex === work.chunks.length - 1} style={{ ...btnSecondary, opacity: (inBeatsMode ? currentIndex === totalItems - 1 : currentIndex === work.chunks.length - 1) ? 0.4 : 1, padding: '0.75rem', minWidth: '44px', minHeight: '44px', justifyContent: 'center' }}>
