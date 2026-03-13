@@ -11,8 +11,8 @@ Memorize Shakespeare's soliloquies through flashcard practice and voice-enabled 
 - **Test Mode** - Random prompts with voice input (Web Speech API) or typing
 - **Recite Mode** - Full soliloquy recording with AI analysis (accuracy, fluency, dramatic coaching)
 - **Beat Editor** - Adjust beat boundaries per-user; shared defaults generated via LLM
-- **Word Pictures** - AI-generated phonetic mnemonics with memory palace rooms
-- **Progress Tracking** - Per-user analytics stored in JSON files
+- **Coach** - Stanislavsky action notes: what the character is DOING + sensory anchors for key words
+- **Progress Tracking** - Per-user analytics stored in JSON files, backed up to Tigris (S3)
 - **Simple Auth** - Numeric token (no passwords), cookie fingerprinting for abuse detection
 
 ## Local Development
@@ -40,7 +40,10 @@ fly auth login
 fly launch --no-deploy
 
 # Create persistent volume for data (1GB should be plenty)
-fly volumes create soliloquy_data --size 1 --region ord
+fly volumes create soliloquy_data --size 1 --region iad
+
+# Create Tigris bucket for analytics backup
+fly storage create soliloquy-analytics
 
 # Set admin key for analytics access
 fly secrets set ADMIN_KEY=your-secret-admin-key
@@ -58,10 +61,11 @@ fly deploy
 ### Configuration
 
 The `fly.toml` is already configured with:
-- Auto-stop/start machines (cost savings)
-- Persistent volume mounted at `/app/server/data`
+- Always-on machine (autostop off, min 1 running)
+- Persistent volume mounted at `/app/server/data/analytics`
+- Tigris S3 backup for analytics (fire-and-forget sync + restore-on-startup)
 - HTTPS enforcement
-- 256MB shared CPU (minimal tier)
+- 512MB shared CPU, region `iad`
 
 ### Admin Endpoints
 
@@ -178,5 +182,5 @@ Play files live in `scripts/plays/{name}.json`. Beats in play files are validate
 
 - **Backend**: Node.js + Express
 - **Frontend**: React + Vite + Tailwind CSS
-- **Storage**: JSON files on persistent volume
+- **Storage**: JSON files on persistent volume + Tigris S3 backup
 - **Voice**: Web Speech API (browser-native)
