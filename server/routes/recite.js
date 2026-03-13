@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -419,7 +420,7 @@ router.post('/transcribe/:authorId/:workId', validateKey, upload.single('audio')
         analytics.progress[workKey].recitations.slice(-10);
     }
 
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
     console.log(`[recite] Stored: ${troubleSpots.length} trouble spots (${stats.substitutions} sub, ${stats.omissions} omit, ${stats.hesitations} hesit, ${stats.stumbles} stumble)`);
 
     res.json({

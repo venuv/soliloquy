@@ -16,6 +16,7 @@ import newsRoutes from './routes/news.js';
 import videosRoutes from './routes/videos.js';
 import reciteRoutes from './routes/recite.js';
 import beatsRoutes from './routes/beats.js';
+import { restoreFromTigris } from './tigris.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,7 +62,16 @@ app.get('*', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Admin key: ${process.env.ADMIN_KEY || 'change-me-in-production'}`);
+// Restore analytics from Tigris before accepting connections
+const DATA_DIR = path.join(__dirname, 'data');
+restoreFromTigris(DATA_DIR).then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Admin key: ${process.env.ADMIN_KEY || 'change-me-in-production'}`);
+  });
+}).catch(err => {
+  console.error('Tigris restore failed, starting anyway:', err.message);
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 });

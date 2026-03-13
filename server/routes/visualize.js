@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -239,7 +240,7 @@ const getOrGenerateDramaticContext = async (work, analyticsPath, workKey, apiKey
     analytics.progress[workKey] = { mastered: [], attempts: [] };
   }
   analytics.progress[workKey].dramaticContext = context;
-  await fs.writeFile(analyticsPath, JSON.stringify(analytics, null, 2));
+  await writeAndSync(analyticsPath, analytics);
 
   return context;
 };
@@ -345,7 +346,7 @@ router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
       generatedAt: new Date().toISOString()
     };
 
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
 
     console.log(`[${workId}] Word pictures generated and improved successfully`);
 
@@ -449,7 +450,7 @@ router.post('/generate-chunk/:authorId/:workId/:chunkIndex', validateKey, async 
 
     // Store the Stanislavski action note (new format: {action, anchors})
     analytics.progress[workKey].wordPictures.generated[idx] = result;
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
 
     console.log(`[${workId}] Chunk ${idx} Stanislavski action note generated`);
 
@@ -492,7 +493,7 @@ router.post('/save-chunk', validateKey, async (req, res) => {
     }
     analytics.progress[workKey].wordPictures.lastEdited = new Date().toISOString();
 
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
 
     res.json({ success: true });
   } catch (err) {
@@ -521,7 +522,7 @@ router.post('/save', validateKey, async (req, res) => {
     analytics.progress[workKey].wordPictures.selected = selected;
     analytics.progress[workKey].wordPictures.lastEdited = new Date().toISOString();
 
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
 
     res.json({ success: true });
   } catch (err) {

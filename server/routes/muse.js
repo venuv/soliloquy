@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { matchQuotes, pickWisdomType, pickStyle, STYLES, loadQuotes } from '../muse/matcher.js';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -153,7 +154,7 @@ async function loadMuseAnalytics() {
  * Save muse analytics
  */
 async function saveMuseAnalytics(analytics) {
-  await fs.writeFile(MUSE_ANALYTICS_FILE, JSON.stringify(analytics, null, 2));
+  await writeAndSync(MUSE_ANALYTICS_FILE, analytics);
 }
 
 /**

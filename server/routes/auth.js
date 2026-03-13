@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,14 +50,14 @@ async function loadKeys() {
   } catch (err) {
     // File doesn't exist, create empty
     const data = { keys: {} };
-    await fs.writeFile(KEYS_FILE, JSON.stringify(data, null, 2));
+    await writeAndSync(KEYS_FILE, data);
     return data;
   }
 }
 
 // Save keys file
 async function saveKeys(data) {
-  await fs.writeFile(KEYS_FILE, JSON.stringify(data, null, 2));
+  await writeAndSync(KEYS_FILE, data);
 }
 
 // Generate a new user key
@@ -94,12 +95,12 @@ router.post('/register', async (req, res) => {
     
     // Initialize analytics file for this user
     const analyticsPath = path.join(ANALYTICS_DIR, `${newKey}.json`);
-    await fs.writeFile(analyticsPath, JSON.stringify({
+    await writeAndSync(analyticsPath, {
       key: newKey,
       createdAt: new Date().toISOString(),
       sessions: [],
       progress: {}
-    }, null, 2));
+    });
     
     console.log(`New user registered: ${newKey}`);
     res.json({ key: newKey });
@@ -151,12 +152,12 @@ router.post('/validate', async (req, res) => {
     try {
       await fs.access(analyticsPath);
     } catch {
-      await fs.writeFile(analyticsPath, JSON.stringify({
+      await writeAndSync(analyticsPath, {
         key: key,
         createdAt: data.keys[key].createdAt,
         sessions: [],
         progress: {}
-      }, null, 2));
+      });
     }
     
     console.log(`User validated: ${key}`);

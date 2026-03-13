@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,7 +68,7 @@ router.post('/session', validateKey, async (req, res) => {
       analytics.sessions = analytics.sessions.slice(-1000);
     }
     
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
     res.json({ success: true });
   } catch (err) {
     console.error('Error recording session:', err);
@@ -96,7 +97,7 @@ router.post('/mastered', validateKey, async (req, res) => {
     }
     analytics.progress[workKey].lastUpdated = new Date().toISOString();
     
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
     res.json({ success: true });
   } catch (err) {
     console.error('Error updating mastered:', err);
@@ -134,7 +135,7 @@ router.post('/attempt', validateKey, async (req, res) => {
       analytics.progress[workKey].attempts = analytics.progress[workKey].attempts.slice(-100);
     }
     
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
     res.json({ success: true });
   } catch (err) {
     console.error('Error recording attempt:', err);
@@ -158,7 +159,7 @@ router.post('/beat-overrides', validateKey, async (req, res) => {
     analytics.progress[workKey].beatOverrides = beats;
     analytics.progress[workKey].lastUpdated = new Date().toISOString();
 
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
     res.json({ success: true });
   } catch (err) {
     console.error('Error saving beat overrides:', err);
@@ -199,7 +200,7 @@ router.post('/preferences', validateKey, async (req, res) => {
     }
     obj[parts[parts.length - 1]] = value;
 
-    await fs.writeFile(req.analyticsPath, JSON.stringify(analytics, null, 2));
+    await writeAndSync(req.analyticsPath, analytics);
     res.json({ success: true });
   } catch (err) {
     console.error('Error updating preferences:', err);

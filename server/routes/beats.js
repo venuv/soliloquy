@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,7 +40,7 @@ function loadAuthor(authorId) {
 // Save author data
 async function saveAuthor(authorId, data) {
   const dataPath = path.join(AUTHORS_DIR, `${authorId}.json`);
-  await fs.writeFile(dataPath, JSON.stringify(data, null, 2));
+  await writeAndSync(dataPath, data);
 }
 
 // Call Groq LLM

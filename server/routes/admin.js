@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -176,7 +177,7 @@ router.post('/cleanup', requireAdmin, async (req, res) => {
         }
       }
       
-      await fs.writeFile(KEYS_FILE, JSON.stringify(keysData, null, 2));
+      await writeAndSync(KEYS_FILE, keysData);
     } catch (err) {
       console.error('Error cleaning keys:', err);
     }
