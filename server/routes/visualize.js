@@ -374,7 +374,7 @@ const buildSingleChunkPrompt = (work, chunkIndex, chunk, dramaticContext) => {
   const prevLine = prevChunk ? `Previous line: "${prevChunk.front} ${prevChunk.back}"` : 'This is the FIRST line of the speech.';
   const nextLine = nextChunk ? `Next line: "${nextChunk.front} ${nextChunk.back}"` : 'This is the LAST line of the speech.';
 
-  return `You are a Stanislavski-trained acting coach helping someone MEMORIZE this Shakespeare line. You use Stanislavski's system: an actor remembers lines not by rote, but by understanding what the character NEEDS, FEELS, and DOES at each moment. The words become the only possible thing to say.
+  return `You are a Stanislavski-trained acting coach helping someone MEMORIZE this Shakespeare line. The performer is NOT a trained actor — they need concrete, physical instructions they can actually DO with their body to lock each line into muscle memory.
 
 DRAMATIC CONTEXT:
 ${contextInfo}${beatInfo}
@@ -385,16 +385,31 @@ ${nextLine}
 
 Provide two things:
 
-1. ACTION: What is ${work.character} DOING with this specific line? Not what it means — what is the character's immediate physical/emotional action? Use an active verb. Write it as a direction to the performer: "You are [doing X]." One to two sentences, visceral and specific. Include WHY this line follows the previous one — what inner need drives the character from that thought to this one.
+1. ACTION: What is ${work.character} DOING with this specific line? Write a short, direct instruction: "You are [active verb]." One sentence. Use a verb you can physically perform: grip, lean, push away, whisper, plead, steady yourself. NOT "imparting caution" or "transitioning" — those are descriptions, not actions.
 
-2. ANCHORS: Pick 2-3 KEY WORDS from the line that carry the most weight. For each, describe what ${work.character} physically FEELS when saying that word — not a dictionary definition, but the sensory/emotional charge the word carries IN THIS MOMENT for this character. Use Stanislavski's sense memory: temperature, texture, muscle tension, taste, pressure.
+GOOD: "You are gripping your son's shoulders, holding him still so he hears every word."
+BAD: "You are imparting caution with a gentle but firm tone, transitioning from granting permission to offering vital advice."
+
+2. ANCHORS: Pick 2-3 KEY WORDS from the line. For each, give a PHYSICAL GESTURE or BODY STATE — something the performer literally does or feels while saying the word. Not a poetic metaphor. Not "a gentle sensation." A specific thing happening in a specific body part.
+
+GOOD anchors:
+- "ear" → "Cup your hand behind your ear, lean forward — you're showing him: LISTEN like this"
+- "censure" → "Jaw tightens, teeth press together — you're bracing against a slap"
+- "sword" → "Right hand drops to your hip, fingers close around an invisible hilt"
+
+BAD anchors:
+- "ear" → "A gentle, open sensation, like a soft breeze on the skin"
+- "fortune" → "A heavy weight of cosmic inevitability"
+- "noble" → "A warm, dignified feeling in the chest"
+
+The sense description must answer: "What do I DO with my body when I say this word?"
 
 JSON only:
 {
-  "action": "You are [doing what]... [why this follows the previous line]",
+  "action": "You are [physical verb]... (one sentence, concrete)",
   "anchors": [
-    {"word": "keyword1", "sense": "what the character physically feels saying this word (10-15 words)"},
-    {"word": "keyword2", "sense": "physical/sensory charge of this word (10-15 words)"}
+    {"word": "keyword1", "sense": "physical gesture or body state — what you DO (8-15 words)"},
+    {"word": "keyword2", "sense": "specific body part + specific sensation or movement (8-15 words)"}
   ]
 }`;
 };
