@@ -263,57 +263,84 @@ router.post('/', async (req, res) => {
       console.log(`[muse] Rerank: skipped (confident)`);
     }
 
-    // Step 5: Generate response (Sonnet — the one call that matters)
+    // Step 5: Generate response — stream if client accepts, else batch
     const t3 = Date.now();
-    const response = await generateResponse(client, quote, input, userState, voice, null);
-    console.log(`[muse] Actor: ${Date.now() - t3}ms`);
-
-    // Step 6: Send response immediately, run critic async for analytics
     const responseId = `muse-${Date.now()}`;
-    const totalMs = Date.now() - t0;
-    console.log(`[muse] Total: ${totalMs}ms (${confident ? '2' : '3'} LLM calls)`);
+    const wantsStream = req.query.stream === '1' || req.headers.accept === 'text/event-stream';
 
-    res.json({
-      id: responseId,
-      response,
-      quote: {
-        text: quote.full_text?.split('\n').slice(0, 8).join('\n'),
-        character: quote.character,
-        play: quote.play,
-        situation: quote.character_situation
-      },
-      meta: {
-        emotions: userState.emotions,
-        wisdomType,
-        voice: VOICES[voice].name,
-        latencyMs: totalMs
-      }
-    });
+    if (wantsStream) {
+      // SSE streaming — user sees words immediately (~1s to first token)
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
 
-    // Async critic — runs after response is sent, for quality tracking only
-    critiqueResponse(client, response, quote, input, voice).then(async (critique) => {
-      const analytics = await loadMuseAnalytics();
-      analytics.responses.push({
+      // Send metadata first
+      const meta = {
         id: responseId,
-        timestamp: new Date().toISOString(),
-        userInput: input.substring(0, 500),
-        userState,
-        quoteId: quote.id,
-        quoteSummary: quote.quote,
-        character: quote.character,
-        play: quote.play,
-        wisdomType,
-        voice,
-        criticPass: critique.pass,
-        criticScores: critique.scores,
-        rerankReason,
-        latencyMs: totalMs
+        quote: {
+          text: quote.full_text?.split('\n').slice(0, 8).join('\n'),
+          character: quote.character,
+          play: quote.play,
+          situation: quote.character_situation
+        },
+        meta: {
+          emotions: userState.emotions,
+          wisdomType,
+          voice: VOICES[voice].name
+        }
+      };
+      res.write(`event: meta\ndata: ${JSON.stringify(meta)}\n\n`);
+
+      // Stream the actor response
+      const voiceConfig = VOICES[voice];
+      const stream = await client.messages.stream({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: buildActorPrompt(quote, input, voiceConfig, null) }]
       });
-      if (analytics.responses.length > 1000) {
-        analytics.responses = analytics.responses.slice(-1000);
+
+      let fullResponse = '';
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.text) {
+          fullResponse += event.delta.text;
+          res.write(`event: token\ndata: ${JSON.stringify(event.delta.text)}\n\n`);
+        }
       }
-      await saveMuseAnalytics(analytics);
-    }).catch(err => console.error('[muse] Async critic/analytics error:', err.message));
+
+      res.write(`event: done\ndata: {}\n\n`);
+      res.end();
+      console.log(`[muse] Actor (streamed): ${Date.now() - t3}ms`);
+      console.log(`[muse] Total: ${Date.now() - t0}ms (${confident ? '2' : '3'} LLM calls, streamed)`);
+
+      // Async critic + analytics
+      critiqueAndLog(client, fullResponse, quote, input, voice, responseId, userState, wisdomType, rerankReason, Date.now() - t0);
+    } else {
+      // Batch mode — original behavior
+      const response = await generateResponse(client, quote, input, userState, voice, null);
+      const totalMs = Date.now() - t0;
+      console.log(`[muse] Actor: ${Date.now() - t3}ms`);
+      console.log(`[muse] Total: ${totalMs}ms (${confident ? '2' : '3'} LLM calls)`);
+
+      res.json({
+        id: responseId,
+        response,
+        quote: {
+          text: quote.full_text?.split('\n').slice(0, 8).join('\n'),
+          character: quote.character,
+          play: quote.play,
+          situation: quote.character_situation
+        },
+        meta: {
+          emotions: userState.emotions,
+          wisdomType,
+          voice: VOICES[voice].name,
+          latencyMs: totalMs
+        }
+      });
+
+      // Async critic + analytics
+      critiqueAndLog(client, response, quote, input, voice, responseId, userState, wisdomType, rerankReason, totalMs);
+    }
   } catch (error) {
     console.error('Muse error:', error);
     res.status(500).json({ error: 'The muse is momentarily silent', message: error.message });
@@ -416,5 +443,72 @@ router.get('/quotes/count', (req, res) => {
   const quotes = loadQuotes();
   res.json({ count: quotes.length });
 });
+
+/**
+ * Build the actor prompt (extracted for reuse in streaming + batch paths)
+ */
+function buildActorPrompt(quote, userInput, voiceConfig, criticNotes) {
+  const revision = criticNotes
+    ? `\n\nIMPORTANT — A critic reviewed your previous attempt and said:\n"${criticNotes}"\nFix these issues in this version.`
+    : '';
+
+  return `You are the Morning Muse. Someone shared how their morning is going. You offer Shakespeare's wisdom — but only if it genuinely connects. You are NOT a Shakespeare encyclopedia. You are a friend who happens to know Shakespeare deeply.
+
+THE USER SAID:
+"${userInput}"
+
+READ CAREFULLY. What did they actually say? Reference their specific words and situation, not a generic emotional category.
+
+SHAKESPEARE QUOTE TO USE:
+Character: ${quote.character} (${quote.play})
+Situation: ${quote.character_situation}
+Quote:
+"${quote.full_text?.split('\n').slice(0, 8).join('\n')}"
+
+YOUR VOICE TODAY: ${voiceConfig.name}
+${voiceConfig.description}
+Example: "${voiceConfig.example}"
+
+RULES:
+1. Your FIRST sentence must reference something SPECIFIC the user said — their actual words, not a paraphrase into therapy-speak.
+2. Connect the quote to their situation with a concrete parallel — what the character was going through that mirrors this.
+3. Present 2-4 key lines from the quote (the ones that land hardest for THIS situation).
+4. Close with one sentence — insight, question, or reframe. Match the voice.
+5. Under 150 words total. The voice dictates everything — word choice, sentence length, attitude.${revision}`;
+}
+
+/**
+ * Async critique + analytics logging (fire-and-forget after response is sent)
+ */
+async function critiqueAndLog(client, response, quote, userInput, voice, responseId, userState, wisdomType, rerankReason, totalMs) {
+  try {
+    const critique = await critiqueResponse(client, response, quote, userInput, voice);
+
+    const analytics = await loadMuseAnalytics();
+    analytics.responses.push({
+      id: responseId,
+      timestamp: new Date().toISOString(),
+      userState,
+      wisdomType,
+      voice,
+      play: quote.play,
+      character: quote.character,
+      quote: quote.quote,
+      rerankReason,
+      critique: critique.scores,
+      critiquePass: critique.pass,
+      latencyMs: totalMs
+    });
+
+    // Keep last 1000 responses
+    if (analytics.responses.length > 1000) {
+      analytics.responses = analytics.responses.slice(-1000);
+    }
+
+    await saveMuseAnalytics(analytics);
+  } catch (err) {
+    console.warn('[muse] critiqueAndLog failed:', err.message);
+  }
+}
 
 export default router;
