@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { matchQuotes, pickWisdomType, pickStyle, STYLES, loadQuotes } from '../muse/matcher.js';
+import { matchQuotes, pickWisdomType, pickVoice, VOICES, loadQuotes } from '../muse/matcher.js';
 import { writeAndSync } from '../persist.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -98,36 +98,77 @@ Respond with JSON:
 }
 
 /**
- * Generate styled response with quote
+ * LLM-rerank: given algorithmic top candidates, ask Claude which quote
+ * actually connects to what the user said.
  */
-async function generateResponse(client, quote, userInput, userState, style) {
-  const styleConfig = STYLES[style];
+async function rerankQuotes(client, candidates, userInput, userState) {
+  const candidateSummaries = candidates.map((q, i) =>
+    `${i}: "${q.quote}" — ${q.character}, ${q.play}. Situation: ${q.character_situation || 'unknown'}`
+  ).join('\n');
 
-  const prompt = `You are the Morning Muse, offering Shakespearean wisdom to start the day.
-
-USER'S MORNING STATE:
+  const prompt = `A user shared how they're feeling this morning:
 "${userInput}"
-Emotions: ${userState.emotions?.join(', ')}
-Themes: ${userState.themes?.join(', ')}
+(Emotions: ${userState.emotions?.join(', ')}. Themes: ${userState.themes?.join(', ')})
 
-MATCHED SHAKESPEARE QUOTE:
-Character: ${quote.character}
-Play: ${quote.play}
+Here are ${candidates.length} Shakespeare quotes. Pick the ONE that most genuinely connects to what this specific person said — not just matching emotions, but where the character's situation resonates with the user's actual experience.
+
+${candidateSummaries}
+
+Respond with JSON only:
+{
+  "pick": 0,
+  "reason": "one sentence: why this quote connects to what they actually said"
+}`;
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 128,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    const text = message.content[0].text;
+    const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
+    const idx = Math.min(Math.max(0, json.pick), candidates.length - 1);
+    console.log(`[muse] Reranked: picked #${idx} — ${json.reason}`);
+    return { quote: candidates[idx], reason: json.reason };
+  } catch (err) {
+    console.warn('[muse] Rerank failed, using algorithmic top:', err.message);
+    return { quote: candidates[0], reason: null };
+  }
+}
+
+/**
+ * Actor: Generate response with a specific quote and voice.
+ */
+async function generateResponse(client, quote, userInput, userState, voice, criticNotes) {
+  const voiceConfig = VOICES[voice];
+  const revision = criticNotes
+    ? `\n\nIMPORTANT — A critic reviewed your previous attempt and said:\n"${criticNotes}"\nFix these issues in this version.`
+    : '';
+
+  const prompt = `You are the Morning Muse. Someone shared how their morning is going. You offer Shakespeare's wisdom — but only if it genuinely connects. You are NOT a Shakespeare encyclopedia. You are a friend who happens to know Shakespeare deeply.
+
+THE USER SAID:
+"${userInput}"
+
+READ CAREFULLY. What did they actually say? Reference their specific words and situation, not a generic emotional category.
+
+SHAKESPEARE QUOTE TO USE:
+Character: ${quote.character} (${quote.play})
 Situation: ${quote.character_situation}
 Quote:
 "${quote.full_text?.split('\n').slice(0, 8).join('\n')}"
 
-COMMUNICATION STYLE: ${styleConfig.name}
-${styleConfig.description}
-Example tone: "${styleConfig.example}"
+YOUR VOICE TODAY: ${voiceConfig.name}
+${voiceConfig.description}
+Example: "${voiceConfig.example}"
 
-Write a response that:
-1. Acknowledges the user's feeling (1 sentence)
-2. Connects it to the character's situation (1-2 sentences)
-3. Presents 2-4 key lines from the quote
-4. Offers a brief insight or comfort (1 sentence)
-
-Keep it concise - under 150 words total. Use the specified communication style throughout.`;
+RULES:
+1. Your FIRST sentence must reference something SPECIFIC the user said — their actual words, not a paraphrase into therapy-speak.
+2. Connect the quote to their situation with a concrete parallel — what the character was going through that mirrors this.
+3. Present 2-4 key lines from the quote (the ones that land hardest for THIS situation).
+4. Close with one sentence — insight, question, or reframe. Match the voice.
+5. Under 150 words total. The voice dictates everything — word choice, sentence length, attitude.${revision}`;
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -136,6 +177,54 @@ Keep it concise - under 150 words total. Use the specified communication style t
   });
 
   return message.content[0].text;
+}
+
+/**
+ * Critic: evaluate whether the response is specific enough, whether the quote
+ * actually connects, and whether the voice is consistent.
+ */
+async function critiqueResponse(client, response, quote, userInput, voice) {
+  const prompt = `You are a quality critic for the Morning Muse — a Shakespeare wisdom service.
+
+THE USER SAID: "${userInput}"
+VOICE CHOSEN: ${voice}
+QUOTE USED: "${quote.quote}" — ${quote.character}, ${quote.play}
+
+RESPONSE GENERATED:
+---
+${response}
+---
+
+Score each criterion 1-5 and explain briefly:
+
+1. SPECIFICITY: Does the response reference what the user actually said (their specific words/situation), or does it use generic therapy-speak like "you're tired and stuck"?
+2. QUOTE FIT: Does the Shakespeare quote genuinely connect to the user's situation, or is it shoehorned in?
+3. VOICE: Does the response sound like the specified voice throughout, or does it slip into generic advice-giving?
+4. BREVITY: Is it tight and punchy, or does it ramble?
+
+Respond with JSON:
+{
+  "scores": { "specificity": 3, "quote_fit": 4, "voice": 3, "brevity": 4 },
+  "pass": true,
+  "notes": "If pass is false, explain what to fix in 1-2 sentences. Be specific."
+}
+
+Set pass=true if ALL scores are 3+. Set pass=false if any score is 1-2.`;
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 256,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    const text = message.content[0].text;
+    const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
+    console.log(`[muse] Critic scores:`, json.scores, json.pass ? 'PASS' : 'FAIL');
+    return json;
+  } catch (err) {
+    console.warn('[muse] Critic failed, accepting response:', err.message);
+    return { pass: true, scores: {}, notes: null };
+  }
 }
 
 /**
@@ -180,27 +269,34 @@ router.post('/', async (req, res) => {
     // Step 1: Parse user input
     const userState = await parseUserInput(client, input);
 
-    // Step 2: Pick wisdom type (system varies)
+    // Step 2: Pick wisdom type
     const wisdomType = pickWisdomType(userState);
     userState.wisdom_type = wisdomType;
 
-    // Step 3: Match quotes
-    const matches = matchQuotes(userState, 3);
-    if (matches.length === 0) {
+    // Step 3: Algorithmic match — get top 5 candidates
+    const candidates = matchQuotes(userState, 5);
+    if (candidates.length === 0) {
       return res.status(503).json({
         error: 'No quotes available',
         message: 'Quote database not loaded. Run crab-enrich.js first.'
       });
     }
 
-    // Pick best match (first one, already sorted by score)
-    const quote = matches[0];
+    // Step 4: LLM rerank — pick the quote that actually connects
+    const { quote, reason: rerankReason } = await rerankQuotes(client, candidates, input, userState);
 
-    // Step 4: Pick style
-    const style = pickStyle(preferredStyle);
+    // Step 5: Pick voice (Fortune's Wheel — random unless user specifies)
+    const voice = pickVoice(preferredStyle);
 
-    // Step 5: Generate response
-    const response = await generateResponse(client, quote, input, userState, style);
+    // Step 6: Actor-Critic loop (max 2 rounds)
+    let response = await generateResponse(client, quote, input, userState, voice, null);
+    let critique = await critiqueResponse(client, response, quote, input, voice);
+
+    if (!critique.pass) {
+      console.log(`[muse] Round 1 failed, regenerating with notes: ${critique.notes}`);
+      response = await generateResponse(client, quote, input, userState, voice, critique.notes);
+      // Don't critique again — accept round 2
+    }
 
     // Record for analytics
     const analytics = await loadMuseAnalytics();
@@ -215,10 +311,12 @@ router.post('/', async (req, res) => {
       character: quote.character,
       play: quote.play,
       wisdomType,
-      style
+      voice,
+      criticPass: critique.pass,
+      criticScores: critique.scores,
+      rerankReason
     });
 
-    // Keep last 1000 responses
     if (analytics.responses.length > 1000) {
       analytics.responses = analytics.responses.slice(-1000);
     }
@@ -236,7 +334,9 @@ router.post('/', async (req, res) => {
       meta: {
         emotions: userState.emotions,
         wisdomType,
-        style: STYLES[style].name
+        voice: VOICES[voice].name,
+        criticPass: critique.pass,
+        criticScores: critique.scores
       }
     });
   } catch (error) {
@@ -301,10 +401,11 @@ router.get('/stats', async (req, res) => {
       });
     });
 
-    // Style distribution
+    // Voice distribution
     const styles = {};
     analytics.responses.forEach(r => {
-      styles[r.style] = (styles[r.style] || 0) + 1;
+      const v = r.voice || r.style;
+      styles[v] = (styles[v] || 0) + 1;
     });
 
     // Top plays

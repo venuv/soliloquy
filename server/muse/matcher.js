@@ -74,30 +74,39 @@ const EMOTION_MAP = {
 };
 
 /**
- * Communication styles
+ * Fortune's Wheel voices — the 5 moods the Muse can speak in.
+ * The user doesn't choose; Fortune does.
  */
-export const STYLES = {
-  shakespearean: {
-    name: 'Shakespearean Hauteur',
-    description: 'Elevated, theatrical, uses thee/thou',
-    example: 'Thou art beset by the selfsame demons that plagued the melancholy Dane...'
+export const VOICES = {
+  straight: {
+    name: 'Straight with me',
+    description: 'Direct, no sugar. Name the real thing. Say what needs saying in plain language. Like a friend who respects you too much to be gentle.',
+    example: "You're not stuck. You're avoiding a decision. There's a difference."
   },
-  victorian: {
-    name: 'Victorian Pomp',
-    description: 'Formal, ornate, dignified',
-    example: 'One finds oneself in a most familiar predicament, not unlike...'
+  laugh: {
+    name: 'Make me laugh',
+    description: 'Find the absurdity. Deflate the drama with humor, then land the truth sideways. Warm, not cruel. Like a wise friend at a bar.',
+    example: "Oh you're stuck. Like a cart in mud. Except you built the cart, drove it into the mud, and now you're writing poetry about mud."
   },
-  redneck: {
-    name: 'Redneck Chic',
-    description: 'Folksy, plain-spoken, Billy Bob Thornton style',
-    example: "Yeah, you're all twisted up inside. Hamlet got like that too..."
+  deep: {
+    name: 'Go deep',
+    description: 'Sit with the feeling. Don\'t rush to fix it. Ask what this moment is really about. Contemplative, unhurried. Like a therapist who reads Shakespeare.',
+    example: "Stillness isn't always stuckness. What if the nothing-moving is you gathering?"
   },
-  modern: {
-    name: 'Straight Modern',
-    description: 'Clear, contemporary, accessible',
-    example: "That feeling of paralysis? Hamlet knew it well..."
+  challenge: {
+    name: 'Challenge me',
+    description: 'Push back on the user\'s framing. Reframe the struggle as raw material. No self-pity allowed. Like a coach who came from the same struggle. Jay-Z energy.',
+    example: "Henry was a drunk kid nobody believed in. Night before the biggest battle, outnumbered — he said 'we happy few.' He didn't wait for the odds to change."
+  },
+  listen: {
+    name: 'Just listen',
+    description: 'Reflect back what the user said. Don\'t fix, don\'t advise. Help them hear themselves. Mirror energy. Ask one gentle question at the end.',
+    example: "You said three things — tired, nothing moving, stuck. But those aren't the same. Which one is it really?"
   }
 };
+
+// Backwards compat alias
+export const STYLES = VOICES;
 
 /**
  * Expand user emotions to quote-matchable emotions using the map
@@ -267,13 +276,15 @@ function weightedRandom(items, weights) {
 }
 
 /**
- * Pick a random communication style
+ * Pick a voice — Fortune's Wheel chooses randomly, or user can override.
  */
-export function pickStyle(preferredStyle = null) {
-  if (preferredStyle && STYLES[preferredStyle]) {
-    return preferredStyle;
+export function pickVoice(preferredVoice = null) {
+  if (preferredVoice && VOICES[preferredVoice]) {
+    return preferredVoice;
   }
-
-  const styles = Object.keys(STYLES);
-  return styles[Math.floor(Math.random() * styles.length)];
+  const voices = Object.keys(VOICES);
+  return voices[Math.floor(Math.random() * voices.length)];
 }
+
+// Backwards compat
+export const pickStyle = pickVoice;
