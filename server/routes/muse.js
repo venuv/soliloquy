@@ -25,67 +25,29 @@ function getClient() {
 loadQuotes();
 
 /**
- * Parse user input to extract emotions and themes
- * This is the "empathetic listening" step - understanding what the user truly feels
+ * Parse user input to extract emotions and themes.
+ * Uses Haiku — this is classification, not creative work. ~3x faster than Sonnet.
  */
 async function parseUserInput(client, userInput) {
-  const prompt = `You are an empathetic listener helping someone start their day. They've shared how they're feeling. Your job is to truly understand - not just the words, but what lies beneath.
+  const prompt = `Classify this morning check-in. JSON only, no explanation.
 
-USER SHARES: "${userInput}"
+"${userInput}"
 
-LISTEN CAREFULLY FOR:
-
-1. **The core emotion** - What are they really feeling? Look past surface words.
-   - "I'm fine but..." often signals something unresolved
-   - Physical states (tired, restless) often mask emotional ones
-   - What they mention casually might matter most
-
-2. **Distinguish precisely between:**
-   - SADNESS: grief, loss, heartache, mourning something/someone
-   - MELANCHOLY: a gentle, reflective sorrow - bittersweet, wistful
-   - AIMLESSNESS: lack of purpose, "what's the point?", drifting, unfocused
-   - SEARCHING: actively seeking meaning, direction, answers
-   - ANXIETY: worry, dread, fear of what's coming
-   - RESTLESSNESS: can't settle, need for change, itching for something
-   - WEARINESS: bone-tired, exhausted by life, depleted
-   - FRUSTRATION: blocked, stuck, things not working
-   - CONTENTMENT: at peace, satisfied, enough
-   - HOPE: looking forward, anticipation, possibility
-   - GRATITUDE: thankful, appreciating what is
-
-3. **What they might need:**
-   - Validation ("you're not alone in feeling this")
-   - Perspective ("zoom out, see the bigger picture")
-   - Comfort ("it's okay, this will pass")
-   - Challenge ("time to act, rise to this")
-   - Reflection ("sit with this, understand it")
-
-4. **Life themes present:**
-   - purpose/meaning: Why am I here? What matters?
-   - identity: Who am I? Who am I becoming?
-   - time/aging: Life passing, seasons changing
-   - change/transformation: Things shifting, becoming
-   - decision: Crossroads, choices to make
-   - relationships: Connection, loneliness, love
-   - ambition: Goals, striving, achievement
-   - mortality: Awareness of finitude
-   - legacy: What will I leave behind?
-   - self_discovery: Learning about oneself
-   - acceptance: Coming to terms with what is
-
-Respond with JSON:
 {
-  "emotions": ["primary", "secondary"],  // 1-2 most accurate emotions
-  "themes": ["theme1", "theme2", "theme3"],  // 2-3 life themes present
+  "emotions": ["primary", "secondary"],
+  "themes": ["theme1", "theme2"],
   "intensity": "low|medium|high",
   "valence": "positive|negative|mixed|neutral",
   "needs": "validation|perspective|comfort|challenge|reflection",
-  "subtext": "brief note on what might be unsaid"
-}`;
+  "subtext": "one sentence: what's unsaid"
+}
+
+Emotions: sadness, melancholy, aimlessness, searching, anxiety, restlessness, weariness, frustration, contentment, hope, gratitude, fear, anger, joy, love
+Themes: purpose, identity, time, change, decision, relationships, ambition, mortality, legacy, self_discovery, acceptance`;
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 256,
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 192,
     messages: [{ role: 'user', content: prompt }]
   });
 
@@ -266,15 +228,17 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Step 1: Parse user input
-    const userState = await parseUserInput(client, input);
+    const t0 = Date.now();
 
-    // Step 2: Pick wisdom type
+    // Step 1: Parse user input (Haiku — fast, ~300ms)
+    const userState = await parseUserInput(client, input);
+    const t1 = Date.now();
+    console.log(`[muse] Parse: ${t1 - t0}ms`);
+
+    // Step 2: Bucket lookup + score (instant, <5ms)
     const wisdomType = pickWisdomType(userState);
     userState.wisdom_type = wisdomType;
-
-    // Step 3: Algorithmic match — get top 5 candidates
-    const candidates = matchQuotes(userState, 5);
+    const { candidates, confident, poolSize } = matchQuotes(userState, 5);
     if (candidates.length === 0) {
       return res.status(503).json({
         error: 'No quotes available',
@@ -282,45 +246,32 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Step 4: LLM rerank — pick the quote that actually connects
-    const { quote, reason: rerankReason } = await rerankQuotes(client, candidates, input, userState);
-
-    // Step 5: Pick voice (Fortune's Wheel — random unless user specifies)
+    // Step 3: Pick voice (instant)
     const voice = pickVoice(preferredStyle);
+    const t2 = Date.now();
+    console.log(`[muse] Match: ${t2 - t1}ms (pool=${poolSize}, confident=${confident})`);
 
-    // Step 6: Actor-Critic loop (max 2 rounds)
-    let response = await generateResponse(client, quote, input, userState, voice, null);
-    let critique = await critiqueResponse(client, response, quote, input, voice);
-
-    if (!critique.pass) {
-      console.log(`[muse] Round 1 failed, regenerating with notes: ${critique.notes}`);
-      response = await generateResponse(client, quote, input, userState, voice, critique.notes);
-      // Don't critique again — accept round 2
+    // Step 4: Conditional rerank — only if algorithmic scores are tight
+    let quote, rerankReason = null;
+    if (!confident) {
+      const reranked = await rerankQuotes(client, candidates, input, userState);
+      quote = reranked.quote;
+      rerankReason = reranked.reason;
+      console.log(`[muse] Rerank: ${Date.now() - t2}ms`);
+    } else {
+      quote = candidates[0]; // algorithmic winner is clear
+      console.log(`[muse] Rerank: skipped (confident)`);
     }
 
-    // Record for analytics
-    const analytics = await loadMuseAnalytics();
+    // Step 5: Generate response (Sonnet — the one call that matters)
+    const t3 = Date.now();
+    const response = await generateResponse(client, quote, input, userState, voice, null);
+    console.log(`[muse] Actor: ${Date.now() - t3}ms`);
+
+    // Step 6: Send response immediately, run critic async for analytics
     const responseId = `muse-${Date.now()}`;
-    analytics.responses.push({
-      id: responseId,
-      timestamp: new Date().toISOString(),
-      userInput: input.substring(0, 500),
-      userState,
-      quoteId: quote.id,
-      quoteSummary: quote.quote,
-      character: quote.character,
-      play: quote.play,
-      wisdomType,
-      voice,
-      criticPass: critique.pass,
-      criticScores: critique.scores,
-      rerankReason
-    });
-
-    if (analytics.responses.length > 1000) {
-      analytics.responses = analytics.responses.slice(-1000);
-    }
-    await saveMuseAnalytics(analytics);
+    const totalMs = Date.now() - t0;
+    console.log(`[muse] Total: ${totalMs}ms (${confident ? '2' : '3'} LLM calls)`);
 
     res.json({
       id: responseId,
@@ -335,10 +286,34 @@ router.post('/', async (req, res) => {
         emotions: userState.emotions,
         wisdomType,
         voice: VOICES[voice].name,
-        criticPass: critique.pass,
-        criticScores: critique.scores
+        latencyMs: totalMs
       }
     });
+
+    // Async critic — runs after response is sent, for quality tracking only
+    critiqueResponse(client, response, quote, input, voice).then(async (critique) => {
+      const analytics = await loadMuseAnalytics();
+      analytics.responses.push({
+        id: responseId,
+        timestamp: new Date().toISOString(),
+        userInput: input.substring(0, 500),
+        userState,
+        quoteId: quote.id,
+        quoteSummary: quote.quote,
+        character: quote.character,
+        play: quote.play,
+        wisdomType,
+        voice,
+        criticPass: critique.pass,
+        criticScores: critique.scores,
+        rerankReason,
+        latencyMs: totalMs
+      });
+      if (analytics.responses.length > 1000) {
+        analytics.responses = analytics.responses.slice(-1000);
+      }
+      await saveMuseAnalytics(analytics);
+    }).catch(err => console.error('[muse] Async critic/analytics error:', err.message));
   } catch (error) {
     console.error('Muse error:', error);
     res.status(500).json({ error: 'The muse is momentarily silent', message: error.message });

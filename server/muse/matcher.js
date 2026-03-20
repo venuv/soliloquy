@@ -15,9 +15,10 @@ const __dirname = path.dirname(__filename);
 const QUOTES_FILE = path.join(__dirname, '../crab/shakespeare-master.json');
 
 let quotesCache = null;
+let moodBuckets = null; // Map<emotion, quote[]> built once at startup
 
 /**
- * Load quotes from file (cached)
+ * Load quotes from file (cached) and build mood index
  */
 export function loadQuotes() {
   if (quotesCache) return quotesCache;
@@ -29,12 +30,28 @@ export function loadQuotes() {
   }
 
   quotesCache = JSON.parse(fs.readFileSync(QUOTES_FILE, 'utf8'));
-
-  // Filter to only enriched quotes (have metadata)
   quotesCache = quotesCache.filter(q => q.character_situation);
 
-  console.log(`Loaded ${quotesCache.length} enriched quotes`);
+  // Build mood bucket index — O(1) lookup per emotion at query time
+  moodBuckets = new Map();
+  for (const quote of quotesCache) {
+    for (const emotion of (quote.emotions || [])) {
+      const key = emotion.toLowerCase();
+      if (!moodBuckets.has(key)) moodBuckets.set(key, []);
+      moodBuckets.get(key).push(quote);
+    }
+  }
+
+  console.log(`Loaded ${quotesCache.length} enriched quotes, ${moodBuckets.size} mood buckets`);
   return quotesCache;
+}
+
+/**
+ * Get mood buckets (ensures loaded)
+ */
+export function getMoodBuckets() {
+  if (!moodBuckets) loadQuotes();
+  return moodBuckets;
 }
 
 /**
@@ -173,26 +190,74 @@ function scoreMatch(quote, userState) {
 }
 
 /**
- * Find best matching quotes for user state
+ * Fast bucket-based matching: pull from mood buckets, score only the pool.
+ * Returns { candidates: quote[], confident: bool }
+ * confident=true means top scores are spread out (no rerank needed)
  */
 export function matchQuotes(userState, limit = 5) {
-  const quotes = loadQuotes();
+  const buckets = getMoodBuckets();
+  const expandedEmotions = expandEmotions(userState.emotions || []);
 
-  if (quotes.length === 0) {
-    return [];
+  // Step 1: Union quotes from matching mood buckets (instant)
+  const seen = new Set();
+  let pool = [];
+  for (const emotion of expandedEmotions) {
+    const bucket = buckets.get(emotion);
+    if (bucket) {
+      for (const q of bucket) {
+        if (!seen.has(q.id)) {
+          seen.add(q.id);
+          pool.push(q);
+        }
+      }
+    }
   }
 
-  // Score all quotes
-  const scored = quotes.map(quote => ({
+  // Fallback: if bucket lookup is too narrow (<20), use full corpus
+  if (pool.length < 20) {
+    pool = loadQuotes();
+  }
+
+  // Step 2: Score only the pool (not all 4120)
+  const scored = pool.map(quote => ({
     quote,
     score: scoreMatch(quote, userState)
   }));
-
-  // Sort by score descending
   scored.sort((a, b) => b.score - a.score);
 
-  // Return top matches
-  return scored.slice(0, limit).map(s => s.quote);
+  // Step 3: Take top 50, then sample `limit` for variety
+  const top50 = scored.slice(0, 50);
+  const topScore = top50[0]?.score || 0;
+  const fifthScore = top50[Math.min(4, top50.length - 1)]?.score || 0;
+  const confident = (topScore - fifthScore) > 15; // clear winner vs tight pack
+
+  // Sample: 3 from top 15, 2 from remaining 35 (if available)
+  const tier1 = top50.slice(0, Math.min(15, top50.length));
+  const tier2 = top50.slice(15);
+  const picks = [];
+
+  // Shuffle-pick from tier1
+  const t1shuffled = tier1.sort(() => Math.random() - 0.5);
+  picks.push(...t1shuffled.slice(0, Math.min(3, limit)));
+
+  // Shuffle-pick from tier2
+  if (tier2.length > 0 && picks.length < limit) {
+    const t2shuffled = tier2.sort(() => Math.random() - 0.5);
+    picks.push(...t2shuffled.slice(0, limit - picks.length));
+  }
+
+  // Fill from tier1 if still short
+  while (picks.length < limit && picks.length < top50.length) {
+    const next = top50.find(s => !picks.includes(s));
+    if (next) picks.push(next);
+    else break;
+  }
+
+  return {
+    candidates: picks.map(s => s.quote),
+    confident,
+    poolSize: pool.length
+  };
 }
 
 /**
