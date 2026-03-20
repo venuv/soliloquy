@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Muse — Fortune's Wheel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --paper: #fdfcf8;
+    --ink: #1a1a1a;
+    --ink-light: #4a4a4a;
+    --ink-faint: #9a9a9a;
+    --crimson: #9b2d30;
+    --forest: #3d5c4a;
+    --deep-blue: #2a4a5e;
+    --gold: #c4a35a;
+    --purple: #5a4a6a;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', Georgia, serif;
+    font-weight: 300;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .container {
+    max-width: 28rem;
+    width: 100%;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .header h1 {
+    font-family: 'Cormorant', serif;
+    font-weight: 400;
+    font-size: 1.75rem;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+  .header .subtitle {
+    font-family: 'Cormorant', serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--ink-faint);
+    margin-top: 0.3rem;
+  }
+
+  /* Phase containers */
+  .phase { display: none; }
+  .phase.active { display: block; }
+
+  /* ===== PHASE 1: Input ===== */
+  .input-card {
+    background: rgba(61,92,74,0.04);
+    border: 1px solid rgba(61,92,74,0.12);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .input-card label {
+    font-family: 'Cormorant', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    letter-spacing: 0.02em;
+  }
+  .input-card textarea {
+    width: 100%;
+    height: 5rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--ink);
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    resize: none;
+    line-height: 1.6;
+  }
+  .input-card textarea:focus {
+    outline: none;
+    border-color: var(--forest);
+  }
+  .input-card textarea::placeholder {
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+  .btn-primary {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-family: 'Cormorant', serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--forest);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .suggestion-pill {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--ink-faint);
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .suggestion-pill:hover {
+    border-color: var(--ink-light);
+    color: var(--ink-light);
+  }
+
+  /* ===== PHASE 2: Fortune's Wheel ===== */
+  .spin-stage {
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .wheel-intro {
+    font-family: 'Cormorant', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--ink-faint);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .mood-revealed {
+    font-family: 'Cormorant', serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-top: 1.25rem;
+    min-height: 1.5em;
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .mood-revealed.visible {
+    opacity: 1;
+  }
+
+  /* The Wheel */
+  .wheel-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin: 0 auto;
+  }
+
+  .wheel-svg {
+    width: 100%;
+    height: 100%;
+    transition: transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+  .wheel-svg.spinning {
+    /* JS sets the final rotation */
+  }
+
+  /* Pointer — fixed above the wheel */
+  .wheel-pointer {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    width: 20px;
+    height: 24px;
+  }
+
+  .btn-spin {
+    display: inline-block;
+    margin-top: 1.25rem;
+    padding: 0.6rem 2.5rem;
+    font-family: 'Cormorant', serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: 1.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.2s;
+  }
+  .btn-spin:hover {
+    border-color: var(--ink);
+    background: rgba(0,0,0,0.03);
+  }
+  .btn-spin:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  /* ===== PHASE 3: Response ===== */
+  .response-card {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.015);
+  }
+
+  .user-echo {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    font-style: italic;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .mood-badge {
+    display: inline-block;
+    font-family: 'Cormorant', serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    margin-bottom: 1.25rem;
+  }
+  .mood-badge[data-mood="straight"]  { background: rgba(42,74,94,0.08); color: var(--deep-blue); }
+  .mood-badge[data-mood="laugh"]     { background: rgba(196,163,90,0.10); color: #8a7a3a; }
+  .mood-badge[data-mood="listen"]    { background: rgba(61,92,74,0.08); color: var(--forest); }
+  .mood-badge[data-mood="deep"]      { background: rgba(90,74,106,0.08); color: var(--purple); }
+  .mood-badge[data-mood="challenge"] { background: rgba(155,45,48,0.08); color: var(--crimson); }
+
+  .response-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--ink-light);
+    margin-bottom: 1.25rem;
+  }
+
+  .quote-block {
+    border-left: 2px solid var(--gold);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    background: rgba(196,163,90,0.04);
+    border-radius: 0 8px 8px 0;
+  }
+  .quote-block .quote-text {
+    font-family: 'Cormorant', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--ink);
+    font-style: italic;
+    white-space: pre-line;
+  }
+  .quote-block .attribution {
+    margin-top: 0.5rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+  }
+  .quote-block .attribution .character {
+    color: var(--crimson);
+    font-weight: 400;
+  }
+
+  .response-closer {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--ink-light);
+    margin-top: 1rem;
+  }
+
+  .feedback-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .feedback-row .btn-feedback {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .feedback-row .btn-feedback:hover {
+    border-color: var(--ink-light);
+    color: var(--ink-light);
+  }
+
+  .btn-again {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.65rem;
+    font-family: 'Cormorant', serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+  }
+  .btn-again:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Morning Muse</h1>
+    <div class="subtitle">Shakespeare's wisdom, Fortune's choosing</div>
+  </div>
+
+  <!-- PHASE 1: Input -->
+  <div class="phase active" id="phase-input">
+    <div class="input-card">
+      <label>How are you feeling this morning?</label>
+      <textarea id="user-input" placeholder="Tired. Restless. Can't focus on anything..."></textarea>
+      <button class="btn-primary" onclick="goToSpin()">Seek Wisdom</button>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+      <button class="suggestion-pill" onclick="fillSuggestion(this)">I'm anxious about today</button>
+      <button class="suggestion-pill" onclick="fillSuggestion(this)">Feeling stuck, no momentum</button>
+      <button class="suggestion-pill" onclick="fillSuggestion(this)">Actually pretty good</button>
+      <button class="suggestion-pill" onclick="fillSuggestion(this)">Restless, need direction</button>
+    </div>
+  </div>
+
+  <!-- PHASE 2: Fortune's Wheel -->
+  <div class="phase" id="phase-spin">
+    <div class="spin-stage">
+      <div class="wheel-intro">The wheel shall choose how Fortune speaks today</div>
+
+      <div class="wheel-container">
+        <!-- Pointer (fixed) -->
+        <svg class="wheel-pointer" viewBox="0 0 20 24">
+          <polygon points="10,24 3,6 10,0 17,6" fill="var(--ink)" opacity="0.85"/>
+        </svg>
+
+        <!-- The wheel (rotates) -->
+        <svg class="wheel-svg" id="wheel" viewBox="0 0 260 260">
+          <defs>
+            <filter id="ink-rough" x="-2%" y="-2%" width="104%" height="104%">
+              <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="4" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+          </defs>
+
+          <g filter="url(#ink-rough)">
+            <!-- Outer ring — double line for engraved look -->
+            <circle cx="130" cy="130" r="120" fill="none" stroke="var(--ink)" stroke-width="1.5" opacity="0.65"/>
+            <circle cx="130" cy="130" r="116" fill="none" stroke="var(--ink)" stroke-width="0.4" opacity="0.2"/>
+
+            <!-- Inner hub -->
+            <circle cx="130" cy="130" r="26" fill="none" stroke="var(--ink)" stroke-width="1" opacity="0.5"/>
+            <circle cx="130" cy="130" r="3" fill="var(--ink)" opacity="0.6"/>
+
+            <!-- 5 spokes at 72° intervals starting from top (0°) -->
+            <!-- Spoke angles from top clockwise: 0°, 72°, 144°, 216°, 288° -->
+            <!-- x = 130 + 120*sin(θ), y = 130 - 120*cos(θ) -->
+            <line x1="130" y1="130" x2="130"   y2="10"    stroke="var(--ink)" stroke-width="0.7" opacity="0.35"/>
+            <line x1="130" y1="130" x2="244.1" y2="92.9"  stroke="var(--ink)" stroke-width="0.7" opacity="0.35"/>
+            <line x1="130" y1="130" x2="200.7" y2="227.1" stroke="var(--ink)" stroke-width="0.7" opacity="0.35"/>
+            <line x1="130" y1="130" x2="59.3"  y2="227.1" stroke="var(--ink)" stroke-width="0.7" opacity="0.35"/>
+            <line x1="130" y1="130" x2="15.9"  y2="92.9"  stroke="var(--ink)" stroke-width="0.7" opacity="0.35"/>
+          </g>
+
+          <!-- Segment labels — positioned at midpoint of each segment, rotated to read naturally -->
+          <!-- Segment midpoints (between spokes): 36°, 108°, 180°, 252°, 324° from top -->
+          <!-- Placed at radius ~78 from center -->
+          <g font-family="'Cormorant', serif" font-style="italic" font-weight="400" font-size="13.5" fill="var(--ink-light)" text-anchor="middle" dominant-baseline="middle">
+            <!-- Seg 0: "Straight with me" at 36° — top right -->
+            <text x="176" y="68" transform="rotate(36, 176, 68)">Straight with me</text>
+            <!-- Seg 1: "Make me laugh" at 108° — right, flipped to stay readable -->
+            <text x="204" y="154" transform="rotate(-72, 204, 154)">Make me laugh</text>
+            <!-- Seg 2: "Go deep" at 180° — bottom center -->
+            <text x="130" y="208" transform="rotate(0, 130, 208)">Go deep</text>
+            <!-- Seg 3: "Challenge me" at 252° — left, flipped -->
+            <text x="56" y="154" transform="rotate(72, 56, 154)">Challenge me</text>
+            <!-- Seg 4: "Just listen" at 324° — top left -->
+            <text x="84" y="68" transform="rotate(-36, 84, 68)">Just listen</text>
+          </g>
+
+          <!-- Dot at each spoke tip -->
+          <g fill="var(--ink)" opacity="0.4">
+            <circle cx="130"   cy="11"    r="2"/>
+            <circle cx="244"   cy="93"    r="2"/>
+            <circle cx="200.5" cy="227"   r="2"/>
+            <circle cx="59.5"  cy="227"   r="2"/>
+            <circle cx="16"    cy="93"    r="2"/>
+          </g>
+        </svg>
+      </div>
+
+      <button class="btn-spin" id="btn-spin" onclick="spinWheel()">Turn the Wheel</button>
+
+      <div class="mood-revealed" id="mood-label"></div>
+    </div>
+  </div>
+
+  <!-- PHASE 3: Response -->
+  <div class="phase" id="phase-response">
+    <div class="response-card">
+      <div class="user-echo" id="response-echo"></div>
+
+      <span class="mood-badge" id="response-badge" data-mood="straight">
+        <span id="badge-text">Straight with me</span>
+      </span>
+
+      <div class="response-text" id="response-text"></div>
+
+      <div class="quote-block">
+        <div class="quote-text" id="quote-text"></div>
+        <div class="attribution">
+          — <span class="character" id="quote-character"></span>, <em><span id="quote-play"></span></em>
+        </div>
+      </div>
+
+      <div class="response-closer" id="response-closer"></div>
+
+      <div class="feedback-row">
+        <button class="btn-feedback" onclick="this.style.borderColor='var(--forest)'; this.style.color='var(--forest)'">&#x1F44D; Helpful</button>
+        <button class="btn-feedback" onclick="this.style.borderColor='var(--crimson)'; this.style.color='var(--crimson)'">&#x1F44E; Not quite</button>
+      </div>
+    </div>
+
+    <button class="btn-again" id="btn-again" onclick="spinAgain()">Spin again</button>
+  </div>
+</div>
+
+<script>
+const MOODS = [
+  { key: 'straight',  label: 'Straight with me' },
+  { key: 'laugh',     label: 'Make me laugh' },
+  { key: 'deep',      label: 'Go deep' },
+  { key: 'challenge', label: 'Challenge me' },
+  { key: 'listen',    label: 'Just listen' },
+];
+
+// Each segment is 72°. Pointer is at top (0°).
+// Spokes at 0°, 72°, 144°, 216°, 288° from top.
+// Segment midpoints: 36°, 108°, 180°, 252°, 324°.
+// To land segment N under the pointer, rotate wheel so midpoint aligns with 0°.
+const SEGMENT_CENTERS = [36, 108, 180, 252, 324];
+
+const DEMO = {
+  straight: {
+    text: "You're tired and stuck. Two different problems wearing the same face. Tired has a fix — rest. Stuck requires a decision you're avoiding.",
+    quote: "Our doubts are traitors,\nand make us lose the good we oft might win,\nby fearing to attempt.",
+    character: "Lucio",
+    play: "Measure for Measure",
+    closer: "The paralysis isn't protecting you. It's the thing you're tired of."
+  },
+  laugh: {
+    text: "Oh you're stuck. Like a cart in mud. Except you built the cart, drove it into the mud, and now you're sitting in it writing poetry about how muddy it is.",
+    quote: "Our doubts are traitors,\nand make us lose the good we oft might win,\nby fearing to attempt.",
+    character: "Lucio",
+    play: "Measure for Measure",
+    closer: "Lucio was a mess and even he figured this out. You're already ahead."
+  },
+  listen: {
+    text: "Tired. Stuck. Nothing moving. You said three things — but they're not the same. Which one is it really? What's the one that sits heaviest?",
+    quote: "Our doubts are traitors,\nand make us lose the good we oft might win,\nby fearing to attempt.",
+    character: "Lucio",
+    play: "Measure for Measure",
+    closer: "You don't have to move yet. Just name the real thing."
+  },
+  deep: {
+    text: "Stillness isn't always stuckness. Sometimes it's the pause before the turn. What if the nothing-moving is you gathering?",
+    quote: "Our doubts are traitors,\nand make us lose the good we oft might win,\nby fearing to attempt.",
+    character: "Lucio",
+    play: "Measure for Measure",
+    closer: "The fear of attempting — sit with that. What exactly are you afraid to try?"
+  },
+  challenge: {
+    text: "Stuck? Or comfortable in the stuck? There's a difference. One is a situation, the other is a choice you're making every morning.",
+    quote: "Our doubts are traitors,\nand make us lose the good we oft might win,\nby fearing to attempt.",
+    character: "Lucio",
+    play: "Measure for Measure",
+    closer: "Name one thing you've been fearing to attempt. Just one. Then do it before lunch."
+  }
+};
+
+let userInput = '';
+let selectedMood = null;
+let currentRotation = 0;
+let usedVoices = [];    // history of voices this session
+const MAX_SPINS = 3;
+
+function fillSuggestion(el) {
+  document.getElementById('user-input').value = el.textContent;
+}
+
+function goToSpin() {
+  userInput = document.getElementById('user-input').value.trim();
+  if (userInput.length < 3) return;
+  document.getElementById('phase-input').classList.remove('active');
+  document.getElementById('phase-spin').classList.add('active');
+}
+
+function spinWheel() {
+  const btn = document.getElementById('btn-spin');
+  const wheel = document.getElementById('wheel');
+  const label = document.getElementById('mood-label');
+
+  btn.disabled = true;
+  label.classList.remove('visible');
+  label.textContent = '';
+
+  // Pick winner — avoid repeats, advance one notch if collision
+  let winnerIdx = Math.floor(Math.random() * 5);
+  let attempts = 0;
+  while (usedVoices.includes(winnerIdx) && attempts < 5) {
+    winnerIdx = (winnerIdx + 1) % 5;
+    attempts++;
+  }
+  selectedMood = MOODS[winnerIdx];
+  usedVoices.push(winnerIdx);
+
+  // Calculate rotation: multiple full spins + land on the winning segment
+  const segCenter = SEGMENT_CENTERS[winnerIdx];
+  const jitter = (Math.random() - 0.5) * 40; // ±20° within segment
+  const targetAngle = (360 - segCenter) + jitter;
+  const fullSpins = 1080 + Math.random() * 720; // 3-5 full rotations
+  const totalRotation = currentRotation + fullSpins + targetAngle;
+
+  wheel.style.transition = 'transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+  wheel.style.transform = `rotate(${totalRotation}deg)`;
+  currentRotation = totalRotation;
+
+  // After spin settles, reveal mood
+  setTimeout(() => {
+    label.textContent = selectedMood.label;
+    label.classList.add('visible');
+  }, 3200);
+
+  // Transition to response
+  setTimeout(() => showResponse(), 4500);
+}
+
+function showResponse() {
+  const demo = DEMO[selectedMood.key];
+
+  document.getElementById('response-echo').textContent = `"${userInput}"`;
+
+  const badge = document.getElementById('response-badge');
+  badge.setAttribute('data-mood', selectedMood.key);
+  document.getElementById('badge-text').textContent = selectedMood.label;
+
+  document.getElementById('response-text').textContent = demo.text;
+  document.getElementById('quote-text').textContent = demo.quote;
+  document.getElementById('quote-character').textContent = demo.character;
+  document.getElementById('quote-play').textContent = demo.play;
+  document.getElementById('response-closer').textContent = demo.closer;
+
+  document.getElementById('phase-spin').classList.remove('active');
+  document.getElementById('phase-response').classList.add('active');
+
+  // Update spin-again button based on remaining spins
+  const spinsLeft = MAX_SPINS - usedVoices.length;
+  const btnAgain = document.getElementById('btn-again');
+  if (spinsLeft > 0) {
+    btnAgain.textContent = `Spin again (${spinsLeft} left)`;
+    btnAgain.onclick = spinAgain;
+    btnAgain.style.display = 'block';
+  } else {
+    btnAgain.textContent = 'Start fresh';
+    btnAgain.onclick = reset;
+  }
+}
+
+function spinAgain() {
+  // Go back to input with text pre-filled for editing
+  document.getElementById('phase-response').classList.remove('active');
+  document.getElementById('phase-input').classList.add('active');
+  document.getElementById('user-input').value = userInput;
+  document.getElementById('btn-spin').disabled = false;
+
+  const label = document.getElementById('mood-label');
+  label.classList.remove('visible');
+  label.textContent = '';
+
+  // Update button text to show spins remaining
+  const spinsLeft = MAX_SPINS - usedVoices.length;
+  const btn = document.getElementById('btn-again');
+  if (spinsLeft > 0) {
+    btn.textContent = `Spin again (${spinsLeft} left)`;
+  }
+
+  selectedMood = null;
+}
+
+function reset() {
+  document.getElementById('phase-response').classList.remove('active');
+  document.getElementById('phase-input').classList.add('active');
+  document.getElementById('user-input').value = '';
+  document.getElementById('btn-spin').disabled = false;
+
+  const label = document.getElementById('mood-label');
+  label.classList.remove('visible');
+  label.textContent = '';
+
+  selectedMood = null;
+  userInput = '';
+  usedVoices = [];
+}
+</script>
+
+</body>
+</html>
