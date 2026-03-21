@@ -2,7 +2,7 @@
   "id": "shakespeare",
   "name": "William Shakespeare",
   "subtitle": "The Bard of Avon",
-  "portrait": "\ud83c\udfad",
+  "portrait": "🎭",
   "bio": "English playwright and poet, widely regarded as the greatest writer in the English language.",
   "works": [
     {
@@ -30,7 +30,7 @@
         },
         {
           "front": "And by opposing end",
-          "back": "them. To die\u2014to sleep,"
+          "back": "them. To die—to sleep,"
         },
         {
           "front": "No more; and by a",
@@ -50,7 +50,7 @@
         },
         {
           "front": "To sleep, perchance to",
-          "back": "dream\u2014ay, there's the rub:"
+          "back": "dream—ay, there's the rub:"
         },
         {
           "front": "For in that sleep of",
@@ -62,7 +62,7 @@
         },
         {
           "front": "Must give us",
-          "back": "pause\u2014there's the respect"
+          "back": "pause—there's the respect"
         },
         {
           "front": "That makes calamity of",
@@ -309,7 +309,7 @@
         },
         {
           "front": "A false creation, proceeding from",
-          "back": "the heat-oppress\u00e8d brain?"
+          "back": "the heat-oppressèd brain?"
         },
         {
           "front": "I see thee yet, in form",
@@ -667,7 +667,7 @@
         },
         {
           "front": "And now, instead of mounting",
-          "back": "barb\u00e8d steeds"
+          "back": "barbèd steeds"
         },
         {
           "front": "To fright the souls",
@@ -1349,7 +1349,7 @@
           "back": "it becomes"
         },
         {
-          "front": "The thron\u00e8d monarch better",
+          "front": "The thronèd monarch better",
           "back": "than his crown."
         },
         {
@@ -1369,7 +1369,7 @@
           "back": "this sceptred sway."
         },
         {
-          "front": "It is enthron\u00e8d in the hearts",
+          "front": "It is enthronèd in the hearts",
           "back": "of kings,"
         },
         {
@@ -1535,7 +1535,7 @@
         },
         {
           "front": "The good is oft",
-          "back": "interr\u00e8d with their bones;"
+          "back": "interrèd with their bones;"
         },
         {
           "front": "So let it be",
@@ -1555,7 +1555,7 @@
         },
         {
           "front": "Here, under leave of Brutus",
-          "back": "and the rest\u2014"
+          "back": "and the rest—"
         },
         {
           "front": "For Brutus is an",
@@ -1563,7 +1563,7 @@
         },
         {
           "front": "So are they all, all",
-          "back": "honourable men\u2014"
+          "back": "honourable men—"
         },
         {
           "front": "Come I to speak in",
@@ -2249,7 +2249,7 @@
         },
         {
           "front": "Ding-dong.",
-          "back": "Hark! now I hear them\u2014"
+          "back": "Hark! now I hear them—"
         },
         {
           "front": "Ding-dong,",
@@ -2435,7 +2435,7 @@
           "back": "lodging:"
         },
         {
-          "front": "such a wagoner as Pha\u00ebthon",
+          "front": "such a wagoner as Phaëthon",
           "back": "would whip you to the west,"
         },
         {
@@ -3436,6 +3436,43 @@
         {
           "front": "make swift the pangs",
           "back": "Of my queen's travails!"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Rebuke the Storm",
+          "intention": "To rebuke the god for calm",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Calm the Storm",
+          "intention": "To calm the storm's effects",
+          "startChunk": 3,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Inquire About the Queen",
+          "intention": "To learn of his queen's condition",
+          "startChunk": 5,
+          "endChunk": 7
+        },
+        {
+          "id": 3,
+          "label": "Invoke Divine Aid for the Queen",
+          "intention": "To invoke the goddess for aid",
+          "startChunk": 8,
+          "endChunk": 10
+        },
+        {
+          "id": 4,
+          "label": "Plead for Swift Delivery",
+          "intention": "To beg the goddess for swift delivery",
+          "startChunk": 11,
+          "endChunk": 12
         }
       ]
     }
