@@ -2,7 +2,7 @@
   "id": "shakespeare",
   "name": "William Shakespeare",
   "subtitle": "The Bard of Avon",
-  "portrait": "🎭",
+  "portrait": "\ud83c\udfad",
   "bio": "English playwright and poet, widely regarded as the greatest writer in the English language.",
   "works": [
     {
@@ -30,7 +30,7 @@
         },
         {
           "front": "And by opposing end",
-          "back": "them. To die—to sleep,"
+          "back": "them. To die\u2014to sleep,"
         },
         {
           "front": "No more; and by a",
@@ -50,7 +50,7 @@
         },
         {
           "front": "To sleep, perchance to",
-          "back": "dream—ay, there's the rub:"
+          "back": "dream\u2014ay, there's the rub:"
         },
         {
           "front": "For in that sleep of",
@@ -62,7 +62,7 @@
         },
         {
           "front": "Must give us",
-          "back": "pause—there's the respect"
+          "back": "pause\u2014there's the respect"
         },
         {
           "front": "That makes calamity of",
@@ -309,7 +309,7 @@
         },
         {
           "front": "A false creation, proceeding from",
-          "back": "the heat-oppressèd brain?"
+          "back": "the heat-oppress\u00e8d brain?"
         },
         {
           "front": "I see thee yet, in form",
@@ -667,7 +667,7 @@
         },
         {
           "front": "And now, instead of mounting",
-          "back": "barbèd steeds"
+          "back": "barb\u00e8d steeds"
         },
         {
           "front": "To fright the souls",
@@ -1349,7 +1349,7 @@
           "back": "it becomes"
         },
         {
-          "front": "The thronèd monarch better",
+          "front": "The thron\u00e8d monarch better",
           "back": "than his crown."
         },
         {
@@ -1369,7 +1369,7 @@
           "back": "this sceptred sway."
         },
         {
-          "front": "It is enthronèd in the hearts",
+          "front": "It is enthron\u00e8d in the hearts",
           "back": "of kings,"
         },
         {
@@ -1535,7 +1535,7 @@
         },
         {
           "front": "The good is oft",
-          "back": "interrèd with their bones;"
+          "back": "interr\u00e8d with their bones;"
         },
         {
           "front": "So let it be",
@@ -1555,7 +1555,7 @@
         },
         {
           "front": "Here, under leave of Brutus",
-          "back": "and the rest—"
+          "back": "and the rest\u2014"
         },
         {
           "front": "For Brutus is an",
@@ -1563,7 +1563,7 @@
         },
         {
           "front": "So are they all, all",
-          "back": "honourable men—"
+          "back": "honourable men\u2014"
         },
         {
           "front": "Come I to speak in",
@@ -2249,7 +2249,7 @@
         },
         {
           "front": "Ding-dong.",
-          "back": "Hark! now I hear them—"
+          "back": "Hark! now I hear them\u2014"
         },
         {
           "front": "Ding-dong,",
@@ -2435,7 +2435,7 @@
           "back": "lodging:"
         },
         {
-          "front": "such a wagoner as Phaëthon",
+          "front": "such a wagoner as Pha\u00ebthon",
           "back": "would whip you to the west,"
         },
         {
@@ -3473,6 +3473,147 @@
           "intention": "To beg the goddess for swift delivery",
           "startChunk": 11,
           "endChunk": 12
+        }
+      ]
+    },
+    {
+      "id": "cause-cause-soul",
+      "title": "It is the cause, it is the cause, my soul",
+      "source": "Othello",
+      "character": "Othello",
+      "act": "Act 5, Scene 2",
+      "chunks": [
+        {
+          "front": "It is the cause,",
+          "back": "it is the cause, my soul,--"
+        },
+        {
+          "front": "Let me not name it to you,",
+          "back": "you chaste stars!--"
+        },
+        {
+          "front": "It is the cause.",
+          "back": "Yet I'll not shed her blood;"
+        },
+        {
+          "front": "Nor scar that whiter skin",
+          "back": "of hers than snow,"
+        },
+        {
+          "front": "And smooth as",
+          "back": "monumental alabaster."
+        },
+        {
+          "front": "Yet she must die,",
+          "back": "else she'll betray more men."
+        },
+        {
+          "front": "Put out the light,",
+          "back": "and then put out the light:"
+        },
+        {
+          "front": "If I quench thee,",
+          "back": "thou flaming minister,"
+        },
+        {
+          "front": "I can again thy",
+          "back": "former light restore,"
+        },
+        {
+          "front": "Should I repent me:",
+          "back": "but once put out thy light,"
+        },
+        {
+          "front": "Thou cunning'st pattern of",
+          "back": "excelling nature,"
+        },
+        {
+          "front": "I know not where is",
+          "back": "that Promethean heat"
+        },
+        {
+          "front": "That can thy light relume.",
+          "back": "When I have pluck'd the rose,"
+        },
+        {
+          "front": "I cannot give it",
+          "back": "vital growth again."
+        },
+        {
+          "front": "It must needs wither:",
+          "back": "I'll smell it on the tree."
+        },
+        {
+          "front": "Ah balmy breath,",
+          "back": "that dost almost persuade"
+        },
+        {
+          "front": "Justice to break her sword!",
+          "back": "One more, one more."
+        },
+        {
+          "front": "Be thus when thou art dead,",
+          "back": "and I will kill thee,"
+        },
+        {
+          "front": "And love thee after. One more,",
+          "back": "and this the last:"
+        },
+        {
+          "front": "So sweet was ne'er so fatal.",
+          "back": "I must weep,"
+        },
+        {
+          "front": "But they are cruel tears:",
+          "back": "this sorrow's heavenly;"
+        },
+        {
+          "front": "It strikes where it doth love.",
+          "back": "She wakes."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Lament The Situation",
+          "intention": "To lament his situation",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "id": 1,
+          "label": "Deny The Truth",
+          "intention": "To avoid acknowledging his wife's supposed infidelity",
+          "startChunk": 2,
+          "endChunk": 4
+        },
+        {
+          "id": 2,
+          "label": "Justify And Ponder The Murder",
+          "intention": "To convince himself that Desdemona must die and understand the finality of taking a life",
+          "startChunk": 5,
+          "endChunk": 14
+        },
+        {
+          "id": 3,
+          "label": "Savor The Moment",
+          "intention": "To indulge in the pleasure of Desdemona's presence one last time",
+          "startChunk": 15,
+          "endChunk": 16
+        },
+        {
+          "id": 4,
+          "label": "Resign To Passion",
+          "intention": "To give in to his passion for Desdemona",
+          "startChunk": 17,
+          "endChunk": 18
+        },
+        {
+          "id": 5,
+          "label": "Resign To Fate",
+          "intention": "To accept the tragic consequences of his actions",
+          "startChunk": 19,
+          "endChunk": 21
         }
       ]
     }
