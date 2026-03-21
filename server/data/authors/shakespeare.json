@@ -3616,6 +3616,433 @@
           "endChunk": 21
         }
       ]
+    },
+    {
+      "id": "know-bank-where-wild-thyme",
+      "title": "I know a bank where the wild thyme blows",
+      "source": "Midsummer Night'S Dream",
+      "character": "Oberon",
+      "act": "Act 2, Scene 1",
+      "chunks": [
+        {
+          "front": "I know a bank where",
+          "back": "the wild thyme blows,"
+        },
+        {
+          "front": "Where oxlips and the",
+          "back": "nodding violet grows,"
+        },
+        {
+          "front": "Quite over-canopied with",
+          "back": "luscious woodbine,"
+        },
+        {
+          "front": "With sweet musk-roses and",
+          "back": "with eglantine:"
+        },
+        {
+          "front": "There sleeps Titania sometime",
+          "back": "of the night,"
+        },
+        {
+          "front": "Lull'd in these flowers with",
+          "back": "dances and delight;"
+        },
+        {
+          "front": "And there the snake throws",
+          "back": "her enamell'd skin,"
+        },
+        {
+          "front": "Weed wide enough to wrap",
+          "back": "a fairy in:"
+        },
+        {
+          "front": "And with the juice of this",
+          "back": "I'll streak her eyes,"
+        },
+        {
+          "front": "And make her full",
+          "back": "of hateful fantasies."
+        },
+        {
+          "front": "Take thou some of it,",
+          "back": "and seek through this grove:"
+        },
+        {
+          "front": "A sweet Athenian lady",
+          "back": "is in love"
+        },
+        {
+          "front": "With a disdainful youth:",
+          "back": "anoint his eyes;"
+        },
+        {
+          "front": "But do it when the",
+          "back": "next thing he espies"
+        },
+        {
+          "front": "May be the lady:",
+          "back": "thou shalt know the man"
+        },
+        {
+          "front": "By the Athenian garments",
+          "back": "he hath on."
+        },
+        {
+          "front": "Effect it with some care,",
+          "back": "that he may prove"
+        },
+        {
+          "front": "More fond on her than",
+          "back": "she upon her love:"
+        },
+        {
+          "front": "And look thou meet me ere",
+          "back": "the first cock crow."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Describe Enchanted Bank",
+          "intention": "To entice with vivid imagery",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "id": 1,
+          "label": "Mention Titania's Sleep",
+          "intention": "To inform about Titania's habits",
+          "startChunk": 5,
+          "endChunk": 7
+        },
+        {
+          "id": 2,
+          "label": "Plot Against Titania",
+          "intention": "To devise a plan for revenge",
+          "startChunk": 8,
+          "endChunk": 9
+        },
+        {
+          "id": 3,
+          "label": "Task Puck with Mission",
+          "intention": "To instruct Puck on a specific task",
+          "startChunk": 10,
+          "endChunk": 15
+        },
+        {
+          "id": 4,
+          "label": "Ensure Desired Outcome and Set Rendezvous",
+          "intention": "To guarantee a specific result and arrange a meeting",
+          "startChunk": 16,
+          "endChunk": 18
+        }
+      ]
+    },
+    {
+      "id": "too-hot-too-hot",
+      "title": "Too hot, too hot!",
+      "source": "Winter'S Tale",
+      "character": "Leontes",
+      "act": "Act 1, Scene 2",
+      "chunks": [
+        {
+          "front": "Too hot,",
+          "back": "too hot!"
+        },
+        {
+          "front": "To mingle friendship far",
+          "back": "is mingling bloods."
+        },
+        {
+          "front": "I have tremor cordis on me:",
+          "back": "my heart dances;"
+        },
+        {
+          "front": "But not for joy;",
+          "back": "not joy. This entertainment"
+        },
+        {
+          "front": "May a free face put on,",
+          "back": "derive a liberty"
+        },
+        {
+          "front": "From heartiness, from bounty,",
+          "back": "fertile bosom,"
+        },
+        {
+          "front": "And well become the agent;",
+          "back": "'t may, I grant;"
+        },
+        {
+          "front": "But to be paddling palms",
+          "back": "and pinching fingers,"
+        },
+        {
+          "front": "As now they are,",
+          "back": "and making practised smiles,"
+        },
+        {
+          "front": "As in a looking-glass,",
+          "back": "and then to sigh, as 'twere"
+        },
+        {
+          "front": "The mort o' the deer;",
+          "back": "O, that is entertainment"
+        },
+        {
+          "front": "My bosom likes not,",
+          "back": "nor my brows! Mamillius,"
+        },
+        {
+          "front": "Art thou my",
+          "back": "boy?"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Expressing Agony",
+          "intention": "To unleash his anguish",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Rationalizing Deceit",
+          "intention": "To justify his hypocrisy",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Condemning Insincerity",
+          "intention": "To ridicule false friendship",
+          "startChunk": 7,
+          "endChunk": 10
+        },
+        {
+          "id": 3,
+          "label": "Seeking Genuine Connection",
+          "intention": "To embrace his son's love",
+          "startChunk": 11,
+          "endChunk": 12
+        }
+      ]
+    },
+    {
+      "id": "ay-die-go-we-know",
+      "title": "Ay, but to die, and go we know not where",
+      "source": "Measure For Measure",
+      "character": "Claudio",
+      "act": "Act 3, Scene 1",
+      "chunks": [
+        {
+          "front": "Ay, but to die,",
+          "back": "and go we know not where;"
+        },
+        {
+          "front": "To lie in cold obstruction",
+          "back": "and to rot;"
+        },
+        {
+          "front": "This sensible warm motion",
+          "back": "to become"
+        },
+        {
+          "front": "A kneaded clod;",
+          "back": "and the delighted spirit"
+        },
+        {
+          "front": "To bathe in fiery floods,",
+          "back": "or to reside"
+        },
+        {
+          "front": "In thrilling region of",
+          "back": "thick-ribbed ice;"
+        },
+        {
+          "front": "To be imprison'd in",
+          "back": "the viewless winds,"
+        },
+        {
+          "front": "And blown with restless",
+          "back": "violence round about"
+        },
+        {
+          "front": "The pendent world;",
+          "back": "or to be worse than worst"
+        },
+        {
+          "front": "Of those that lawless",
+          "back": "and incertain thought"
+        },
+        {
+          "front": "Imagine howling:",
+          "back": "'tis too horrible!"
+        },
+        {
+          "front": "The weariest and most",
+          "back": "loathed worldly life"
+        },
+        {
+          "front": "That age,",
+          "back": "ache, penury and imprisonment"
+        },
+        {
+          "front": "Can lay on nature",
+          "back": "is a paradise"
+        },
+        {
+          "front": "To what we fear",
+          "back": "of death."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Confront Death",
+          "intention": "To imagine the afterlife",
+          "startChunk": 0,
+          "endChunk": 5
+        },
+        {
+          "id": 1,
+          "label": "Abhor the Alternative",
+          "intention": "To recoil from the horrors of death",
+          "startChunk": 6,
+          "endChunk": 10
+        },
+        {
+          "id": 2,
+          "label": "Reevaluate Life",
+          "intention": "To compare life's hardships to death's terror",
+          "startChunk": 11,
+          "endChunk": 14
+        }
+      ]
+    },
+    {
+      "id": "give-me-robe-put-on",
+      "title": "Give me my robe, put on my crown",
+      "source": "Antony And Cleopatra",
+      "character": "Cleopatra",
+      "act": "Act 5, Scene 2",
+      "chunks": [
+        {
+          "front": "Give me my robe,",
+          "back": "put on my crown; I have"
+        },
+        {
+          "front": "Immortal longings in me:",
+          "back": "now no more"
+        },
+        {
+          "front": "The juice of Egypt's grape",
+          "back": "shall moist this lip:"
+        },
+        {
+          "front": "Yare, yare, good Iras; quick.",
+          "back": "Methinks I hear"
+        },
+        {
+          "front": "Antony call;",
+          "back": "I see him rouse himself"
+        },
+        {
+          "front": "To praise my noble act;",
+          "back": "I hear him mock"
+        },
+        {
+          "front": "The luck of Caesar,",
+          "back": "which the gods give men"
+        },
+        {
+          "front": "To excuse their after wrath:",
+          "back": "husband, I come:"
+        },
+        {
+          "front": "Now to that name my",
+          "back": "courage prove my title!"
+        },
+        {
+          "front": "I am fire and air;",
+          "back": "my other elements"
+        },
+        {
+          "front": "I give to baser life.",
+          "back": "So; have you done?"
+        },
+        {
+          "front": "Come then, and take the last",
+          "back": "warmth of my lips."
+        },
+        {
+          "front": "Farewell, kind Charmian; Iras,",
+          "back": "long farewell."
+        },
+        {
+          "front": "Have I the aspic in my lips?",
+          "back": "Dost fall?"
+        },
+        {
+          "front": "If thou and nature can",
+          "back": "so gently part,"
+        },
+        {
+          "front": "The stroke of death is",
+          "back": "as a lover's pinch,"
+        },
+        {
+          "front": "Which hurts, and is desired.",
+          "back": "Dost thou lie still?"
+        },
+        {
+          "front": "If thus thou vanishest,",
+          "back": "thou tell'st the world"
+        },
+        {
+          "front": "It is not",
+          "back": "worth leave-taking."
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Prepare for Death",
+          "intention": "To ready herself for the end",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Anticipate Antony's Reaction",
+          "intention": "To imagine Antony's praise",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "id": 2,
+          "label": "Invoke Noble Pride",
+          "intention": "To assert her noble character",
+          "startChunk": 7,
+          "endChunk": 10
+        },
+        {
+          "id": 3,
+          "label": "Bid Farewell and Observe Iras' Death",
+          "intention": "To take leave and observe the effect of the aspic",
+          "startChunk": 11,
+          "endChunk": 14
+        },
+        {
+          "id": 4,
+          "label": "Reflect and Accept Mortality",
+          "intention": "To contemplate and come to terms with death",
+          "startChunk": 15,
+          "endChunk": 18
+        }
+      ]
     }
   ]
 }

@@ -134,6 +134,29 @@ KNOWN_SOLILOQUIES = {
             "start_line": "I, that please some, try all",
         },
     ],
+    "antony and cleopatra": [
+        {
+            "character": "Cleopatra",
+            "title": "Give me my robe, put on my crown",
+            "act": "Act 5, Scene 2",
+            "description": "Cleopatra prepares for death with royal ceremony. She transforms suicide into triumph — 'I am fire and air.'",
+            "start_line": "Give me my robe, put on my crown",
+        },
+        {
+            "character": "Enobarbus",
+            "title": "The barge she sat in, like a burnish'd throne",
+            "act": "Act 2, Scene 2",
+            "description": "Enobarbus describes Cleopatra's first meeting with Antony on the Cydnus — Shakespeare's most lavish descriptive passage.",
+            "start_line": "The barge she sat in, like a burnish'd throne",
+        },
+        {
+            "character": "Cleopatra",
+            "title": "I dreamt there was an Emperor Antony",
+            "act": "Act 5, Scene 2",
+            "description": "Cleopatra eulogizes Antony after his death, elevating him to mythic proportions. His legs bestrid the ocean.",
+            "start_line": "I dreamt there was an Emperor Antony",
+        },
+    ],
     "measure for measure": [
         {
             "character": "Isabella",
