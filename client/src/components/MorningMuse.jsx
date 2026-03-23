@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Home, Coffee, ThumbsUp, ThumbsDown } from 'lucide-react'
-import { api } from '../App'
+import { api, trackPageview } from '../App'
 
 const colors = {
   paper: '#fdfcf8',
@@ -159,6 +159,8 @@ export default function MorningMuse() {
   const [usedVoices, setUsedVoices] = useState([])
   const [selectedMood, setSelectedMood] = useState(null)
   const abortRef = useRef(null)
+
+  useEffect(() => { trackPageview('muse') }, [])
 
   useEffect(() => {
     api('/muse/quotes/count')

@@ -40,6 +40,35 @@ router.get('/progress', validateKey, async (req, res) => {
   }
 });
 
+// Record a page view (lightweight tracking for non-practice pages)
+router.post('/pageview', validateKey, async (req, res) => {
+  try {
+    const { page, workId } = req.body;
+    if (!page) return res.status(400).json({ error: 'page required' });
+
+    const content = await fs.readFile(req.analyticsPath, 'utf-8');
+    const analytics = JSON.parse(content);
+
+    if (!analytics.pageviews) analytics.pageviews = [];
+    analytics.pageviews.push({
+      timestamp: new Date().toISOString(),
+      page, // 'reflect', 'watch', 'live', 'muse', 'news', 'recite'
+      workId: workId || null
+    });
+
+    // Keep last 2000 pageviews
+    if (analytics.pageviews.length > 2000) {
+      analytics.pageviews = analytics.pageviews.slice(-2000);
+    }
+
+    await writeAndSync(req.analyticsPath, analytics);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error recording pageview:', err);
+    res.status(500).json({ error: 'Failed to record pageview' });
+  }
+});
+
 // Record a practice session
 router.post('/session', validateKey, async (req, res) => {
   try {

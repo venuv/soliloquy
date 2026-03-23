@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Home,
@@ -11,6 +11,7 @@ import {
   Globe2,
   Theater
 } from 'lucide-react'
+import { trackPageview } from '../App'
 import {
   PERFORMANCES,
   VENUES,
@@ -334,7 +335,9 @@ function VenueSection({ venueId, performances }) {
 export default function LivePerformances() {
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedPlay, setSelectedPlay] = useState('all');
-  const [viewMode, setViewMode] = useState('venue'); // 'venue' or 'timeline'
+  const [viewMode, setViewMode] = useState('venue');
+
+  useEffect(() => { trackPageview('live') }, []); // 'venue' or 'timeline'
 
   // Get unique plays for filter
   const plays = useMemo(() => {

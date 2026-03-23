@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { api } from '../App'
+import { api, trackPageview } from '../App'
 import {
   ArrowLeft, Sparkles, Save, Loader2, Check, Edit3, X,
   Grid3X3, List, ChevronDown, ChevronUp, Home
@@ -45,6 +45,8 @@ export default function Visualize() {
 
   const [view, setView] = useState('editor') // 'editor' | 'bingo'
   const [expandedChunk, setExpandedChunk] = useState(null)
+
+  useEffect(() => { trackPageview('reflect', `${authorId}/${workId}`) }, [authorId, workId])
 
   // Load data on mount
   useEffect(() => {

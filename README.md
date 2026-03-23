@@ -72,10 +72,13 @@ The `fly.toml` is already configured with:
 All require `X-Admin-Key` header matching your `ADMIN_KEY` secret.
 
 ```bash
-# Download all analytics
+# Download all analytics as JSON (full blob — users, sessions, pageviews, progress)
 curl -H "X-Admin-Key: your-secret" https://your-app.fly.dev/api/admin/download > analytics.json
 
-# Get storage stats
+# Pretty-print and explore with jq
+curl -s -H "X-Admin-Key: your-secret" https://your-app.fly.dev/api/admin/download | jq '.users.analytics | keys'
+
+# Get storage stats (file count, total size)
 curl -H "X-Admin-Key: your-secret" https://your-app.fly.dev/api/admin/stats
 
 # Cleanup old data (users inactive for 90+ days)
@@ -83,6 +86,55 @@ curl -X POST -H "X-Admin-Key: your-secret" \
   -H "Content-Type: application/json" \
   -d '{"maxAgeDays": 90}' \
   https://your-app.fly.dev/api/admin/cleanup
+```
+
+#### Analytics Download Structure
+
+The `/api/admin/download` endpoint returns:
+
+```json
+{
+  "exportedAt": "2026-03-22T...",
+  "users": {
+    "keys": { ... },
+    "analytics": {
+      "<userKey>": {
+        "sessions": [{ "timestamp", "authorId", "workId", "mode", "duration", "score" }],
+        "pageviews": [{ "timestamp", "page", "workId" }],
+        "progress": { "<authorId/workId>": { "chunks": { ... }, "mastered": true/false } },
+        "attempts": [...],
+        "recitations": [...]
+      }
+    }
+  },
+  "aggregates": { ... }
+}
+```
+
+**What's tracked:**
+- `sessions` — Memorize and Test mode practice (duration, score, chunks reviewed)
+- `pageviews` — Visits to Reflect, Watch, Live, Muse, News pages
+- `progress` — Per-work chunk mastery state
+- `attempts` — Individual correct/incorrect answers
+- `recitations` — Full recitation transcripts with drama coaching analysis
+
+#### Offline Analysis Script
+
+```bash
+# Download and save locally
+ADMIN_KEY="your-secret"
+APP_URL="https://soliloquy-master.fly.dev"
+
+curl -s -H "X-Admin-Key: $ADMIN_KEY" "$APP_URL/api/admin/download" > analytics-$(date +%Y%m%d).json
+
+# Count users with sessions
+cat analytics-*.json | jq '[.users.analytics | to_entries[] | select(.value.sessions | length > 0)] | length'
+
+# List pageview distribution
+cat analytics-*.json | jq '[.users.analytics[].pageviews[]?.page] | group_by(.) | map({page: .[0], count: length}) | sort_by(-.count)'
+
+# Users by last activity
+cat analytics-*.json | jq '.users.analytics | to_entries[] | {user: .key, sessions: (.value.sessions | length), pageviews: (.value.pageviews // [] | length), last: (.value.sessions[-1]?.timestamp // "never")}'
 ```
 
 ## Data Structure
@@ -177,6 +229,32 @@ node scripts/add-play.mjs hamlet
 ```
 
 Play files live in `scripts/plays/{name}.json`. Beats in play files are validated for contiguity and full chunk coverage.
+
+## Corpus Manager (Python)
+
+Interactive CLI for searching, adding, and managing soliloquies:
+
+```bash
+# Search for soliloquies from a play
+python scripts/corpus-manager.py search othello
+
+# List all soliloquies (or filter by play)
+python scripts/corpus-manager.py list
+python scripts/corpus-manager.py list --play hamlet
+
+# Add a soliloquy interactively (fetch → extract → chunk → save → generate beats)
+GROQ_API_KEY=your-key python scripts/corpus-manager.py add
+```
+
+The `add` command walks through:
+1. Select play and candidate soliloquy
+2. Fetch text from MIT Shakespeare
+3. Review extracted speech
+4. Auto-chunk at caesura (natural line breaks)
+5. Save to `shakespeare.json`
+6. Generate Stanislavski beats via Groq LLM
+
+Supported plays: Othello, Midsummer Night's Dream, Winter's Tale, Measure for Measure, Antony & Cleopatra, and more.
 
 ## Tech Stack
 

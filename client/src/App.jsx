@@ -41,6 +41,14 @@ export async function api(endpoint, options = {}) {
   return res.json()
 }
 
+// Fire-and-forget pageview tracking for non-practice pages
+export function trackPageview(page, workId = null) {
+  api('/analytics/pageview', {
+    method: 'POST',
+    body: JSON.stringify({ page, workId })
+  }).catch(() => {})
+}
+
 function App() {
   const [userKey, setUserKey] = useState(null)
   const [loading, setLoading] = useState(true)

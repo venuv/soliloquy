@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Home, Play, Clock, User, ChevronDown, ChevronUp, ExternalLink, Archive, Loader2 } from 'lucide-react'
+import { trackPageview } from '../App'
 
 // Curated YouTube performances of Shakespeare soliloquies
 // All videos are under 15 minutes - focused on quality short-form performances
@@ -537,6 +538,8 @@ export default function GetInspired() {
   const [filter, setFilter] = useState('all')
   const [archiveClips, setArchiveClips] = useState([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => { trackPageview('watch') }, [])
 
   // Fetch Internet Archive clips on mount
   useEffect(() => {

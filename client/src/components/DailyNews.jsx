@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Home, Calendar, Theater, Star, ExternalLink, ChevronRight, Clock, MapPin } from 'lucide-react'
-import { api } from '../App'
+import { api, trackPageview } from '../App'
 
 function OnThisDayCard({ events, upcoming, message }) {
   const today = new Date()
@@ -202,6 +202,8 @@ export default function DailyNews() {
   const [news, setNews] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  useEffect(() => { trackPageview('news') }, [])
 
   useEffect(() => {
     api('/news')
