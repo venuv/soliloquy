@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../App'
 import {
@@ -6,7 +6,7 @@ import {
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
   Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target
 } from 'lucide-react'
-import { similarityScore, containsExpected, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
+import { similarityScore, containsExpected, compositeScore, wordDiff, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
 import BeatEditor from './BeatEditor'
 import useIsMobile from '../hooks/useIsMobile'
 
@@ -55,6 +55,7 @@ export default function Practice() {
   const [isCorrect, setIsCorrect] = useState(false)
   const [score, setScore] = useState({ points: 0, total: 0 })
   const [lastLikert, setLastLikert] = useState(0)
+  const [lastScoreDetail, setLastScoreDetail] = useState(null) // composite score breakdown
   const [isListening, setIsListening] = useState(false)
 
   // Tab state within memorize mode
@@ -565,18 +566,22 @@ export default function Practice() {
 
   const checkAnswer = () => {
     const itemIdx = testOrder[testIndex]
-    let expected
+    let expected, chunks
     if (practiceUnit === 'beats') {
-      expected = getBeatText(work.chunks, beats[itemIdx])
+      const beat = beats[itemIdx]
+      expected = getBeatText(work.chunks, beat)
+      chunks = work.chunks.slice(beat.startChunk, beat.endChunk + 1)
     } else {
       expected = work.chunks[itemIdx].back
+      chunks = null // single line, no line-level breakdown needed
     }
-    const similarity = similarityScore(userAnswer, expected)
     const hasExpected = practiceUnit === 'beats' ? false : containsExpected(userAnswer, expected)
-    const likert = hasExpected ? 1.0 : toLikert(similarity, practiceUnit === 'beats')
+    const detail = compositeScore(userAnswer, expected, chunks)
+    const likert = hasExpected ? 1.0 : toLikert(detail.composite, practiceUnit === 'beats')
     const correct = practiceUnit === 'beats' ? likert >= 0.8 : likert >= 1.0
     setIsCorrect(correct)
     setLastLikert(likert)
+    setLastScoreDetail(detail)
     setShowResult(true)
     const newScore = { points: Math.round((score.points + likert) * 100) / 100, total: score.total + 1 }
     setScore(newScore)
@@ -588,6 +593,7 @@ export default function Practice() {
       setTestIndex(testIndex + 1)
       setUserAnswer('')
       setShowResult(false)
+      setLastScoreDetail(null)
     } else {
       recordSession(score)
       setMode('results')
@@ -1103,10 +1109,12 @@ export default function Practice() {
                         </>
                       ) : (
                         (() => {
-                          const similarity = similarityScore(drillAnswer, drillExpected)
+                          const drillChunks = isDrillBeats ? work.chunks.slice(drillBeat.startChunk, drillBeat.endChunk + 1) : null
                           const hasExpected = isDrillBeats ? false : containsExpected(drillAnswer, drillExpected)
-                          const likert = hasExpected ? 1.0 : toLikert(similarity, isDrillBeats)
+                          const detail = compositeScore(drillAnswer, drillExpected, drillChunks)
+                          const likert = hasExpected ? 1.0 : toLikert(detail.composite, isDrillBeats)
                           const isCorrect = likert >= 0.8
+                          const diff = !isCorrect && drillAnswer ? wordDiff(drillAnswer, drillExpected) : null
 
                           return (
                             <>
@@ -1123,31 +1131,82 @@ export default function Practice() {
                                     {likert >= 1.0 ? 'Perfect!' : likert >= 0.8 ? 'Great!' : likert >= 0.6 ? 'Close' : likert >= 0.4 ? 'Partial' : 'Keep practicing'}
                                   </p>
                                   <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 600, color: likertColor(likert) }}>
-                                    {Math.round(likert * 100)}%
+                                    {Math.round(detail.composite * 100)}%
                                   </span>
+                                </div>
+                                {/* Dimension bars */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '5rem 1fr', gap: '0.2rem 0.5rem', alignItems: 'center', fontSize: '0.7rem', color: colors.muted, marginBottom: drillAnswer ? '0.5rem' : 0 }}>
+                                  {[
+                                    ['Words', detail.wordRecall],
+                                    ['Order', detail.sequence],
+                                    ['Phrasing', detail.phrasing],
+                                    ['Coverage', detail.completeness],
+                                  ].map(([label, val]) => (
+                                    <React.Fragment key={label}>
+                                      <span>{label}</span>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: 'rgba(0,0,0,0.08)' }}>
+                                          <div style={{ width: `${Math.round(val * 100)}%`, height: '100%', borderRadius: '2px', background: val >= 0.9 ? colors.forest : val >= 0.6 ? colors.gold : colors.crimson }} />
+                                        </div>
+                                        <span style={{ width: '2rem', textAlign: 'right', fontSize: '0.65rem' }}>{Math.round(val * 100)}%</span>
+                                      </div>
+                                    </React.Fragment>
+                                  ))}
                                 </div>
                                 {drillAnswer && (
                                   <p style={{ color: colors.muted, fontSize: '0.85rem', margin: 0 }}>You said: "{drillAnswer}"</p>
                                 )}
                               </div>
 
-                              {/* Correct answer */}
-                              <div style={{ background: 'rgba(61,92,74,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', textAlign: isDrillBeats ? 'left' : 'center' }}>
-                                <p style={{ fontSize: '0.7rem', color: colors.faded, marginBottom: '0.25rem', textTransform: 'uppercase' }}>Correct answer</p>
-                                {isDrillBeats ? (
-                                  <div>
-                                    {work.chunks.slice(drillBeat.startChunk, drillBeat.endChunk + 1).map((c, i) => (
-                                      <p key={i} style={{ fontFamily: "'Cormorant', serif", fontSize: '1.05rem', color: colors.forest, lineHeight: 1.6, margin: '0.1rem 0' }}>
-                                        {c.front} {c.back}
-                                      </p>
+                              {/* Word diff for incorrect answers */}
+                              {diff && (
+                                <div style={{ marginBottom: '0.75rem', padding: '0.75rem', background: 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+                                  <p style={{ fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
+                                    {diff.userDiff.map((w, i) => (
+                                      <span key={i} style={{
+                                        color: w.status === 'correct' ? colors.forest : colors.crimson,
+                                        textDecoration: w.status === 'extra' ? 'line-through' : 'none',
+                                        opacity: w.status === 'extra' ? 0.6 : 1
+                                      }}>{i > 0 ? ' ' : ''}{w.word}</span>
                                     ))}
-                                  </div>
-                                ) : (
+                                  </p>
+                                  {diff.expectedDiff.some(w => w.status === 'missing') && (
+                                    <p style={{ fontSize: '0.8rem', color: colors.crimson, marginTop: '0.4rem', opacity: 0.8, margin: '0.4rem 0 0' }}>
+                                      Missing: {diff.expectedDiff.filter(w => w.status === 'missing').map(w => w.word).join(' ')}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Correct answer */}
+                              {isDrillBeats && detail.lineResults?.length > 0 ? (
+                                <div style={{ marginBottom: '1rem' }}>
+                                  {detail.lineResults.map((line, i) => (
+                                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', padding: '0.3rem 0', borderBottom: i < detail.lineResults.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                                      <span style={{ fontSize: '0.75rem', marginTop: '0.1rem', flexShrink: 0 }}>
+                                        {line.status === 'perfect' ? '✓' : line.status === 'partial' ? '~' : '✗'}
+                                      </span>
+                                      <p style={{
+                                        fontFamily: "'Cormorant', serif",
+                                        fontSize: '0.95rem',
+                                        color: line.status === 'perfect' ? colors.forest : line.status === 'partial' ? colors.gold : colors.crimson,
+                                        opacity: line.status === 'missing' ? 0.6 : 1,
+                                        margin: 0,
+                                        lineHeight: 1.5
+                                      }}>
+                                        {line.front} {line.back}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div style={{ background: 'rgba(61,92,74,0.08)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center' }}>
+                                  <p style={{ fontSize: '0.7rem', color: colors.faded, marginBottom: '0.25rem', textTransform: 'uppercase' }}>Correct answer</p>
                                   <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.3rem', color: colors.forest, fontWeight: 500, margin: 0 }}>
                                     {drillExpected}
                                   </p>
-                                )}
-                              </div>
+                                </div>
+                              )}
 
                               <p style={{ color: colors.muted, fontSize: '0.85rem', textAlign: 'center', marginBottom: '0.75rem' }}>Rate yourself:</p>
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1406,27 +1465,90 @@ export default function Practice() {
             </>
           ) : (
             <>
+              {/* Score header */}
               <div style={{ padding: '1rem', borderRadius: '8px', marginBottom: '1rem', background: isCorrect ? 'rgba(61,92,74,0.1)' : 'rgba(155,45,48,0.06)', border: `1px solid ${isCorrect ? 'rgba(61,92,74,0.3)' : 'rgba(155,45,48,0.15)'}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <p style={{ fontWeight: 500, color: likertColor(lastLikert) }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <p style={{ fontWeight: 500, color: likertColor(lastLikert), margin: 0 }}>
                     {lastLikert >= 1.0 ? 'Perfect' : lastLikert >= 0.8 ? 'Almost' : lastLikert >= 0.6 ? 'Partial' : lastLikert >= 0.4 ? 'Rough' : 'Needs work'}
                   </p>
-                  <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 600, color: likertColor(lastLikert) }}>{lastLikert.toFixed(1)}</span>
+                  <span style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 600, color: likertColor(lastLikert) }}>{Math.round((lastScoreDetail?.composite || lastLikert) * 100)}%</span>
                 </div>
-                <p style={{ color: colors.muted, fontSize: '0.9rem' }}>Your answer: "{userAnswer}"</p>
-                {isTestBeats ? (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <p style={{ fontSize: '0.8rem', color: colors.faded, marginBottom: '0.25rem' }}>Correct:</p>
-                    {work.chunks.slice(testBeat.startChunk, testBeat.endChunk + 1).map((c, i) => (
-                      <p key={i} style={{ fontSize: '0.85rem', color: colors.ink, lineHeight: 1.5, margin: '0.1rem 0' }}>
-                        {c.front} <span style={{ color: colors.blue, fontWeight: 500 }}>{c.back}</span>
-                      </p>
+
+                {/* Dimension bars */}
+                {lastScoreDetail && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '5rem 1fr', gap: '0.3rem 0.5rem', alignItems: 'center', fontSize: '0.75rem', color: colors.muted }}>
+                    {[
+                      ['Words', lastScoreDetail.wordRecall],
+                      ['Order', lastScoreDetail.sequence],
+                      ['Phrasing', lastScoreDetail.phrasing],
+                      ['Coverage', lastScoreDetail.completeness],
+                    ].map(([label, val]) => (
+                      <React.Fragment key={label}>
+                        <span>{label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: 'rgba(0,0,0,0.08)' }}>
+                            <div style={{ width: `${Math.round(val * 100)}%`, height: '100%', borderRadius: '2px', background: val >= 0.9 ? colors.forest : val >= 0.6 ? colors.gold : colors.crimson, transition: 'width 0.3s' }} />
+                          </div>
+                          <span style={{ width: '2rem', textAlign: 'right', fontSize: '0.7rem' }}>{Math.round(val * 100)}%</span>
+                        </div>
+                      </React.Fragment>
                     ))}
                   </div>
-                ) : (
-                  <p style={{ color: colors.ink, marginTop: '0.5rem', fontSize: '0.9rem' }}>Correct: <span style={{ color: colors.crimson, fontWeight: 500 }}>{testExpected}</span></p>
                 )}
               </div>
+
+              {/* Line-level results for beats */}
+              {isTestBeats && lastScoreDetail?.lineResults?.length > 0 ? (
+                <div style={{ marginBottom: '1rem' }}>
+                  {lastScoreDetail.lineResults.map((line, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', padding: '0.4rem 0', borderBottom: i < lastScoreDetail.lineResults.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                      <span style={{ fontSize: '0.8rem', marginTop: '0.1rem', flexShrink: 0 }}>
+                        {line.status === 'perfect' ? '✓' : line.status === 'partial' ? '~' : '✗'}
+                      </span>
+                      <p style={{
+                        fontFamily: "'Cormorant', serif",
+                        fontSize: '0.95rem',
+                        color: line.status === 'perfect' ? colors.forest : line.status === 'partial' ? colors.gold : colors.crimson,
+                        opacity: line.status === 'missing' ? 0.6 : 1,
+                        margin: 0,
+                        lineHeight: 1.5
+                      }}>
+                        {line.front} {line.back}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : !isTestBeats && (
+                <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', borderRadius: '8px' }}>
+                  <p style={{ fontSize: '0.7rem', color: colors.faded, textTransform: 'uppercase', marginBottom: '0.4rem' }}>Correct</p>
+                  <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: colors.ink, margin: 0 }}>{testExpected}</p>
+                </div>
+              )}
+
+              {/* Word-level diff of user's answer */}
+              {lastScoreDetail && !isCorrect && (() => {
+                const diff = wordDiff(userAnswer, testExpected)
+                return (
+                  <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+                    <p style={{ fontSize: '0.7rem', color: colors.faded, textTransform: 'uppercase', marginBottom: '0.4rem' }}>Your answer</p>
+                    <p style={{ fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
+                      {diff.userDiff.map((w, i) => (
+                        <span key={i} style={{
+                          color: w.status === 'correct' ? colors.forest : colors.crimson,
+                          textDecoration: w.status === 'extra' ? 'line-through' : 'none',
+                          opacity: w.status === 'extra' ? 0.6 : 1
+                        }}>{i > 0 ? ' ' : ''}{w.word}</span>
+                      ))}
+                    </p>
+                    {diff.expectedDiff.some(w => w.status === 'missing') && (
+                      <p style={{ fontSize: '0.8rem', color: colors.crimson, marginTop: '0.5rem', opacity: 0.8 }}>
+                        Missing: {diff.expectedDiff.filter(w => w.status === 'missing').map(w => w.word).join(' ')}
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
+
               <button onClick={nextTest} style={{ ...btnPrimary, width: '100%', justifyContent: 'center' }}>
                 {testIndex < testOrder.length - 1 ? 'Next Question' : 'See Results'}
               </button>

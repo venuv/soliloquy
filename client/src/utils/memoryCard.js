@@ -66,6 +66,176 @@ export const containsExpected = (userAnswer, expected) => {
 }
 
 /**
+ * Longest Common Subsequence length between two word arrays.
+ * Measures how well the user preserved word order.
+ */
+const lcsLength = (a, b) => {
+  const m = a.length, n = b.length
+  // Use 1D DP for memory efficiency
+  const prev = new Array(n + 1).fill(0)
+  const curr = new Array(n + 1).fill(0)
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      curr[j] = a[i - 1] === b[j - 1]
+        ? prev[j - 1] + 1
+        : Math.max(prev[j], curr[j - 1])
+    }
+    for (let j = 0; j <= n; j++) { prev[j] = curr[j]; curr[j] = 0 }
+  }
+  return prev[n]
+}
+
+/**
+ * N-gram overlap ratio between two word arrays.
+ * Captures exact phrasing fidelity.
+ */
+const ngramOverlap = (userWords, expectedWords, n) => {
+  if (expectedWords.length < n) return userWords.length >= expectedWords.length ? 1 : 0
+  const makeNgrams = (words) => {
+    const grams = new Map()
+    for (let i = 0; i <= words.length - n; i++) {
+      const gram = words.slice(i, i + n).join(' ')
+      grams.set(gram, (grams.get(gram) || 0) + 1)
+    }
+    return grams
+  }
+  const expected = makeNgrams(expectedWords)
+  const user = makeNgrams(userWords)
+  let matches = 0
+  for (const [gram, count] of expected) {
+    matches += Math.min(count, user.get(gram) || 0)
+  }
+  return matches / expected.size
+}
+
+/**
+ * Composite scoring across 4 dimensions:
+ * - Word Recall: what fraction of expected words appear (order-independent)
+ * - Sequence: longest common subsequence preserving word order
+ * - Phrasing: bigram + trigram overlap for exact phrase fidelity
+ * - Completeness: how much of the expected text was covered
+ *
+ * @param {string} userText - The user's answer
+ * @param {string} expectedText - The expected answer
+ * @param {Array} [chunks] - Optional chunks array for line-level analysis
+ * @returns {object} { composite, wordRecall, sequence, phrasing, completeness, lineResults }
+ */
+export const compositeScore = (userText, expectedText, chunks) => {
+  const normUser = normalizeText(userText)
+  const normExpected = normalizeText(expectedText)
+  const userWords = normUser.split(' ').filter(Boolean)
+  const expectedWords = normExpected.split(' ').filter(Boolean)
+
+  if (expectedWords.length === 0) {
+    return { composite: userWords.length === 0 ? 1 : 0, wordRecall: 0, sequence: 0, phrasing: 0, completeness: 0, lineResults: [] }
+  }
+
+  // 1. Word Recall — matched words / expected words (order-independent)
+  const expectedPool = expectedWords.slice()
+  let wordMatches = 0
+  userWords.forEach(w => {
+    const idx = expectedPool.indexOf(w)
+    if (idx !== -1) { wordMatches++; expectedPool.splice(idx, 1) }
+  })
+  const wordRecall = wordMatches / expectedWords.length
+
+  // 2. Sequence — LCS / expected length
+  const sequence = lcsLength(userWords, expectedWords) / expectedWords.length
+
+  // 3. Phrasing — average of bigram and trigram overlap
+  const bigramScore = ngramOverlap(userWords, expectedWords, 2)
+  const trigramScore = ngramOverlap(userWords, expectedWords, 3)
+  const phrasing = (bigramScore + trigramScore) / 2
+
+  // 4. Completeness — line-level coverage
+  let completeness = wordRecall // fallback
+  let lineResults = []
+  if (chunks && chunks.length > 0) {
+    lineResults = chunks.map(chunk => {
+      const lineText = normalizeText(`${chunk.front} ${chunk.back}`)
+      const lineWords = lineText.split(' ').filter(Boolean)
+      const pool = userWords.slice()
+      let hits = 0
+      lineWords.forEach(w => {
+        const idx = pool.indexOf(w)
+        if (idx !== -1) { hits++; pool.splice(idx, 1) }
+      })
+      const lineScore = hits / lineWords.length
+      return {
+        front: chunk.front,
+        back: chunk.back,
+        score: lineScore,
+        status: lineScore >= 0.9 ? 'perfect' : lineScore >= 0.5 ? 'partial' : 'missing'
+      }
+    })
+    const covered = lineResults.filter(l => l.score >= 0.5).length
+    completeness = covered / lineResults.length
+  }
+
+  // Composite: weighted blend
+  const composite = 0.30 * sequence + 0.25 * phrasing + 0.25 * wordRecall + 0.20 * completeness
+
+  return { composite, wordRecall, sequence, phrasing, completeness, lineResults }
+}
+
+/**
+ * Word-level diff between user answer and expected answer.
+ * Returns array of { word, status } where status is 'correct', 'missing', or 'extra'.
+ *
+ * Uses LCS to align words, then marks unmatched expected words as missing
+ * and unmatched user words as extra.
+ */
+export const wordDiff = (userText, expectedText) => {
+  const normUser = normalizeText(userText)
+  const normExpected = normalizeText(expectedText)
+  const userWords = normUser.split(' ').filter(Boolean)
+  const expectedWords = normExpected.split(' ').filter(Boolean)
+
+  // Build full LCS table for backtracking
+  const m = userWords.length, n = expectedWords.length
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = userWords[i - 1] === expectedWords[j - 1]
+        ? dp[i - 1][j - 1] + 1
+        : Math.max(dp[i - 1][j], dp[i][j - 1])
+    }
+  }
+
+  // Backtrack to find alignment
+  const result = []
+  let i = m, j = n
+  const aligned = [] // collect in reverse
+  while (i > 0 && j > 0) {
+    if (userWords[i - 1] === expectedWords[j - 1]) {
+      aligned.push({ userIdx: i - 1, expIdx: j - 1 })
+      i--; j--
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      i--
+    } else {
+      j--
+    }
+  }
+  aligned.reverse()
+
+  // Build expected-side diff: mark each expected word as correct or missing
+  const matchedExpIdx = new Set(aligned.map(a => a.expIdx))
+  const expectedDiff = expectedWords.map((word, idx) => ({
+    word,
+    status: matchedExpIdx.has(idx) ? 'correct' : 'missing'
+  }))
+
+  // Build user-side diff: mark extra words
+  const matchedUserIdx = new Set(aligned.map(a => a.userIdx))
+  const userDiff = userWords.map((word, idx) => ({
+    word,
+    status: matchedUserIdx.has(idx) ? 'correct' : 'extra'
+  }))
+
+  return { expectedDiff, userDiff }
+}
+
+/**
  * Counts the number of words in a text.
  *
  * @param {string} text - The text to count words in
