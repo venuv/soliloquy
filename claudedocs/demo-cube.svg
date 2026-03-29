@@ -1,0 +1,472 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 720" width="800" height="720">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&amp;family=IBM+Plex+Sans:wght@300;400;500&amp;display=swap');
+
+      .serif { font-family: 'Cormorant', 'Georgia', serif; }
+      .sans { font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif; }
+
+      /* 3-state crossfade, 6s loop */
+      @keyframes state1 {
+        0%, 26% { opacity: 1; }
+        32%, 88% { opacity: 0; }
+        94%, 100% { opacity: 1; }
+      }
+      @keyframes state2 {
+        0%, 30% { opacity: 0; }
+        36%, 60% { opacity: 1; }
+        66%, 100% { opacity: 0; }
+      }
+      @keyframes state3 {
+        0%, 64% { opacity: 0; }
+        70%, 88% { opacity: 1; }
+        94%, 100% { opacity: 0; }
+      }
+      .s1 { animation: state1 6s ease-in-out infinite; }
+      .s2 { animation: state2 6s ease-in-out infinite; }
+      .s3 { animation: state3 6s ease-in-out infinite; }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      .cube-group { animation: float 8s ease-in-out infinite; }
+    </style>
+
+    <!-- Crosshatch patterns for face textures -->
+    <!-- Top face: horizontal lines (lit from above, lightest) -->
+    <pattern id="hatch-top" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(0)">
+      <line x1="0" y1="3" x2="6" y2="3" stroke="#8b7355" stroke-width="0.3" opacity="0.07"/>
+    </pattern>
+
+    <!-- Left face: 45° diagonal (shadow side, denser) -->
+    <pattern id="hatch-left" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#4a3828" stroke-width="0.4" opacity="0.09"/>
+    </pattern>
+    <!-- Second layer for left face cross-hatch -->
+    <pattern id="hatch-left-cross" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(-30)">
+      <line x1="0" y1="0" x2="0" y2="7" stroke="#4a3828" stroke-width="0.3" opacity="0.06"/>
+    </pattern>
+
+    <!-- Right face: -45° diagonal (lighter side) -->
+    <pattern id="hatch-right" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(-45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#4a3828" stroke-width="0.35" opacity="0.065"/>
+    </pattern>
+
+    <!-- Pencil-stroke filter: slight wobble + grain -->
+    <filter id="pencil" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- Heavier pencil for outer edges -->
+    <filter id="pencil-heavy" x="-3%" y="-3%" width="106%" height="106%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="5" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- Clip paths for each face -->
+    <clipPath id="clip-top">
+      <polygon points="400,90 610,215 400,340 190,215"/>
+    </clipPath>
+    <clipPath id="clip-left">
+      <polygon points="190,215 400,340 400,590 190,465"/>
+    </clipPath>
+    <clipPath id="clip-right">
+      <polygon points="400,340 610,215 610,465 400,590"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="720" fill="#f5f0e8"/>
+
+  <!-- Title above cube -->
+  <text x="400" y="50" text-anchor="middle" class="serif" font-size="28" font-weight="300" fill="#1a1a1a" letter-spacing="0.04em">Soliloquy Master</text>
+  <text x="400" y="72" text-anchor="middle" class="sans" font-size="10" font-weight="300" fill="#9a9a9a" letter-spacing="0.15em">MEMORIZE · REFLECT · WATCH</text>
+
+  <g class="cube-group">
+
+    <!-- ============================= -->
+    <!-- TOP FACE — HOME               -->
+    <!-- Design space: 200x200         -->
+    <!-- matrix(1.05,-0.595,-1.05,0.595, 400,90) -->
+    <!-- ============================= -->
+    <g clip-path="url(#clip-top)">
+      <polygon points="400,90 610,215 400,340 190,215" fill="#fdfcf8"/>
+      <!-- Top face crosshatch texture -->
+      <polygon points="400,90 610,215 400,340 190,215" fill="url(#hatch-top)"/>
+
+      <!--
+        Top face transform: maps 200x200 local space to the diamond face.
+        (0,0)→(400,90)=apex  (200,0)→(610,215)=right
+        (0,200)→(190,215)=left  (200,200)→(400,340)=center
+        matrix(a,b,c,d,e,f) = matrix(1.05, 0.625, -1.05, 0.625, 400, 90)
+      -->
+      <g transform="matrix(1.05, 0.625, -1.05, 0.625, 400, 90)">
+
+        <!-- State 1: Hero landing -->
+        <g class="s1">
+          <!-- Crimson ink band across the middle -->
+          <rect x="15" y="70" width="170" height="65" rx="2" fill="#9b2d30" opacity="0.9"/>
+
+          <!-- 3 feature cards on band -->
+          <text x="55" y="88" text-anchor="middle" class="serif" font-size="11" fill="#fdfcf8" font-weight="500">Memorize</text>
+          <text x="100" y="88" text-anchor="middle" class="serif" font-size="11" fill="#fdfcf8" font-weight="500">Watch</text>
+          <text x="145" y="88" text-anchor="middle" class="serif" font-size="11" fill="#fdfcf8" font-weight="500">Reflect</text>
+
+          <!-- Dividers -->
+          <line x1="77" y1="76" x2="77" y2="128" stroke="#fdfcf8" stroke-width="0.4" opacity="0.35"/>
+          <line x1="123" y1="76" x2="123" y2="128" stroke="#fdfcf8" stroke-width="0.4" opacity="0.35"/>
+
+          <!-- Descriptions -->
+          <text x="55" y="100" text-anchor="middle" class="sans" font-size="5.5" fill="#fdfcf8" opacity="0.7">25 soliloquies</text>
+          <text x="55" y="108" text-anchor="middle" class="sans" font-size="5.5" fill="#fdfcf8" opacity="0.7">learnable fragments</text>
+          <text x="100" y="100" text-anchor="middle" class="sans" font-size="5.5" fill="#fdfcf8" opacity="0.7">McKellen, Dench</text>
+          <text x="100" y="108" text-anchor="middle" class="sans" font-size="5.5" fill="#fdfcf8" opacity="0.7">Branagh &amp; more</text>
+          <text x="145" y="100" text-anchor="middle" class="sans" font-size="5.5" fill="#fdfcf8" opacity="0.7">Daily wisdom</text>
+          <text x="145" y="108" text-anchor="middle" class="sans" font-size="5.5" fill="#fdfcf8" opacity="0.7">from the Bard</text>
+
+          <!-- Seal below band -->
+          <rect x="90" y="118" width="20" height="20" rx="1" fill="#9b2d30" opacity="0.75"/>
+          <text x="100" y="133" text-anchor="middle" class="serif" font-size="13" font-weight="600" fill="#fdfcf8">習</text>
+
+          <!-- Title above band -->
+          <text x="100" y="55" text-anchor="middle" class="serif" font-size="14" font-weight="300" fill="#1a1a1a">Commit the words</text>
+          <text x="100" y="66" text-anchor="middle" class="serif" font-size="14" font-weight="300" fill="#1a1a1a">to <tspan font-style="italic">memory</tspan></text>
+        </g>
+
+        <!-- State 2: Stats -->
+        <g class="s2">
+          <text x="100" y="45" text-anchor="middle" class="sans" font-size="7" fill="#9a9a9a" letter-spacing="0.1em">YOUR COLLECTION</text>
+
+          <!-- 3 stat halos -->
+          <ellipse cx="50" cy="90" rx="28" ry="20" fill="#9b2d30" opacity="0.12"/>
+          <text x="50" y="96" text-anchor="middle" class="serif" font-size="22" fill="#9b2d30">25</text>
+          <text x="50" y="110" text-anchor="middle" class="sans" font-size="5" fill="#9a9a9a" letter-spacing="0.08em">SOLILOQUIES</text>
+
+          <ellipse cx="100" cy="90" rx="24" ry="18" fill="#3d5c4a" opacity="0.15"/>
+          <text x="100" y="96" text-anchor="middle" class="serif" font-size="22" fill="#3d5c4a">9</text>
+          <text x="100" y="110" text-anchor="middle" class="sans" font-size="5" fill="#9a9a9a" letter-spacing="0.08em">PLAYS</text>
+
+          <ellipse cx="150" cy="90" rx="24" ry="18" fill="#2a4a5e" opacity="0.15"/>
+          <text x="150" y="96" text-anchor="middle" class="serif" font-size="22" fill="#2a4a5e">&#x221e;</text>
+          <text x="150" y="110" text-anchor="middle" class="sans" font-size="5" fill="#9a9a9a" letter-spacing="0.08em">PERFORMANCES</text>
+
+          <!-- Gold divider -->
+          <line x1="25" y1="125" x2="175" y2="125" stroke="#c4a35a" stroke-width="0.8" opacity="0.5"/>
+
+          <text x="100" y="140" text-anchor="middle" class="serif" font-size="9" fill="#4a4a4a" font-style="italic">Shakespeare's birthday approaches...</text>
+        </g>
+
+        <!-- State 3: Minimal branding -->
+        <g class="s3">
+          <!-- Globe hint -->
+          <circle cx="100" cy="65" r="20" fill="none" stroke="#9b2d30" stroke-width="0.8" opacity="0.4"/>
+          <text x="100" y="70" text-anchor="middle" class="serif" font-size="12" fill="#9b2d30" opacity="0.6">&#x1f3ad;</text>
+
+          <text x="100" y="100" text-anchor="middle" class="serif" font-size="13" font-weight="300" fill="#1a1a1a">A tool for the</text>
+          <text x="100" y="113" text-anchor="middle" class="serif" font-size="13" font-weight="300" fill="#1a1a1a" font-style="italic">aspiring player</text>
+
+          <!-- 3 chevrons -->
+          <path d="M92,128 L100,136 L108,128" fill="none" stroke="#8b3a3d" stroke-width="1.2" stroke-linecap="round" opacity="0.35"/>
+          <path d="M92,136 L100,144 L108,136" fill="none" stroke="#7a2f32" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+          <path d="M92,144 L100,152 L108,144" fill="none" stroke="#6d2628" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- Face borders removed — pencil edges below handle all structure -->
+
+
+    <!-- ============================= -->
+    <!-- LEFT FACE — MEMORIZE          -->
+    <!-- Design space: 200x200         -->
+    <!-- (0,0)→(190,215) (200,0)→(400,340) -->
+    <!-- (0,200)→(190,465) (200,200)→(400,590) -->
+    <!-- matrix(1.05, 0.625, 0, 1.25, 190, 215) -->
+    <!-- ============================= -->
+    <g clip-path="url(#clip-left)">
+      <polygon points="190,215 400,340 400,590 190,465" fill="#fdfcf8"/>
+      <!-- Shadow side tint -->
+      <polygon points="190,215 400,340 400,590 190,465" fill="#1a1a1a" opacity="0.02"/>
+      <!-- Left face crosshatch (denser, shadow side) -->
+      <polygon points="190,215 400,340 400,590 190,465" fill="url(#hatch-left)"/>
+      <polygon points="190,215 400,340 400,590 190,465" fill="url(#hatch-left-cross)"/>
+
+      <g transform="matrix(1.05, 0.625, 0, 1.25, 190, 215)">
+
+        <!-- State 1: Lines mode with word-initial hints -->
+        <g class="s1">
+          <text x="10" y="15" class="sans" font-size="6.5" fill="#9a9a9a" letter-spacing="0.08em">MEMORIZE</text>
+          <text x="70" y="15" class="sans" font-size="6.5" fill="#9b2d30" letter-spacing="0.08em">LINES</text>
+
+          <!-- Progress bar -->
+          <rect x="10" y="22" width="150" height="3" rx="1.5" fill="#e8e4dc"/>
+          <rect x="10" y="22" width="95" height="3" rx="1.5" fill="#9b2d30" opacity="0.75"/>
+
+          <!-- Verse -->
+          <text x="12" y="44" class="serif" font-size="10.5" fill="#1a1a1a" font-style="italic">"To be, or not to be,</text>
+          <text x="15" y="56" class="serif" font-size="10.5" fill="#1a1a1a" font-style="italic">that is the question&#x2014;"</text>
+
+          <!-- Word initials -->
+          <text x="12" y="78" class="serif" font-size="12" fill="#c4a35a" font-weight="500" letter-spacing="0.25em">W &#x2019; t i n</text>
+          <text x="12" y="92" class="serif" font-size="12" fill="#c4a35a" font-weight="500" letter-spacing="0.25em">i t m o f</text>
+
+          <!-- Faded next line -->
+          <text x="12" y="110" class="sans" font-size="7" fill="#9a9a9a" font-style="italic">Whether 'tis nobler in the mind...</text>
+
+          <!-- Likert scale -->
+          <g transform="translate(12, 125)">
+            <circle cx="0" cy="0" r="4.5" fill="#9b2d30" opacity="0.75"/>
+            <circle cx="16" cy="0" r="4.5" fill="#9b2d30" opacity="0.5"/>
+            <circle cx="32" cy="0" r="4.5" fill="#c4a35a" opacity="0.65"/>
+            <circle cx="48" cy="0" r="4.5" fill="#2a4a5e" opacity="0.55"/>
+            <circle cx="64" cy="0" r="4.5" fill="#3d5c4a" opacity="0.75"/>
+            <text x="0" y="14" class="sans" font-size="5" fill="#9a9a9a" text-anchor="middle">Rough</text>
+            <text x="64" y="14" class="sans" font-size="5" fill="#3d5c4a" text-anchor="middle">Perfect</text>
+          </g>
+        </g>
+
+        <!-- State 2: Test mode -->
+        <g class="s2">
+          <text x="10" y="15" class="sans" font-size="6.5" fill="#9a9a9a" letter-spacing="0.08em">MEMORIZE</text>
+          <text x="70" y="15" class="sans" font-size="6.5" fill="#9b2d30" letter-spacing="0.08em">TEST</text>
+
+          <!-- Question -->
+          <text x="12" y="38" class="serif" font-size="9" fill="#4a4a4a">Complete the line:</text>
+          <text x="12" y="52" class="serif" font-size="10.5" fill="#1a1a1a" font-style="italic">"To sleep, perchance to ___"</text>
+
+          <!-- Multiple choice -->
+          <g transform="translate(12, 62)">
+            <rect x="0" y="0" width="130" height="18" rx="3" fill="#c4a35a" fill-opacity="0.08" stroke="#c4a35a" stroke-width="0.7"/>
+            <text x="10" y="13" class="sans" font-size="8" fill="#1a1a1a">A. dream</text>
+            <circle cx="120" cy="9" r="4" fill="#3d5c4a" opacity="0.6"/>
+            <path d="M117,9 L119,11.5 L123,6.5" fill="none" stroke="#fdfcf8" stroke-width="1"/>
+
+            <rect x="0" y="24" width="130" height="18" rx="3" fill="none" stroke="#e8e4dc" stroke-width="0.7"/>
+            <text x="10" y="37" class="sans" font-size="8" fill="#4a4a4a">B. sleep</text>
+
+            <rect x="0" y="48" width="130" height="18" rx="3" fill="none" stroke="#e8e4dc" stroke-width="0.7"/>
+            <text x="10" y="61" class="sans" font-size="8" fill="#4a4a4a">C. rest</text>
+
+            <rect x="0" y="72" width="130" height="18" rx="3" fill="none" stroke="#e8e4dc" stroke-width="0.7"/>
+            <text x="10" y="85" class="sans" font-size="8" fill="#4a4a4a">D. die</text>
+          </g>
+        </g>
+
+        <!-- State 3: Memory palace -->
+        <g class="s3">
+          <text x="10" y="15" class="sans" font-size="6.5" fill="#9a9a9a" letter-spacing="0.08em">MEMORIZE</text>
+          <text x="70" y="15" class="sans" font-size="6.5" fill="#9b2d30" letter-spacing="0.08em">PALACE</text>
+
+          <!-- Mini floor plan -->
+          <g transform="translate(10, 25)">
+            <!-- Room 1 -->
+            <rect x="0" y="0" width="65" height="40" rx="1.5" fill="none" stroke="#888" stroke-width="0.7"/>
+            <text x="5" y="10" class="sans" font-size="5.5" fill="#aaa">1</text>
+            <text x="16" y="10" class="sans" font-size="4.5" fill="#999" letter-spacing="0.06em">FOYER</text>
+            <line x1="3" y1="14" x2="62" y2="14" stroke="#ddd" stroke-width="0.4"/>
+            <text x="5" y="24" class="sans" font-size="5.5" fill="#555">A ghost at the</text>
+            <text x="5" y="32" class="sans" font-size="5.5" fill="#555">castle entrance</text>
+
+            <!-- Room 2 -->
+            <rect x="75" y="0" width="65" height="40" rx="1.5" fill="none" stroke="#888" stroke-width="0.7"/>
+            <text x="80" y="10" class="sans" font-size="5.5" fill="#aaa">2</text>
+            <text x="91" y="10" class="sans" font-size="4.5" fill="#999" letter-spacing="0.06em">GREAT HALL</text>
+            <line x1="78" y1="14" x2="137" y2="14" stroke="#ddd" stroke-width="0.4"/>
+            <text x="80" y="24" class="sans" font-size="5.5" fill="#555">Skull on the</text>
+            <text x="80" y="32" class="sans" font-size="5.5" fill="#555">banquet table</text>
+
+            <!-- Connector -->
+            <line x1="65" y1="20" x2="75" y2="20" stroke="#bbb" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+            <!-- Room 3 -->
+            <rect x="0" y="50" width="65" height="40" rx="1.5" fill="none" stroke="#888" stroke-width="0.7"/>
+            <text x="5" y="60" class="sans" font-size="5.5" fill="#aaa">3</text>
+            <text x="16" y="60" class="sans" font-size="4.5" fill="#999" letter-spacing="0.06em">PARLOR</text>
+            <line x1="3" y1="64" x2="62" y2="64" stroke="#ddd" stroke-width="0.4"/>
+            <text x="5" y="74" class="sans" font-size="5.5" fill="#555">Mirror showing</text>
+            <text x="5" y="82" class="sans" font-size="5.5" fill="#555">two selves</text>
+
+            <!-- Room 4 -->
+            <rect x="75" y="50" width="65" height="40" rx="1.5" fill="none" stroke="#888" stroke-width="0.7"/>
+            <text x="80" y="60" class="sans" font-size="5.5" fill="#aaa">4</text>
+            <text x="91" y="60" class="sans" font-size="4.5" fill="#999" letter-spacing="0.06em">LIBRARY</text>
+            <line x1="78" y1="64" x2="137" y2="64" stroke="#ddd" stroke-width="0.4"/>
+            <text x="80" y="74" class="sans" font-size="5.5" fill="#555">Books turning</text>
+            <text x="80" y="82" class="sans" font-size="5.5" fill="#555">into daggers</text>
+
+            <!-- Connector -->
+            <line x1="65" y1="70" x2="75" y2="70" stroke="#bbb" stroke-width="0.5" stroke-dasharray="2,2"/>
+
+            <!-- Vertical connectors -->
+            <line x1="32" y1="40" x2="32" y2="50" stroke="#bbb" stroke-width="0.5" stroke-dasharray="2,2"/>
+            <line x1="107" y1="40" x2="107" y2="50" stroke="#bbb" stroke-width="0.5" stroke-dasharray="2,2"/>
+          </g>
+
+          <!-- Footer -->
+          <text x="12" y="132" class="serif" font-size="7" fill="#4a4a4a" font-style="italic">Hamlet &#x2014; To be or not to be</text>
+          <text x="148" y="132" text-anchor="end" class="sans" font-size="5.5" fill="#9a9a9a" letter-spacing="0.06em">8 ROOMS</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- ============================= -->
+    <!-- RIGHT FACE — REFLECT + WATCH  -->
+    <!-- Design space: 200x200         -->
+    <!-- (0,0)→(400,340) (200,0)→(610,215) -->
+    <!-- (0,200)→(400,590) (200,200)→(610,465) -->
+    <!-- matrix(1.05, -0.625, 0, 1.25, 400, 340) -->
+    <!-- ============================= -->
+    <g clip-path="url(#clip-right)">
+      <polygon points="400,340 610,215 610,465 400,590" fill="#fdfcf8"/>
+      <!-- Right face crosshatch (lighter side) -->
+      <polygon points="400,340 610,215 610,465 400,590" fill="url(#hatch-right)"/>
+
+      <g transform="matrix(1.05, -0.625, 0, 1.25, 400, 340)">
+
+        <!-- State 1: Fortune wheel -->
+        <g class="s1">
+          <text x="10" y="15" class="sans" font-size="6.5" fill="#9a9a9a" letter-spacing="0.08em">REFLECT</text>
+
+          <text x="12" y="35" class="serif" font-size="9" fill="#4a4a4a" font-style="italic">How are you feeling?</text>
+
+          <!-- Mini wheel -->
+          <g transform="translate(80, 85)">
+            <circle cx="0" cy="0" r="40" fill="none" stroke="#1a1a1a" stroke-width="0.8" opacity="0.45"/>
+
+            <!-- 5 segments -->
+            <line x1="0" y1="0" x2="0" y2="-40" stroke="#1a1a1a" stroke-width="0.4" opacity="0.25"/>
+            <line x1="0" y1="0" x2="38" y2="-12.4" stroke="#1a1a1a" stroke-width="0.4" opacity="0.25"/>
+            <line x1="0" y1="0" x2="23.5" y2="32.4" stroke="#1a1a1a" stroke-width="0.4" opacity="0.25"/>
+            <line x1="0" y1="0" x2="-23.5" y2="32.4" stroke="#1a1a1a" stroke-width="0.4" opacity="0.25"/>
+            <line x1="0" y1="0" x2="-38" y2="-12.4" stroke="#1a1a1a" stroke-width="0.4" opacity="0.25"/>
+
+            <!-- Labels -->
+            <text x="12" y="-22" class="sans" font-size="5" fill="#2a4a5e">Straight</text>
+            <text x="24" y="6" class="sans" font-size="5" fill="#c4a35a">Laugh</text>
+            <text x="8" y="28" class="sans" font-size="5" fill="#5a4a6a">Deep</text>
+            <text x="-28" y="28" class="sans" font-size="5" fill="#9b2d30">Challenge</text>
+            <text x="-38" y="6" class="sans" font-size="5" fill="#3d5c4a">Listen</text>
+
+            <!-- Hub -->
+            <circle cx="0" cy="0" r="7" fill="#fdfcf8" stroke="#1a1a1a" stroke-width="0.4" opacity="0.5"/>
+            <circle cx="0" cy="0" r="1.5" fill="#1a1a1a" opacity="0.5"/>
+
+            <!-- Pointer -->
+            <polygon points="-3.5,-41 0,-48 3.5,-41" fill="#1a1a1a" opacity="0.65"/>
+          </g>
+
+          <text x="80" y="140" text-anchor="middle" class="serif" font-size="9" fill="#4a4a4a" font-weight="500">Turn the Wheel</text>
+        </g>
+
+        <!-- State 2: Therapist response -->
+        <g class="s2">
+          <text x="10" y="15" class="sans" font-size="6.5" fill="#9a9a9a" letter-spacing="0.08em">REFLECT</text>
+          <text x="58" y="15" class="sans" font-size="6.5" fill="#5a4a6a" letter-spacing="0.08em">RESPONSE</text>
+
+          <!-- Mood badge -->
+          <rect x="10" y="22" width="42" height="14" rx="7" fill="#5a4a6a" opacity="0.12"/>
+          <text x="31" y="32" text-anchor="middle" class="sans" font-size="6.5" fill="#5a4a6a" font-weight="500">Go deep</text>
+
+          <!-- Input echo -->
+          <text x="12" y="52" class="sans" font-size="7" fill="#9a9a9a" font-style="italic">"Feeling restless today..."</text>
+
+          <!-- Quote with gold bar -->
+          <line x1="10" y1="62" x2="10" y2="112" stroke="#c4a35a" stroke-width="2" opacity="0.55"/>
+          <text x="18" y="75" class="serif" font-size="9.5" fill="#1a1a1a" font-style="italic">"Our doubts are traitors,</text>
+          <text x="18" y="87" class="serif" font-size="9.5" fill="#1a1a1a" font-style="italic">and make us lose the good</text>
+          <text x="18" y="99" class="serif" font-size="9.5" fill="#1a1a1a" font-style="italic">we oft might win..."</text>
+          <text x="18" y="114" class="sans" font-size="6.5" fill="#9a9a9a">&#x2014; Lucio, Measure for Measure</text>
+
+          <!-- Feedback -->
+          <rect x="18" y="124" width="34" height="13" rx="6.5" fill="#3d5c4a" opacity="0.1"/>
+          <text x="35" y="133" text-anchor="middle" class="sans" font-size="5.5" fill="#3d5c4a">Helpful</text>
+          <rect x="58" y="124" width="38" height="13" rx="6.5" fill="#9b2d30" opacity="0.08"/>
+          <text x="77" y="133" text-anchor="middle" class="sans" font-size="5.5" fill="#9b2d30">Not quite</text>
+        </g>
+
+        <!-- State 3: Get Inspired / Watch -->
+        <g class="s3">
+          <text x="10" y="15" class="sans" font-size="6.5" fill="#9a9a9a" letter-spacing="0.08em">WATCH</text>
+          <text x="52" y="15" class="sans" font-size="6.5" fill="#5a4a6a" letter-spacing="0.08em">GET INSPIRED</text>
+
+          <!-- Soliloquy heading -->
+          <text x="12" y="36" class="serif" font-size="10.5" fill="#1a1a1a" font-style="italic">"To be, or not to be"</text>
+          <text x="12" y="48" class="sans" font-size="7" fill="#9a9a9a">Hamlet</text>
+
+          <!-- Video card 1 (YouTube - purple tint) -->
+          <g transform="translate(10, 56)">
+            <rect x="0" y="0" width="140" height="32" rx="4" fill="#5a4a6a" fill-opacity="0.05" stroke="#5a4a6a" stroke-width="0.5" stroke-opacity="0.15"/>
+            <circle cx="16" cy="16" r="11" fill="#5a4a6a" opacity="0.08"/>
+            <polygon points="13,10 13,22 22,16" fill="#5a4a6a" opacity="0.45"/>
+            <text x="34" y="13" class="sans" font-size="7.5" fill="#1a1a1a" font-weight="500">Branagh (1996)</text>
+            <text x="34" y="24" class="sans" font-size="6" fill="#4a4a4a">Kenneth Branagh &#xb7; 4:15</text>
+          </g>
+
+          <!-- Video card 2 (Archive - gold tint) -->
+          <g transform="translate(10, 94)">
+            <rect x="0" y="0" width="140" height="32" rx="4" fill="#c4a35a" fill-opacity="0.05" stroke="#c4a35a" stroke-width="0.5" stroke-opacity="0.18"/>
+            <circle cx="16" cy="16" r="11" fill="#c4a35a" opacity="0.08"/>
+            <polygon points="13,10 13,22 22,16" fill="#c4a35a" opacity="0.45"/>
+            <text x="34" y="13" class="sans" font-size="7.5" fill="#1a1a1a" font-weight="500">Olivier (1948)</text>
+            <text x="34" y="24" class="sans" font-size="6" fill="#4a4a4a">Laurence Olivier &#xb7; 3:52</text>
+          </g>
+
+          <!-- Practice button -->
+          <rect x="10" y="134" width="65" height="16" rx="8" fill="#9b2d30" opacity="0.08"/>
+          <text x="42" y="145" text-anchor="middle" class="sans" font-size="6.5" fill="#9b2d30" font-weight="500">Practice This</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- ============================= -->
+    <!-- PENCIL-DRAWN CUBE EDGES       -->
+    <!-- Double strokes with wobble    -->
+    <!-- ============================= -->
+
+    <!-- Outer edges: heavy pencil stroke — full black, full opacity -->
+    <g filter="url(#pencil-heavy)">
+      <line x1="400" y1="90" x2="610" y2="215" stroke="#000000" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="400" y1="90" x2="190" y2="215" stroke="#000000" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="190" y1="215" x2="190" y2="465" stroke="#000000" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="610" y1="215" x2="610" y2="465" stroke="#000000" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="190" y1="465" x2="400" y2="590" stroke="#000000" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="610" y1="465" x2="400" y2="590" stroke="#000000" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+
+    <!-- Outer edges: retracing pass — full black, offset wobble -->
+    <g filter="url(#pencil)">
+      <line x1="400" y1="90" x2="610" y2="215" stroke="#000000" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="400" y1="90" x2="190" y2="215" stroke="#000000" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="190" y1="215" x2="190" y2="465" stroke="#000000" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="610" y1="215" x2="610" y2="465" stroke="#000000" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="190" y1="465" x2="400" y2="590" stroke="#000000" stroke-width="1.1" stroke-linecap="round"/>
+      <line x1="610" y1="465" x2="400" y2="590" stroke="#000000" stroke-width="1.1" stroke-linecap="round"/>
+    </g>
+
+    <!-- Inner edges: full black, thinner -->
+    <g filter="url(#pencil-heavy)">
+      <line x1="400" y1="340" x2="400" y2="590" stroke="#000000" stroke-width="1.4" opacity="0.6" stroke-linecap="round"/>
+      <line x1="190" y1="215" x2="400" y2="340" stroke="#000000" stroke-width="1.4" opacity="0.6" stroke-linecap="round"/>
+      <line x1="400" y1="340" x2="610" y2="215" stroke="#000000" stroke-width="1.4" opacity="0.6" stroke-linecap="round"/>
+    </g>
+    <g filter="url(#pencil)">
+      <line x1="400" y1="340" x2="400" y2="590" stroke="#000000" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/>
+      <line x1="190" y1="215" x2="400" y2="340" stroke="#000000" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/>
+      <line x1="400" y1="340" x2="610" y2="215" stroke="#000000" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/>
+    </g>
+
+  </g>
+
+  <!-- Face labels outside cube -->
+  <text x="105" y="400" text-anchor="middle" class="sans" font-size="10" fill="#9b2d30" font-weight="500" letter-spacing="0.06em">MEMORIZE</text>
+  <text x="105" y="414" text-anchor="middle" class="sans" font-size="7" fill="#9a9a9a">lines &#xb7; tests &#xb7; palaces</text>
+
+  <text x="695" y="400" text-anchor="middle" class="sans" font-size="10" fill="#5a4a6a" font-weight="500" letter-spacing="0.06em">REFLECT + WATCH</text>
+  <text x="695" y="414" text-anchor="middle" class="sans" font-size="7" fill="#9a9a9a">wisdom &#xb7; performances</text>
+
+  <!-- Bottom tagline -->
+  <text x="400" y="670" text-anchor="middle" class="serif" font-size="14" font-weight="300" fill="#4a4a4a" font-style="italic">Commit the words to memory</text>
+  <text x="400" y="692" text-anchor="middle" class="sans" font-size="9" fill="#9a9a9a" letter-spacing="0.1em">soliloquymaster.com</text>
+</svg>
