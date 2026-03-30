@@ -82,65 +82,48 @@ function DemoCube() {
         <polygon points="90,105 250,200 250,390 90,295" fill="url(#lh-left)"/>
         <polygon points="90,105 250,200 250,390 90,295" fill="url(#lh-left-x)"/>
         <g transform="matrix(0.8,0.475,0,0.95,90,105)">
+          {/* State 1: Lines mode — bigger text, more spacing */}
           <g className="ls1">
-            <text x="10" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a" letterSpacing="0.08em">MEMORIZE</text>
-            <text x="70" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9b2d30" letterSpacing="0.08em">LINES</text>
-            <rect x="10" y="22" width="150" height="3" rx="1.5" fill="#e8e4dc"/>
-            <rect x="10" y="22" width="95" height="3" rx="1.5" fill="#9b2d30" opacity="0.75"/>
-            <text x="12" y="44" fontFamily="Georgia,serif" fontSize="10.5" fill="#1a1a1a" fontStyle="italic">"To be, or not to be,</text>
-            <text x="15" y="56" fontFamily="Georgia,serif" fontSize="10.5" fill="#1a1a1a" fontStyle="italic">that is the question—"</text>
-            <text x="12" y="78" fontFamily="Georgia,serif" fontSize="12" fill="#c4a35a" fontWeight="500" letterSpacing="0.25em">W ' t i n</text>
-            <text x="12" y="92" fontFamily="Georgia,serif" fontSize="12" fill="#c4a35a" fontWeight="500" letterSpacing="0.25em">i t m o f</text>
-            <g transform="translate(12,115)">
-              <circle cx="0" cy="0" r="4.5" fill="#9b2d30" opacity="0.75"/>
-              <circle cx="16" cy="0" r="4.5" fill="#9b2d30" opacity="0.5"/>
-              <circle cx="32" cy="0" r="4.5" fill="#c4a35a" opacity="0.65"/>
-              <circle cx="48" cy="0" r="4.5" fill="#2a4a5e" opacity="0.55"/>
-              <circle cx="64" cy="0" r="4.5" fill="#3d5c4a" opacity="0.75"/>
-            </g>
+            <text x="10" y="18" fontFamily="sans-serif" fontSize="8" fill="#9b2d30" fontWeight="500" letterSpacing="0.08em">LINES</text>
+            <rect x="10" y="26" width="150" height="4" rx="2" fill="#e8e4dc"/>
+            <rect x="10" y="26" width="95" height="4" rx="2" fill="#9b2d30" opacity="0.75"/>
+            <text x="12" y="52" fontFamily="Georgia,serif" fontSize="13" fill="#1a1a1a" fontStyle="italic">"To be, or not to be,</text>
+            <text x="15" y="68" fontFamily="Georgia,serif" fontSize="13" fill="#1a1a1a" fontStyle="italic">that is the question—"</text>
+            <text x="12" y="96" fontFamily="Georgia,serif" fontSize="15" fill="#c4a35a" fontWeight="500" letterSpacing="0.3em">W ' t i n</text>
+            <text x="12" y="116" fontFamily="Georgia,serif" fontSize="15" fill="#c4a35a" fontWeight="500" letterSpacing="0.3em">i t m o f</text>
           </g>
+          {/* State 2: Test mode — fewer options, bigger */}
           <g className="ls2">
-            <text x="10" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a" letterSpacing="0.08em">MEMORIZE</text>
-            <text x="70" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9b2d30" letterSpacing="0.08em">TEST</text>
-            <text x="12" y="38" fontFamily="Georgia,serif" fontSize="9" fill="#4a4a4a">Complete the line:</text>
-            <text x="12" y="52" fontFamily="Georgia,serif" fontSize="10.5" fill="#1a1a1a" fontStyle="italic">"To sleep, perchance to ___"</text>
-            <g transform="translate(12,62)">
-              <rect x="0" y="0" width="130" height="18" rx="3" fill="#c4a35a" fillOpacity="0.08" stroke="#c4a35a" strokeWidth="0.7"/>
-              <text x="10" y="13" fontFamily="sans-serif" fontSize="8" fill="#1a1a1a">A. dream</text>
-              <rect x="0" y="24" width="130" height="18" rx="3" fill="none" stroke="#e8e4dc" strokeWidth="0.7"/>
-              <text x="10" y="37" fontFamily="sans-serif" fontSize="8" fill="#4a4a4a">B. sleep</text>
-              <rect x="0" y="48" width="130" height="18" rx="3" fill="none" stroke="#e8e4dc" strokeWidth="0.7"/>
-              <text x="10" y="61" fontFamily="sans-serif" fontSize="8" fill="#4a4a4a">C. rest</text>
+            <text x="10" y="18" fontFamily="sans-serif" fontSize="8" fill="#9b2d30" fontWeight="500" letterSpacing="0.08em">TEST</text>
+            <text x="12" y="44" fontFamily="Georgia,serif" fontSize="12" fill="#4a4a4a">Complete the line:</text>
+            <text x="12" y="64" fontFamily="Georgia,serif" fontSize="13" fill="#1a1a1a" fontStyle="italic">"To sleep, perchance</text>
+            <text x="15" y="80" fontFamily="Georgia,serif" fontSize="13" fill="#1a1a1a" fontStyle="italic">to ___"</text>
+            <g transform="translate(12,92)">
+              <rect x="0" y="0" width="140" height="22" rx="4" fill="#c4a35a" fillOpacity="0.08" stroke="#c4a35a" strokeWidth="0.8"/>
+              <text x="12" y="16" fontFamily="sans-serif" fontSize="10" fill="#1a1a1a" fontWeight="500">A. dream</text>
+              <circle cx="128" cy="11" r="5" fill="#3d5c4a" opacity="0.6"/>
+              <path d="M125,11 L127,13.5 L131,8.5" fill="none" stroke="#fdfcf8" strokeWidth="1.2"/>
             </g>
           </g>
+          {/* State 3: Palace — 2 rooms only, bigger text */}
           <g className="ls3">
-            <text x="10" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a" letterSpacing="0.08em">MEMORIZE</text>
-            <text x="70" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9b2d30" letterSpacing="0.08em">PALACE</text>
-            <g transform="translate(10,25)">
-              <rect x="0" y="0" width="65" height="40" rx="1.5" fill="none" stroke="#888" strokeWidth="0.7"/>
-              <text x="5" y="10" fontFamily="sans-serif" fontSize="5.5" fill="#aaa">1</text>
-              <text x="16" y="10" fontFamily="sans-serif" fontSize="4.5" fill="#999" letterSpacing="0.06em">FOYER</text>
-              <line x1="3" y1="14" x2="62" y2="14" stroke="#ddd" strokeWidth="0.4"/>
-              <text x="5" y="24" fontFamily="sans-serif" fontSize="5.5" fill="#555">A ghost at the</text>
-              <text x="5" y="32" fontFamily="sans-serif" fontSize="5.5" fill="#555">castle entrance</text>
-              <rect x="75" y="0" width="65" height="40" rx="1.5" fill="none" stroke="#888" strokeWidth="0.7"/>
-              <text x="80" y="10" fontFamily="sans-serif" fontSize="5.5" fill="#aaa">2</text>
-              <text x="91" y="10" fontFamily="sans-serif" fontSize="4.5" fill="#999" letterSpacing="0.06em">GREAT HALL</text>
-              <line x1="78" y1="14" x2="137" y2="14" stroke="#ddd" strokeWidth="0.4"/>
-              <text x="80" y="24" fontFamily="sans-serif" fontSize="5.5" fill="#555">Skull on the</text>
-              <text x="80" y="32" fontFamily="sans-serif" fontSize="5.5" fill="#555">banquet table</text>
-              <rect x="0" y="50" width="65" height="40" rx="1.5" fill="none" stroke="#888" strokeWidth="0.7"/>
-              <text x="5" y="60" fontFamily="sans-serif" fontSize="5.5" fill="#aaa">3</text>
-              <text x="16" y="60" fontFamily="sans-serif" fontSize="4.5" fill="#999" letterSpacing="0.06em">PARLOR</text>
-              <line x1="3" y1="64" x2="62" y2="64" stroke="#ddd" strokeWidth="0.4"/>
-              <text x="5" y="74" fontFamily="sans-serif" fontSize="5.5" fill="#555">Mirror showing</text>
-              <text x="5" y="82" fontFamily="sans-serif" fontSize="5.5" fill="#555">two selves</text>
-              <rect x="75" y="50" width="65" height="40" rx="1.5" fill="none" stroke="#888" strokeWidth="0.7"/>
-              <text x="80" y="60" fontFamily="sans-serif" fontSize="5.5" fill="#aaa">4</text>
-              <text x="91" y="60" fontFamily="sans-serif" fontSize="4.5" fill="#999" letterSpacing="0.06em">LIBRARY</text>
-              <line x1="78" y1="64" x2="137" y2="64" stroke="#ddd" strokeWidth="0.4"/>
-              <text x="80" y="74" fontFamily="sans-serif" fontSize="5.5" fill="#555">Books turning</text>
-              <text x="80" y="82" fontFamily="sans-serif" fontSize="5.5" fill="#555">into daggers</text>
+            <text x="10" y="18" fontFamily="sans-serif" fontSize="8" fill="#9b2d30" fontWeight="500" letterSpacing="0.08em">PALACE</text>
+            <g transform="translate(10,30)">
+              <rect x="0" y="0" width="140" height="42" rx="2" fill="none" stroke="#888" strokeWidth="0.8"/>
+              <text x="6" y="12" fontFamily="sans-serif" fontSize="7" fill="#aaa">1</text>
+              <text x="20" y="12" fontFamily="sans-serif" fontSize="6" fill="#999" letterSpacing="0.06em">FOYER</text>
+              <line x1="4" y1="16" x2="136" y2="16" stroke="#ddd" strokeWidth="0.4"/>
+              <text x="6" y="28" fontFamily="sans-serif" fontSize="7" fill="#555">A ghost at the</text>
+              <text x="6" y="38" fontFamily="sans-serif" fontSize="7" fill="#555">castle entrance</text>
+
+              <rect x="0" y="52" width="140" height="42" rx="2" fill="none" stroke="#888" strokeWidth="0.8"/>
+              <text x="6" y="64" fontFamily="sans-serif" fontSize="7" fill="#aaa">2</text>
+              <text x="20" y="64" fontFamily="sans-serif" fontSize="6" fill="#999" letterSpacing="0.06em">GREAT HALL</text>
+              <line x1="4" y1="68" x2="136" y2="68" stroke="#ddd" strokeWidth="0.4"/>
+              <text x="6" y="80" fontFamily="sans-serif" fontSize="7" fill="#555">Skull on the</text>
+              <text x="6" y="90" fontFamily="sans-serif" fontSize="7" fill="#555">banquet table</text>
+
+              <line x1="70" y1="42" x2="70" y2="52" stroke="#bbb" strokeWidth="0.6" strokeDasharray="2,2"/>
             </g>
           </g>
         </g>
@@ -151,54 +134,60 @@ function DemoCube() {
         <polygon points="250,200 410,105 410,295 250,390" fill="#fdfcf8"/>
         <polygon points="250,200 410,105 410,295 250,390" fill="url(#lh-right)"/>
         <g transform="matrix(0.8,-0.475,0,0.95,250,200)">
+          {/* State 1: Reflect — wheel smaller, centered, no text overlap */}
           <g className="ls1">
-            <text x="10" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a" letterSpacing="0.08em">REFLECT</text>
-            <text x="12" y="35" fontFamily="Georgia,serif" fontSize="9" fill="#4a4a4a" fontStyle="italic">How are you feeling?</text>
-            <g transform="translate(80,75)">
-              <circle cx="0" cy="0" r="40" fill="none" stroke="#1a1a1a" strokeWidth="0.8" opacity="0.45"/>
-              <line x1="0" y1="0" x2="0" y2="-40" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.25"/>
-              <line x1="0" y1="0" x2="38" y2="-12.4" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.25"/>
-              <line x1="0" y1="0" x2="23.5" y2="32.4" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.25"/>
-              <line x1="0" y1="0" x2="-23.5" y2="32.4" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.25"/>
-              <line x1="0" y1="0" x2="-38" y2="-12.4" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.25"/>
-              <text x="12" y="-22" fontFamily="sans-serif" fontSize="5" fill="#2a4a5e">Straight</text>
-              <text x="24" y="6" fontFamily="sans-serif" fontSize="5" fill="#c4a35a">Laugh</text>
-              <text x="8" y="28" fontFamily="sans-serif" fontSize="5" fill="#5a4a6a">Deep</text>
-              <text x="-28" y="28" fontFamily="sans-serif" fontSize="5" fill="#9b2d30">Challenge</text>
-              <text x="-38" y="6" fontFamily="sans-serif" fontSize="5" fill="#3d5c4a">Listen</text>
-              <circle cx="0" cy="0" r="7" fill="#fdfcf8" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.5"/>
-              <circle cx="0" cy="0" r="1.5" fill="#1a1a1a" opacity="0.5"/>
-              <polygon points="-3.5,-41 0,-48 3.5,-41" fill="#1a1a1a" opacity="0.65"/>
+            <text x="10" y="18" fontFamily="sans-serif" fontSize="8" fill="#5a4a6a" fontWeight="500" letterSpacing="0.08em">REFLECT</text>
+            <text x="12" y="38" fontFamily="Georgia,serif" fontSize="12" fill="#4a4a4a" fontStyle="italic">How are you feeling?</text>
+            {/* Compact wheel — centered below text */}
+            <g transform="translate(75,82)">
+              <circle cx="0" cy="0" r="32" fill="none" stroke="#1a1a1a" strokeWidth="0.8" opacity="0.4"/>
+              <line x1="0" y1="0" x2="0" y2="-32" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.2"/>
+              <line x1="0" y1="0" x2="30.4" y2="-9.9" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.2"/>
+              <line x1="0" y1="0" x2="18.8" y2="25.9" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.2"/>
+              <line x1="0" y1="0" x2="-18.8" y2="25.9" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.2"/>
+              <line x1="0" y1="0" x2="-30.4" y2="-9.9" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.2"/>
+              <text x="10" y="-17" fontFamily="sans-serif" fontSize="6" fill="#2a4a5e">Straight</text>
+              <text x="20" y="5" fontFamily="sans-serif" fontSize="6" fill="#c4a35a">Laugh</text>
+              <text x="6" y="22" fontFamily="sans-serif" fontSize="6" fill="#5a4a6a">Deep</text>
+              <text x="-26" y="22" fontFamily="sans-serif" fontSize="6" fill="#9b2d30">Challenge</text>
+              <text x="-34" y="5" fontFamily="sans-serif" fontSize="6" fill="#3d5c4a">Listen</text>
+              <circle cx="0" cy="0" r="5" fill="#fdfcf8" stroke="#1a1a1a" strokeWidth="0.4" opacity="0.5"/>
+              <circle cx="0" cy="0" r="1.5" fill="#1a1a1a" opacity="0.4"/>
+              <polygon points="-3,-33 0,-39 3,-33" fill="#1a1a1a" opacity="0.6"/>
             </g>
           </g>
+          {/* State 2: Response — bigger quote, cleaner layout */}
           <g className="ls2">
-            <text x="10" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a" letterSpacing="0.08em">REFLECT</text>
-            <rect x="10" y="22" width="42" height="14" rx="7" fill="#5a4a6a" opacity="0.12"/>
-            <text x="31" y="32" textAnchor="middle" fontFamily="sans-serif" fontSize="6.5" fill="#5a4a6a" fontWeight="500">Go deep</text>
-            <text x="12" y="52" fontFamily="sans-serif" fontSize="7" fill="#9a9a9a" fontStyle="italic">"Feeling restless today..."</text>
-            <line x1="10" y1="62" x2="10" y2="112" stroke="#c4a35a" strokeWidth="2" opacity="0.55"/>
-            <text x="18" y="75" fontFamily="Georgia,serif" fontSize="9.5" fill="#1a1a1a" fontStyle="italic">"Our doubts are traitors,</text>
-            <text x="18" y="87" fontFamily="Georgia,serif" fontSize="9.5" fill="#1a1a1a" fontStyle="italic">and make us lose the good</text>
-            <text x="18" y="99" fontFamily="Georgia,serif" fontSize="9.5" fill="#1a1a1a" fontStyle="italic">we oft might win..."</text>
-            <text x="18" y="114" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a">— Lucio, Measure for Measure</text>
+            <text x="10" y="18" fontFamily="sans-serif" fontSize="8" fill="#5a4a6a" fontWeight="500" letterSpacing="0.08em">RESPONSE</text>
+            <rect x="10" y="26" width="48" height="16" rx="8" fill="#5a4a6a" opacity="0.1"/>
+            <text x="34" y="38" textAnchor="middle" fontFamily="sans-serif" fontSize="7.5" fill="#5a4a6a" fontWeight="500">Go deep</text>
+            <line x1="10" y1="54" x2="10" y2="112" stroke="#c4a35a" strokeWidth="2.5" opacity="0.5"/>
+            <text x="20" y="68" fontFamily="Georgia,serif" fontSize="12" fill="#1a1a1a" fontStyle="italic">"Our doubts are</text>
+            <text x="20" y="83" fontFamily="Georgia,serif" fontSize="12" fill="#1a1a1a" fontStyle="italic">traitors, and make</text>
+            <text x="20" y="98" fontFamily="Georgia,serif" fontSize="12" fill="#1a1a1a" fontStyle="italic">us lose the good</text>
+            <text x="20" y="113" fontFamily="Georgia,serif" fontSize="12" fill="#1a1a1a" fontStyle="italic">we oft might win..."</text>
+            <text x="20" y="130" fontFamily="sans-serif" fontSize="7" fill="#9a9a9a">— Measure for Measure</text>
           </g>
+          {/* State 3: Watch — bigger cards */}
           <g className="ls3">
-            <text x="10" y="15" fontFamily="sans-serif" fontSize="6.5" fill="#9a9a9a" letterSpacing="0.08em">WATCH</text>
-            <text x="12" y="36" fontFamily="Georgia,serif" fontSize="10.5" fill="#1a1a1a" fontStyle="italic">"To be, or not to be"</text>
-            <text x="12" y="48" fontFamily="sans-serif" fontSize="7" fill="#9a9a9a">Hamlet</text>
-            <g transform="translate(10,56)">
-              <rect x="0" y="0" width="140" height="32" rx="4" fill="#5a4a6a" fillOpacity="0.05" stroke="#5a4a6a" strokeWidth="0.5" strokeOpacity="0.15"/>
-              <circle cx="16" cy="16" r="11" fill="#5a4a6a" opacity="0.08"/>
-              <polygon points="13,10 13,22 22,16" fill="#5a4a6a" opacity="0.45"/>
-              <text x="34" y="13" fontFamily="sans-serif" fontSize="7.5" fill="#1a1a1a" fontWeight="500">Branagh (1996)</text>
-              <text x="34" y="24" fontFamily="sans-serif" fontSize="6" fill="#4a4a4a">Kenneth Branagh · 4:15</text>
+            <text x="10" y="18" fontFamily="sans-serif" fontSize="8" fill="#5a4a6a" fontWeight="500" letterSpacing="0.08em">WATCH</text>
+            <text x="12" y="40" fontFamily="Georgia,serif" fontSize="13" fill="#1a1a1a" fontStyle="italic">"To be, or not to be"</text>
+            <text x="12" y="54" fontFamily="sans-serif" fontSize="8" fill="#9a9a9a">Hamlet</text>
+            {/* Video card 1 */}
+            <g transform="translate(10,64)">
+              <rect x="0" y="0" width="145" height="36" rx="5" fill="#5a4a6a" fillOpacity="0.05" stroke="#5a4a6a" strokeWidth="0.6" strokeOpacity="0.15"/>
+              <circle cx="18" cy="18" r="13" fill="#5a4a6a" opacity="0.08"/>
+              <polygon points="14,11 14,25 25,18" fill="#5a4a6a" opacity="0.45"/>
+              <text x="38" y="15" fontFamily="sans-serif" fontSize="9" fill="#1a1a1a" fontWeight="500">Branagh (1996)</text>
+              <text x="38" y="27" fontFamily="sans-serif" fontSize="7" fill="#4a4a4a">Kenneth Branagh · 4:15</text>
             </g>
-            <g transform="translate(10,94)">
-              <rect x="0" y="0" width="140" height="32" rx="4" fill="#c4a35a" fillOpacity="0.05" stroke="#c4a35a" strokeWidth="0.5" strokeOpacity="0.18"/>
-              <circle cx="16" cy="16" r="11" fill="#c4a35a" opacity="0.08"/>
-              <polygon points="13,10 13,22 22,16" fill="#c4a35a" opacity="0.45"/>
-              <text x="34" y="13" fontFamily="sans-serif" fontSize="7.5" fill="#1a1a1a" fontWeight="500">Olivier (1948)</text>
-              <text x="34" y="24" fontFamily="sans-serif" fontSize="6" fill="#4a4a4a">Laurence Olivier · 3:52</text>
+            {/* Video card 2 */}
+            <g transform="translate(10,108)">
+              <rect x="0" y="0" width="145" height="36" rx="5" fill="#c4a35a" fillOpacity="0.05" stroke="#c4a35a" strokeWidth="0.6" strokeOpacity="0.18"/>
+              <circle cx="18" cy="18" r="13" fill="#c4a35a" opacity="0.08"/>
+              <polygon points="14,11 14,25 25,18" fill="#c4a35a" opacity="0.45"/>
+              <text x="38" y="15" fontFamily="sans-serif" fontSize="9" fill="#1a1a1a" fontWeight="500">Olivier (1948)</text>
+              <text x="38" y="27" fontFamily="sans-serif" fontSize="7" fill="#4a4a4a">Laurence Olivier · 3:52</text>
             </g>
           </g>
         </g>
