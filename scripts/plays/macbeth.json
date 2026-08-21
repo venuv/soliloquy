@@ -1,0 +1,61 @@
+{
+  "play": "Macbeth",
+  "soliloquies": [
+    {
+      "id": "raven-himself-hoarse",
+      "title": "The raven himself is hoarse",
+      "character": "Lady Macbeth",
+      "act": "Act 1, Scene 5",
+      "chunks": [
+        { "front": "The raven himself", "back": "is hoarse" },
+        { "front": "That croaks the fatal entrance", "back": "of Duncan" },
+        { "front": "Under my battlements.", "back": "Come, you spirits" },
+        { "front": "That tend on mortal thoughts,", "back": "unsex me here," },
+        { "front": "And fill me from the crown", "back": "to the toe top-full" },
+        { "front": "Of direst cruelty.", "back": "Make thick my blood." },
+        { "front": "Stop up the access", "back": "and passage to remorse" },
+        { "front": "That no compunctious visitings", "back": "of nature" },
+        { "front": "Shake my fell purpose,", "back": "nor keep peace between" },
+        { "front": "The effect and it.", "back": "Come to my woman's breasts," },
+        { "front": "And take my milk for gall,", "back": "you murd'ring ministers," },
+        { "front": "Wherever in your sightless substances", "back": "you wait on nature's mischief." },
+        { "front": "Come, thick night,", "back": "and pall thee in the dunnest smoke of hell," },
+        { "front": "That my keen knife", "back": "see not the wound it makes," },
+        { "front": "Nor heaven peep", "back": "through the blanket of the dark" },
+        { "front": "To cry", "back": "'Hold, hold!'" }
+      ],
+      "beats": [
+        {
+          "label": "Summon The Darkness",
+          "intention": "To call the powers of darkness to attend her",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "label": "Demand Transformation",
+          "intention": "To be unsexed and remade wholly with cruelty",
+          "startChunk": 3,
+          "endChunk": 5
+        },
+        {
+          "label": "Seal Off Conscience",
+          "intention": "To block pity, hesitation, and remorse from her purpose",
+          "startChunk": 6,
+          "endChunk": 8
+        },
+        {
+          "label": "Weaponize The Feminine",
+          "intention": "To offer her mother's milk to the murdering spirits",
+          "startChunk": 9,
+          "endChunk": 11
+        },
+        {
+          "label": "Blindfold Heaven",
+          "intention": "To pull night over the deed so no light can witness it",
+          "startChunk": 12,
+          "endChunk": 15
+        }
+      ]
+    }
+  ]
+}

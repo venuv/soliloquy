@@ -2,7 +2,7 @@
   "id": "shakespeare",
   "name": "William Shakespeare",
   "subtitle": "The Bard of Avon",
-  "portrait": "\ud83c\udfad",
+  "portrait": "🎭",
   "bio": "English playwright and poet, widely regarded as the greatest writer in the English language.",
   "works": [
     {
@@ -30,7 +30,7 @@
         },
         {
           "front": "And by opposing end",
-          "back": "them. To die\u2014to sleep,"
+          "back": "them. To die—to sleep,"
         },
         {
           "front": "No more; and by a",
@@ -50,7 +50,7 @@
         },
         {
           "front": "To sleep, perchance to",
-          "back": "dream\u2014ay, there's the rub:"
+          "back": "dream—ay, there's the rub:"
         },
         {
           "front": "For in that sleep of",
@@ -62,7 +62,7 @@
         },
         {
           "front": "Must give us",
-          "back": "pause\u2014there's the respect"
+          "back": "pause—there's the respect"
         },
         {
           "front": "That makes calamity of",
@@ -309,7 +309,7 @@
         },
         {
           "front": "A false creation, proceeding from",
-          "back": "the heat-oppress\u00e8d brain?"
+          "back": "the heat-oppressèd brain?"
         },
         {
           "front": "I see thee yet, in form",
@@ -667,7 +667,7 @@
         },
         {
           "front": "And now, instead of mounting",
-          "back": "barb\u00e8d steeds"
+          "back": "barbèd steeds"
         },
         {
           "front": "To fright the souls",
@@ -1349,7 +1349,7 @@
           "back": "it becomes"
         },
         {
-          "front": "The thron\u00e8d monarch better",
+          "front": "The thronèd monarch better",
           "back": "than his crown."
         },
         {
@@ -1369,7 +1369,7 @@
           "back": "this sceptred sway."
         },
         {
-          "front": "It is enthron\u00e8d in the hearts",
+          "front": "It is enthronèd in the hearts",
           "back": "of kings,"
         },
         {
@@ -1535,7 +1535,7 @@
         },
         {
           "front": "The good is oft",
-          "back": "interr\u00e8d with their bones;"
+          "back": "interrèd with their bones;"
         },
         {
           "front": "So let it be",
@@ -1555,7 +1555,7 @@
         },
         {
           "front": "Here, under leave of Brutus",
-          "back": "and the rest\u2014"
+          "back": "and the rest—"
         },
         {
           "front": "For Brutus is an",
@@ -1563,7 +1563,7 @@
         },
         {
           "front": "So are they all, all",
-          "back": "honourable men\u2014"
+          "back": "honourable men—"
         },
         {
           "front": "Come I to speak in",
@@ -2249,7 +2249,7 @@
         },
         {
           "front": "Ding-dong.",
-          "back": "Hark! now I hear them\u2014"
+          "back": "Hark! now I hear them—"
         },
         {
           "front": "Ding-dong,",
@@ -2435,7 +2435,7 @@
           "back": "lodging:"
         },
         {
-          "front": "such a wagoner as Pha\u00ebthon",
+          "front": "such a wagoner as Phaëthon",
           "back": "would whip you to the west,"
         },
         {
@@ -4041,6 +4041,116 @@
           "intention": "To contemplate and come to terms with death",
           "startChunk": 15,
           "endChunk": 18
+        }
+      ]
+    },
+    {
+      "id": "raven-himself-hoarse",
+      "title": "The raven himself is hoarse",
+      "source": "Macbeth",
+      "character": "Lady Macbeth",
+      "act": "Act 1, Scene 5",
+      "chunks": [
+        {
+          "front": "The raven himself",
+          "back": "is hoarse"
+        },
+        {
+          "front": "That croaks the fatal entrance",
+          "back": "of Duncan"
+        },
+        {
+          "front": "Under my battlements.",
+          "back": "Come, you spirits"
+        },
+        {
+          "front": "That tend on mortal thoughts,",
+          "back": "unsex me here,"
+        },
+        {
+          "front": "And fill me from the crown",
+          "back": "to the toe top-full"
+        },
+        {
+          "front": "Of direst cruelty.",
+          "back": "Make thick my blood."
+        },
+        {
+          "front": "Stop up the access",
+          "back": "and passage to remorse"
+        },
+        {
+          "front": "That no compunctious visitings",
+          "back": "of nature"
+        },
+        {
+          "front": "Shake my fell purpose,",
+          "back": "nor keep peace between"
+        },
+        {
+          "front": "The effect and it.",
+          "back": "Come to my woman's breasts,"
+        },
+        {
+          "front": "And take my milk for gall,",
+          "back": "you murd'ring ministers,"
+        },
+        {
+          "front": "Wherever in your sightless substances",
+          "back": "you wait on nature's mischief."
+        },
+        {
+          "front": "Come, thick night,",
+          "back": "and pall thee in the dunnest smoke of hell,"
+        },
+        {
+          "front": "That my keen knife",
+          "back": "see not the wound it makes,"
+        },
+        {
+          "front": "Nor heaven peep",
+          "back": "through the blanket of the dark"
+        },
+        {
+          "front": "To cry",
+          "back": "'Hold, hold!'"
+        }
+      ],
+      "beats": [
+        {
+          "id": 0,
+          "label": "Summon The Darkness",
+          "intention": "To call the powers of darkness to attend her",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "id": 1,
+          "label": "Demand Transformation",
+          "intention": "To be unsexed and remade wholly with cruelty",
+          "startChunk": 3,
+          "endChunk": 5
+        },
+        {
+          "id": 2,
+          "label": "Seal Off Conscience",
+          "intention": "To block pity, hesitation, and remorse from her purpose",
+          "startChunk": 6,
+          "endChunk": 8
+        },
+        {
+          "id": 3,
+          "label": "Weaponize The Feminine",
+          "intention": "To offer her mother's milk to the murdering spirits",
+          "startChunk": 9,
+          "endChunk": 11
+        },
+        {
+          "id": 4,
+          "label": "Blindfold Heaven",
+          "intention": "To pull night over the deed so no light can witness it",
+          "startChunk": 12,
+          "endChunk": 15
         }
       ]
     }
