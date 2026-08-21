@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { writeAndSync } from '../persist.js';
+import { rateLimit } from '../rate-limit.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -288,7 +289,7 @@ router.get('/word-pictures/:authorId/:workId', validateKey, async (req, res) => 
 });
 
 // POST /generate/:authorId/:workId - Generate word pictures via Groq API (2-call: generate + reflect)
-router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
+router.post('/generate/:authorId/:workId', validateKey, rateLimit({ name: 'viz-gen', capacity: 3, windowMs: 3600_000 }), async (req, res) => {
   try {
     const { authorId, workId } = req.params;
     const work = loadWork(authorId, workId);

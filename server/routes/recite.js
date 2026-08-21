@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { writeAndSync } from '../persist.js';
+import { rateLimit } from '../rate-limit.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -357,7 +358,7 @@ function aggregateTroubleSpots(recitations, lastN = 3) {
 }
 
 // POST /transcribe/:authorId/:workId
-router.post('/transcribe/:authorId/:workId', validateKey, upload.single('audio'), async (req, res) => {
+router.post('/transcribe/:authorId/:workId', validateKey, rateLimit({ name: 'recite', capacity: 30, windowMs: 3600_000 }), upload.single('audio'), async (req, res) => {
   try {
     const { authorId, workId } = req.params;
     const work = loadWork(authorId, workId);

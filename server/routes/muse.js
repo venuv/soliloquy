@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { matchQuotes, pickWisdomType, pickVoice, VOICES, loadQuotes } from '../muse/matcher.js';
 import { writeAndSync } from '../persist.js';
+import { rateLimit } from '../rate-limit.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -212,7 +213,7 @@ async function saveMuseAnalytics(analytics) {
  * POST /api/muse
  * Main endpoint - takes user input, returns Shakespeare wisdom
  */
-router.post('/', async (req, res) => {
+router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), async (req, res) => {
   const client = getClient();
   if (!client) {
     return res.status(503).json({

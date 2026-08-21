@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { writeAndSync } from '../persist.js';
+import { rateLimit } from '../rate-limit.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -234,7 +235,7 @@ Review these beat divisions. Return corrected beats if needed, or approve them.`
 }
 
 // POST /generate/:authorId/:workId — Generate beats and save to shared data
-router.post('/generate/:authorId/:workId', validateKey, async (req, res) => {
+router.post('/generate/:authorId/:workId', validateKey, rateLimit({ name: 'beats-gen', capacity: 3, windowMs: 3600_000 }), async (req, res) => {
   try {
     const { authorId, workId } = req.params;
     const apiKey = process.env.GROQ_API_KEY;
