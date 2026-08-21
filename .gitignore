@@ -31,3 +31,6 @@ npm-debug.log*
 *.swp
 *.swo
 tmp/
+
+# Claude Code — commit the shared /ship command, keep local settings private
+.claude/settings.local.json
