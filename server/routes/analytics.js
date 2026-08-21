@@ -9,6 +9,16 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 const ANALYTICS_DIR = path.join(__dirname, '../data/analytics');
+const EVENTS_PATH = path.join(ANALYTICS_DIR, 'events.jsonl');
+
+// Append one line to the events log. Fire-and-forget: no read, no rewrite,
+// no per-event Tigris sync (rotation handles durability + upload).
+export function appendEvent(entry) {
+  const line = JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n';
+  fs.appendFile(EVENTS_PATH, line).catch(err =>
+    console.error('[events] append failed:', err.message)
+  );
+}
 
 // Middleware to validate user key
 async function validateKey(req, res, next) {
@@ -38,6 +48,16 @@ router.get('/progress', validateKey, async (req, res) => {
     console.error('Error fetching progress:', err);
     res.status(500).json({ error: 'Failed to fetch progress' });
   }
+});
+
+// Append a lightweight funnel event to the append-only log.
+// No per-user file read/write — meant for high-frequency events (page opens,
+// session starts) that should not incur the cost of the full analytics blob.
+router.post('/event', validateKey, (req, res) => {
+  const { event, ...meta } = req.body || {};
+  if (!event) return res.status(400).json({ error: 'event required' });
+  appendEvent({ key: req.userKey, event, ...meta });
+  res.json({ success: true });
 });
 
 // Record a page view (lightweight tracking for non-practice pages)
@@ -91,13 +111,19 @@ router.post('/session', validateKey, async (req, res) => {
     };
     
     analytics.sessions.push(session);
-    
+
     // Keep only last 1000 sessions
     if (analytics.sessions.length > 1000) {
       analytics.sessions = analytics.sessions.slice(-1000);
     }
-    
+
     await writeAndSync(req.analyticsPath, analytics);
+    appendEvent({
+      key: req.userKey,
+      event: mode === 'test' ? 'test-complete' : 'session-complete',
+      authorId, workId, practiceUnit: session.practiceUnit,
+      duration, score: session.score
+    });
     res.json({ success: true });
   } catch (err) {
     console.error('Error recording session:', err);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { api } from '../App'
+import { api, trackEvent } from '../App'
 import { Home, ChevronRight } from 'lucide-react'
 import useIsMobile from '../hooks/useIsMobile'
 
@@ -134,6 +134,7 @@ export default function AuthorWorks() {
   const [playFilter, setPlayFilter] = useState(null)
 
   useEffect(() => {
+    trackEvent('catalog', { authorId })
     Promise.all([
       api(`/authors/${authorId}`),
       api('/analytics/progress'),

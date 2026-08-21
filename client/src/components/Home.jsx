@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth, api } from '../App'
+import { useAuth, api, trackEvent } from '../App'
 import { LogOut, BarChart2, KeyRound } from 'lucide-react'
 import useIsMobile from '../hooks/useIsMobile'
 import './Home.css'
@@ -12,6 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    trackEvent('home')
     api('/authors')
       .then(setAuthors)
       .catch(console.error)

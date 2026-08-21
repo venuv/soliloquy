@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { writeAndSync } from '../persist.js';
+import { appendEvent } from './analytics.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +104,7 @@ router.post('/register', async (req, res) => {
     });
     
     console.log(`New user registered: ${newKey}`);
+    appendEvent({ key: newKey, event: 'login-first' });
     res.json({ key: newKey });
   } catch (err) {
     console.error('Registration error:', err);
@@ -161,7 +163,8 @@ router.post('/validate', async (req, res) => {
     }
     
     console.log(`User validated: ${key}`);
-    res.json({ 
+    appendEvent({ key, event: 'login-return', devices: data.keys[key].fingerprints.length });
+    res.json({
       valid: true,
       flagged: data.keys[key].flaggedForSharing || false,
       uniqueDevices: data.keys[key].fingerprints.length

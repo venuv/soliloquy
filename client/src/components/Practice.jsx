@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { api } from '../App'
+import { api, trackEvent } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
@@ -96,6 +96,7 @@ export default function Practice() {
   const recognitionRef = useRef(null)
 
   useEffect(() => {
+    trackEvent('practice-open', { authorId, workId })
     Promise.all([
       api(`/authors/${authorId}/works/${workId}`),
       api('/analytics/progress'),

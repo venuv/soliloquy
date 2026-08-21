@@ -49,6 +49,15 @@ export function trackPageview(page, workId = null) {
   }).catch(() => {})
 }
 
+// Fire-and-forget funnel event to the append-only events log.
+// Cheaper than trackPageview (server appends a JSONL line, no per-user file read).
+export function trackEvent(event, meta = {}) {
+  api('/analytics/event', {
+    method: 'POST',
+    body: JSON.stringify({ event, ...meta })
+  }).catch(() => {})
+}
+
 function App() {
   const [userKey, setUserKey] = useState(null)
   const [loading, setLoading] = useState(true)
