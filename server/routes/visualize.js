@@ -13,8 +13,10 @@ const ANALYTICS_DIR = path.join(__dirname, '../data/analytics');
 const AUTHORS_DIR = path.join(__dirname, '../data/authors');
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
-const GROQ_MODEL_FAST = 'llama-3.1-8b-instant'; // Faster for simple tasks
+// Groq deprecated llama-3.3-70b-versatile and llama-3.1-8b-instant on 2026-08-16.
+// Migrated to Groq's openai/gpt-oss family (recommended replacements).
+const GROQ_MODEL = 'openai/gpt-oss-120b';
+const GROQ_MODEL_FAST = 'openai/gpt-oss-20b'; // Faster for simple tasks
 
 // Middleware to validate user key
 async function validateKey(req, res, next) {

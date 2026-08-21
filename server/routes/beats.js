@@ -13,7 +13,7 @@ const ANALYTICS_DIR = path.join(__dirname, '../data/analytics');
 const AUTHORS_DIR = path.join(__dirname, '../data/authors');
 
 const GROQ_LLM_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const LLM_MODEL = 'llama-3.3-70b-versatile';
+const LLM_MODEL = 'openai/gpt-oss-120b'; // was llama-3.3-70b-versatile (deprecated 2026-08-16)
 
 // Middleware to validate user key
 async function validateKey(req, res, next) {

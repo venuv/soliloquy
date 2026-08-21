@@ -10,6 +10,7 @@ import GetInspired from './components/GetInspired'
 import MorningMuse from './components/MorningMuse'
 import DailyNews from './components/DailyNews'
 import LivePerformances from './components/LivePerformances'
+import Onboarding, { shouldShowOnboarding } from './components/Onboarding'
 
 // Auth Context
 const AuthContext = createContext(null)
@@ -61,6 +62,7 @@ export function trackEvent(event, meta = {}) {
 function App() {
   const [userKey, setUserKey] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showTour, setShowTour] = useState(false)
 
   useEffect(() => {
     const savedKey = localStorage.getItem('userKey')
@@ -85,6 +87,7 @@ function App() {
   const login = (key) => {
     localStorage.setItem('userKey', key)
     setUserKey(key)
+    if (shouldShowOnboarding()) setShowTour(true)
   }
 
   const logout = () => {
@@ -102,6 +105,7 @@ function App() {
 
   return (
     <AuthContext.Provider value={{ userKey, login, logout }}>
+      {showTour && <Onboarding onDone={() => setShowTour(false)} />}
       <Routes>
         <Route path="/login" element={userKey ? <Navigate to="/" /> : <Login />} />
         <Route path="/" element={userKey ? <Home /> : <Navigate to="/login" />} />

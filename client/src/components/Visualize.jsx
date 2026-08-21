@@ -300,25 +300,16 @@ export default function Visualize() {
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
-              onClick={handleGenerate}
-              disabled={generating}
+              disabled
+              title="Word picture generation is disabled during the public beta"
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
-                background: generating ? 'rgba(0,0,0,0.1)' : colors.purple, color: generating ? colors.faded : colors.paper,
-                cursor: generating ? 'not-allowed' : 'pointer', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem'
+                background: 'rgba(0,0,0,0.08)', color: colors.faded,
+                cursor: 'not-allowed', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.9rem'
               }}
             >
-              {generating ? (
-                <>
-                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                  Creating & Improving...
-                </>
-              ) : (
-                <>
-                  <Sparkles size={16} />
-                  {hasGenerated ? 'Regenerate' : 'Generate'}
-                </>
-              )}
+              <Sparkles size={16} />
+              {hasGenerated ? 'Regenerate' : 'Generate'}
             </button>
 
             {hasChanges && (
