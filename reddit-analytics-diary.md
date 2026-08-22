@@ -74,6 +74,106 @@ test-complete       0   <-- flat all day
 
 ---
 
+## 2026-08-22 — Day 2 (reddit tail + first proper reddit-side metrics)
+
+### Reddit post analytics (48h view since launch)
+- **1,700 views total**, peak ~02:00–03:00 UTC on Aug 22 (US late-night traffic)
+- Classic decay curve — post now in long tail
+- **4 upvotes, 70% upvote ratio** (~1/3 of voters downvoted — most common cause on niche subs is "reads as self-promotion")
+- **3 comments** (one substantive — Euphoric-Rest1919, see below)
+- Geo mix: US 63%, UK 11.2%, Canada 7.5%, Other 18.3% (Berlin visitor in "Other")
+
+### App-side snapshot at 12:36 UTC
+| Total keys | New 24h | Active 24h | Return rate | Sessions | Events log |
+|---|---|---|---|---|---|
+| 30 | 26 | 28 | 10/26 = 38% | 42 (2 test) | 233 |
+
+### Combined day-1 funnel (reddit → product)
+```
+Reddit post view                        1,700
+  → clicked through                       ~50–80 (est., 3–5% CTR)
+  → registered a key                       30    (1.8% overall conv)
+  → completed onboarding                   22    (73% of registered)
+  → opened a soliloquy                     12    (40%)
+  → finished a memorize pass                6    (20%)
+  → tested themselves                       0
+  → returned within a day                   6    (20%, of which ~3 are same-session refresh false-positives)
+  → engaged deeply (>1 min per pass)        2    (533339, 497990)
+  → gave actionable feedback                1    (533339 → shipped)
+```
+
+**1.8% signup conversion is above the reddit-post baseline** (typical 0.5–1%). Product commitment step (onboarding + first click) is where most beta apps lose people; this one held them.
+
+### Engaged users — how they actually used it
+
+**`533339` — "Berlin Macbeth hobbyist" (aka Euphoric-Rest1919 on reddit)**
+
+Session 1 — 19:54 UTC, 2026-08-21:
+```
+19:54:40  login-first
+19:54:40  onboarding-open
+19:54:54  onboarding-close (completed all 4 slides in 14s)
+19:55:21  home
+19:55:31  catalog (shakespeare)
+19:55:38  practice-open: is-this-a-dagger
+20:04:34  session-complete: is-this-a-dagger (duration 529s = 8.8 min, learn mode, no score)
+20:04:36  catalog
+20:05:06  practice-open: now-is-the-winter
+20:05:20  practice-open: now-is-the-winter (re-mount)
+20:05:35  catalog
+20:08:30  practice-open: is-this-a-dagger (back to first pick)
+20:08:36  catalog
+[left]
+```
+
+Session 2 — 22:07 UTC (~2h later, same device):
+```
+22:07:45  login-return (devices:1)
+22:07:45  catalog
+22:40     [last seen — no further events recorded, likely just browsing]
+```
+
+Behavioral read: went straight to a Macbeth work he already knew ("is this a dagger"), gave it a proper 8.8-minute learn pass, then window-shopped several others before leaving. On return, only browsed — probably checking what got added. Then commented on reddit asking for Lady M Act 1 Sc 5 ("The raven himself is hoarse"). We shipped it within the hour.
+
+Subreddit-inferred profile (public reddit memberships): Berlin resident, German/English bilingual, poly, Berghain-scene, indie-electronic taste, non-actor, self-described bedtime Shakespeare reciter.
+
+**`497990` — "Beats-mode power user"**
+
+Single session — 23:53 UTC, 2026-08-21, no return in >12h since:
+```
+23:53:05  login-first
+23:54:25  session-complete: how-all-occasions      (duration 39s,  beats mode, no score)
+23:56:26  session-complete: quality-of-mercy       (duration 100s, lines mode, no score)
+[left]
+```
+
+Behavioral read: two substantial, non-famous picks in <4 minutes — Hamlet's "How all occasions do inform against me" (which most casual readers wouldn't name) followed by Portia's "The quality of mercy is not strain'd." First one **in beats mode** (Stanislavsky action-by-action structure — a power-user feature), second in lines mode. That's someone comparing modes, or an actor rehearsing.
+
+No onboarding-open/close events in the visible slice — either they skipped/closed the modal without a tracked exit (worth checking) or the event was outside the last-50 window.
+
+### Patterns confirmed / new
+- **Reddit funnel behaves as expected:** 48h decay curve, ~1.8% signup rate, sampling-heavy first cohort with a handful of real users buried in the noise.
+- **Return-rate signal is inflated by same-session refresh.** 815682, 711859, 342267 each fire `login-return` 2×+ in the same visit — probably tab refresh or nav bounce. Real day-over-day returns closer to 5–7 out of 26.
+- **Session-complete pipeline stalled.** No new completions in 12+ hours since the day-1 cohort. New arrivals sample but don't finish.
+- **Zero test-completes across 2 days and 12 practice-opens.** Now a real problem, not a fluke. Need to walk the loop manually to determine bug vs UX.
+
+### Decisions made today
+- **Not editing the reddit post.** In decay, editing is marginal, "(edited)" tag is a slight trust hit. Post did its job; effort better spent on next community.
+- **HN "Show HN" is the next post to draft** — different audience (technical hobbyists), needs to lead with the *interesting engineering choices*, not the actor pitch. Candidate hooks: append-only events log at 512MB scale-to-zero, Groq gpt-oss-120b for Stanislavsky coaching, hand-authored beats vs LLM-generated. Space it out from the reddit post — same-week posts to different communities dilute attribution.
+- **artofmemory forum post is the higher-intent watch.** Lower volume, but a single memorizer returning 5× in a week outweighs 100 samplers. Filter events by post-timestamp of that thread next entry.
+
+### Ships today
+- Observation day, no code shipped.
+- Diary itself committed and pushed.
+
+### Open questions
+- Test-complete = 0: bug or UX? **[carried, unresolved]** — verify by walking the loop yourself
+- Do 533339 and 497990 return on day 2? (as of 12:36, neither has)
+- Does artofmemory bring different behavior (deeper sessions, more test-completes)?
+- Reddit downvoters: title tone? "actors" framing?
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
