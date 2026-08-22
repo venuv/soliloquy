@@ -172,6 +172,45 @@ No onboarding-open/close events in the visible slice — either they skipped/clo
 - Does artofmemory bring different behavior (deeper sessions, more test-completes)?
 - Reddit downvoters: title tone? "actors" framing?
 
+### Late-day update (23:52 UTC)
+
+Snapshot delta since 12:36 (~11h): +10 keys (40 total), +66 events (299), **+1 session-complete (7 total)**, +4 login-returns, 0 tests.
+
+**New engaged user: `850945` — "Storm speech rehearser"**
+
+Focused rehearsal pattern on a single work — King Lear's "Blow winds and crack your cheeks" (8 chunks). Three visits in 3.5 hours:
+
+```
+17:22:56  login-first
+17:23:21  catalog
+17:23:29  practice-open: blow-winds
+17:24:15  session-complete: blow-winds  (44s, lines mode)
+[~1h20 gap]
+18:44:53  login-return + practice-open: blow-winds  (same work, no completion this visit)
+[~2h20 gap]
+21:02:03  login-return  (browsed, left)
+```
+
+Behavioral read: **this is the memorization pattern.** Read → sleep on it → come back to test recall → come back again. Not spaced-repetition to the day but to the *hour* — which for an 8-line piece is about right. Best "actually using this tool for its purpose" match of any user so far. Beats 533339 and 497990 on the metric that matters most for a memorization app: *does the user return specifically to keep working on the same piece?*
+
+**Day-2 rehash of the three engaged users:**
+| User | Day 1 | Day 2 | Pattern |
+|---|---|---|---|
+| `533339` (Berlin Macbeth) | 8.8min learn + browse | *no return* | One-shot deep + feature request; possibly one-and-done |
+| `497990` (beats power user) | 2 sessions, 2 modes | *no return* | Evaluator, not user? |
+| `850945` (storm rehearser) | reg → 44s pass | +2 returns to same work | Textbook memorization discipline |
+
+Day-2 return rate on day-1 engaged users: **0 of 2**. Small sample, but if the pattern holds it suggests deep-first-session ≠ retention. The 850945 pattern (short session + rapid same-day returns) may be the better retention predictor.
+
+**Content signals**
+- `raven-himself-hoarse` (added yesterday in response to 533339's request): 2 → 4 opens. New content draws clicks.
+- New work discoveries: `this-royal-throne` (Richard II), `once-more-unto-the-breach` (Henry V), `blow-winds` (King Lear). History plays are getting exploratory attention.
+- `168029` (22:43): rapid-sampler pattern — 3 different history-play works opened in 90s, no completions. Contrasts sharply with 850945.
+
+**First day-2 completion is significant.** Until 17:24 all 6 session-completes were from the day-1 cohort. 850945 becoming the 7th means at least one day-2 arrival got past the "sampler" barrier. Small n, but the plateau isn't total.
+
+**Still zero test-completes** across 40 keys, 16 practice-opens, 3 named engaged users, 2 days. Test verification is now the top-priority TODO — walk the loop manually to distinguish bug from UX gap.
+
 ---
 
 <!-- Next entry template
