@@ -258,21 +258,34 @@ Three engaged users, three distinct archetypes, same product need. Cross-persona
 **artofmemory forum — rejected.**
 - Mod (Josh Cohen, "dear johnn-ed") ruefully rejected the post
 - Their rule: no commerce-oriented links, no matter the intent (slippery-slope concern)
-- Zero traffic from this source; the "higher-intent memorization audience" hypothesis remains untested via this channel
-- Adjacent alternatives to try later: r/anki, Anki forums, Roam-research memory-palace communities
+- Zero traffic from this source
 
-**HN Show HN — queued for Tue–Thu morning US Pacific.**
-- Weekend post = lower ceiling, longer front-page life; weekday = higher ceiling, shorter life. Weekday wins for Show HN.
-- Use the weekend to draft carefully. HN readers punish generic pitches.
-- Lead with the technical hook, not the actor pitch. Candidate framings:
-  - "Show HN: A Shakespeare memorization app with an append-only analytics log on a 512MB scale-to-zero VM"
-  - "Show HN: Stanislavsky-style AI coaching for memorizing Shakespeare (Groq gpt-oss-120b)"
-- Avoid Monday morning US (everyone posts then). Tue-Thu 7-9am PT is optimal.
+**HN Show HN — deprioritized (not for this app, not now).**
+- Instinct: "this isn't exotic AI." Correct. The engineering is competent, not novel by HN standards.
+- HN would mostly produce curious engineers who bounce, not the actor/teacher/memorizer audience the app is for.
+- Cost of a mediocre HN reception (harsh comments, spikey traffic, novelty burned) outweighs the marginal user count.
+- Revisit only if a real technical story appears (multi-speaker scenes, LLM-as-judge on recited audio, 30-day postmortem with data).
 
-**r/TeachingUK — queued behind HN.**
-- 59K UK teachers, coherent with Minimum-Target-7543 persona
-- Framing shift: "free tool for memorizing set texts" lands differently there than the r/shakespeare pitch
-- Wait 5-7 days after HN to space out attribution
+**Priority follow-up communities — these ARE the point.**
+
+The r/shakespeare launch validated the concept; the next posts should go where the *actual target users* are, not where novelty-hunters are.
+
+| Priority | Community | Members | Why it fits |
+|---|---|---|---|
+| 1 | **r/actors** and **r/acting** | ~150K + ~100K | Original target audience; still untested. Actors literally rehearse soliloquies. |
+| 2 | **r/TheatreEducation** | ~small, high-intent | Drama teachers = adjacent-audience multiplier (see 850945 persona). One teacher = a class of students. |
+| 3 | **Poetry Foundation forum / poets.org** communities | small, very high intent | Poets memorize verse; Shakespeare is their shared reference. Cultural fit is near-perfect. |
+| 4 | **r/anki** | 200K | Spaced-repetition adjacency. Framing: "not Anki, but line-by-line verse cards with beat structure." Highest volume of the four. |
+
+**r/TeachingUK** is a #5 — coherent with the Minimum-Target-7543 persona but wait for the r/shakespeare cooldown (7 days from launch) since it's the same country/language cluster.
+
+**Cadence:** post to one per week, in the order above. That lets each channel's users show up on the dashboard with clean attribution (compare a week-over-week snapshot before and after each post). Rushing them dilutes the ability to see which audience actually converts.
+
+**Framing shifts per channel:**
+- r/actors / r/acting → lead with "memorize your monologue faster; test yourself line-by-line; Stanislavsky beats are optional"
+- r/TheatreEducation → "free tool for students memorizing monologues for auditions or coursework; no signup, no tracking beyond a 6-digit key"
+- Poetry Foundation → "line-by-line memorization for verse, built around natural verse-line chunks not arbitrary flashcards"
+- r/anki → "not spaced-repetition per se, but complementary — chunked verse cards with intention-based grouping"
 
 ### Open questions
 - Does the test-mode-lines fix produce any `test-complete` events in the next 24h?
