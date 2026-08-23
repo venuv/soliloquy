@@ -213,6 +213,75 @@ Day-2 return rate on day-1 engaged users: **0 of 2**. Small sample, but if the p
 
 ---
 
+## 2026-08-23 — Day 3 (personas, artofmemory rejection, HN queued)
+
+### Reddit post won't die
+- **2K views** total (up 300 since day-2 evening), **5 comments** (up from 3)
+- **Marked as user's #1 all-time reddit post**
+- Views chart went to 0 for 16 hours (hours 32–48) then trickled back with +8
+- Upvote ratio held at 70%
+- Second comment produced second engaged user (Minimum-Target-7543 / 850945) → shipped Edmund
+- Pattern: **comments, not upvotes, are the leading engagement predictor.** 2 comments → 2 engaged users → 2 content-adds.
+
+### Ships today
+- **Edmund's "Thou, Nature, art my goddess"** — King Lear Act 1 Sc 2, 22 chunks, 6 hand-authored beats (Invoke Nature → Challenge Custom → Assert Equality → Boast Superior Origin → Plot Against Edgar → Claim Triumph). Second engaged-user → content-add loop completed.
+- **Test mode forced to lines** — regardless of the user's saved `practiceUnit` preference. Beat-based tests ask reciters to deliver several lines from a single intention cue; too hard as a default. Likely explanation for `test-complete = 0` across the first 42 users.
+- **Diary itself** — first two entries now committed.
+
+### Engaged user #3 persona: `850945` = Minimum-Target-7543
+
+Subreddit-inferred profile:
+- **Location:** UK (r/TeachingUK, r/GCSE, r/veganuk, r/CasualUK — 4 independent UK signals)
+- **Occupation:** teacher, most likely English or Classics. r/TeachingUK + r/GCSE + r/classicliterature + r/classics + r/latin + r/shakespeare is a coherent literary-teacher signal. GCSE English Lit set texts include Macbeth — fits the Lear/Macbeth focus perfectly. May be memorizing works they *teach*.
+- **Age:** 30–45 (self-identified r/Millennials)
+- **Gender:** mild lean female (r/SarahJMaas + self-care + cat cluster) but keep "they"
+- **Values:** progressive (r/veganuk, r/SarahJMaas's declared politics)
+- **Lifestyle:** cat person (4 cat subs), fitness (r/Garmin), self-care (r/finch), history-podcast listener (r/TheRestIsHistory), genre-fiction fan (r/HannibalTV, r/LV426, r/criminalminds), single (r/Tinder)
+
+Why this profile matters for the product:
+- **Teachers = adjacent-audience multiplier.** One recommendation to a colleague or class = another engaged user, unpaid.
+- **GCSE/A-level set text bias pays double.** Macbeth, Romeo & Juliet, Julius Caesar, Much Ado — if the app covers what they teach, they'll use it AND recommend it.
+- **r/TeachingUK** (59K UK teachers) is a natural follow-up community, queued behind HN.
+
+### Persona archive so far
+
+| App ID | Reddit handle | Location | Persona | Pattern |
+|---|---|---|---|---|
+| `533339` | Euphoric-Rest1919 | Berlin | Alt-scene hobbyist, non-actor bedtime reciter | 1 deep 8.8min session + 1 browse return; requested Lady M Act 1 Sc 5 |
+| `497990` | ? (no comment) | ? | Beats-mode power user; possibly actor or evaluator | 2 mode-comparison sessions in 3min; no return |
+| `850945` | Minimum-Target-7543 | UK | English/Classics teacher, ~30-45 | 3 returns to same work over 3.5h; requested Edmund's soliloquy |
+
+Three engaged users, three distinct archetypes, same product need. Cross-persona demand suggests the concept has more shapes of user than the original "actors" framing implied.
+
+### Channels
+
+**artofmemory forum — rejected.**
+- Mod (Josh Cohen, "dear johnn-ed") ruefully rejected the post
+- Their rule: no commerce-oriented links, no matter the intent (slippery-slope concern)
+- Zero traffic from this source; the "higher-intent memorization audience" hypothesis remains untested via this channel
+- Adjacent alternatives to try later: r/anki, Anki forums, Roam-research memory-palace communities
+
+**HN Show HN — queued for Tue–Thu morning US Pacific.**
+- Weekend post = lower ceiling, longer front-page life; weekday = higher ceiling, shorter life. Weekday wins for Show HN.
+- Use the weekend to draft carefully. HN readers punish generic pitches.
+- Lead with the technical hook, not the actor pitch. Candidate framings:
+  - "Show HN: A Shakespeare memorization app with an append-only analytics log on a 512MB scale-to-zero VM"
+  - "Show HN: Stanislavsky-style AI coaching for memorizing Shakespeare (Groq gpt-oss-120b)"
+- Avoid Monday morning US (everyone posts then). Tue-Thu 7-9am PT is optimal.
+
+**r/TeachingUK — queued behind HN.**
+- 59K UK teachers, coherent with Minimum-Target-7543 persona
+- Framing shift: "free tool for memorizing set texts" lands differently there than the r/shakespeare pitch
+- Wait 5-7 days after HN to space out attribution
+
+### Open questions
+- Does the test-mode-lines fix produce any `test-complete` events in the next 24h?
+- Do any of the three named engaged users return day 3?
+- Does forcing test to lines mode affect users who genuinely liked beats-testing? (small population, probably fine)
+- Cross-persona pattern: what other shapes-of-user will show up? Actors, students, elders, ESL learners?
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
