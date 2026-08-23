@@ -293,6 +293,31 @@ The r/shakespeare launch validated the concept; the next posts should go where t
 - Does forcing test to lines mode affect users who genuinely liked beats-testing? (small population, probably fine)
 - Cross-persona pattern: what other shapes-of-user will show up? Actors, students, elders, ESL learners?
 
+### Late day 3 — Minimum-Target-7543 persona fully confirmed + content roadmap
+
+She replied to the Edmund ship with:
+1. **Persona confirmed exactly.** "I teach King Lear at A-level (as a literature text) and this is my favourite speech." UK English/Classics teacher inference was correct.
+2. **Explicit multiplier signal.** "I'm going to share this with the teachers and students at my school." One engaged user → potentially a school's worth of trials.
+3. **Content roadmap gift.** Her exam-board coverage priorities:
+   - **GCSE:** Macbeth, Romeo and Juliet (most-taught)
+   - **A-level:** Othello, and to a lesser extent King Lear
+4. **Two more requests, same scene:** Gloucester's "These late eclipses" and Edmund's "This is the excellent foppery" (both Act 1 Sc 2). Shipped in ~20 minutes.
+
+**Cumulative for this one user: 3 speeches shipped same-day (Edmund's soliloquy + 2 more Act 1 Sc 2 speeches). All three now cover the opening of Act 1 Sc 2 in narrative order — a student can memorize the whole scene sequentially.**
+
+Content backlog implied by her note (in order of leverage):
+- More **Macbeth** (already 4 works; GCSE top play — worth pushing to 8-10)
+- **Romeo & Juliet** (currently 3 works — GCSE top play — needs more)
+- More **Othello** (currently 1 work — A-level primary — needs more)
+- More **King Lear** (currently 4 works incl. today's — A-level secondary — solid for now)
+
+### Reinforced pattern
+- **3 engaged users → 3 same-day feature requests → 4 speeches shipped in <24h combined**
+- Cost per add: effectively $0 (hand-authored beats, no LLM spend)
+- Time per add: ~20 min including deploy
+- **Every request fulfilled has come from a user with a clear persona pattern in the events log**
+- No requests yet from any of the "sampler" users — signal remains: engaged users produce actionable requests, samplers don't
+
 ---
 
 <!-- Next entry template
