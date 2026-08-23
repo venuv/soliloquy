@@ -318,6 +318,27 @@ Content backlog implied by her note (in order of leverage):
 - **Every request fulfilled has come from a user with a clear persona pattern in the events log**
 - No requests yet from any of the "sampler" users — signal remains: engaged users produce actionable requests, samplers don't
 
+### Late day 3 — reddit post plateauing, not decaying
+
+Metrics at ~end of day 2 UTC (post is ~48h old):
+- **2.5K views** (+500 in ~4h; the plateau is *accelerating slightly*, not decaying)
+- **7 upvotes / 76.9% ratio** (up from 70%)
+- **8 comments** — but ~4 of those are user's own replies, so audience-originated comments are ~3-4
+- UK share up 11.6% → 12.4% (small; watch for whether Minimum-Target-7543's school-sharing is landing)
+
+**Atypical decay curve.** Normal reddit posts drop to near-zero by hour 30-40. This one has plateaued at 15-25 views/hour and stayed there through hours 30-48. Hypotheses (unverified):
+- Reddit search / sidebar surfacing to newcomers
+- Outbound link-sharing (Minimum-Target's school network in particular)
+- Sustained comment activity keeps the post visible in sub feed
+
+**Ratio movement is the more interesting metric.** Initial reddit-front-page skimmers were more downvote-prone; the plateau-baseline audience likes it *more* than early browsers. Unusual — typically posts degrade over time as noise catches up. Here quality-of-audience seems to be improving with time.
+
+### Channel-selection lesson
+- User's past attempts to launch things on Twitter and LinkedIn underperformed reddit substantially.
+- Reddit-hobby-sub calculus: **"which specific hobby community actively discusses this?"** > "what's the highest-reach platform?"
+- Broadcast platforms (Twitter, LinkedIn) reward hot takes and scale; niche hobby subs reward specificity and get you to self-selected users without scale.
+- This is worth remembering for future personal projects — always ask "which hobby sub, not which big platform?"
+
 ---
 
 <!-- Next entry template
