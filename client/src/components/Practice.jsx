@@ -350,8 +350,11 @@ export default function Practice() {
     setScore({ points: 0, total: 0 })
     setLastLikert(0)
     if (m === 'test') {
-      const itemCount = practiceUnit === 'beats' ? beats.length : work.chunks.length
-      const order = [...Array(itemCount).keys()].sort(() => Math.random() - 0.5)
+      // Test always runs line-by-line — beat-based tests ask the reciter to
+      // deliver several lines from a single intention cue, which is too hard
+      // as a default. Learn/Drill can still use beats via the toggle.
+      setPracticeUnit('lines')
+      const order = [...Array(work.chunks.length).keys()].sort(() => Math.random() - 0.5)
       setTestOrder(order)
       setTestIndex(0)
       setUserAnswer('')
