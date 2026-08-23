@@ -68,6 +68,113 @@
           "endChunk": 21
         }
       ]
+    },
+    {
+      "id": "these-late-eclipses",
+      "title": "These late eclipses in the sun and moon",
+      "character": "Gloucester",
+      "act": "Act 1, Scene 2",
+      "chunks": [
+        { "front": "These late eclipses in the sun and moon", "back": "portend no good to us." },
+        { "front": "Though the wisdom of nature can reason it thus and thus,", "back": "yet nature finds itself scourged by the sequent effects." },
+        { "front": "Love cools,", "back": "friendship falls off," },
+        { "front": "brothers divide;", "back": "in cities, mutinies;" },
+        { "front": "in countries, discord;", "back": "in palaces, treason;" },
+        { "front": "and the bond cracked", "back": "'twixt son and father." },
+        { "front": "This villain of mine", "back": "comes under the prediction—" },
+        { "front": "there's son against father.", "back": "The king falls from bias of nature—" },
+        { "front": "there's father against child.", "back": "We have seen the best of our time." },
+        { "front": "Machinations, hollowness, treachery,", "back": "and all ruinous disorders" },
+        { "front": "follow us disquietly", "back": "to our graves." },
+        { "front": "Find out this villain, Edmund;", "back": "it shall lose thee nothing." },
+        { "front": "Do it carefully.", "back": "And the noble and true-hearted Kent banished!" },
+        { "front": "His offence, honesty!", "back": "'Tis strange." }
+      ],
+      "beats": [
+        {
+          "label": "Read The Omens",
+          "intention": "To interpret the eclipses as portents of cosmic disorder",
+          "startChunk": 0,
+          "endChunk": 1
+        },
+        {
+          "label": "Catalog The Corruption",
+          "intention": "To enumerate how the disorder infects every human bond, from love to state",
+          "startChunk": 2,
+          "endChunk": 5
+        },
+        {
+          "label": "Apply It To My House",
+          "intention": "To fit the pattern to Edgar's supposed treachery and Lear's fall",
+          "startChunk": 6,
+          "endChunk": 8
+        },
+        {
+          "label": "Lament The Age",
+          "intention": "To mourn that the best days are behind and disorder will trail us to the grave",
+          "startChunk": 9,
+          "endChunk": 11
+        },
+        {
+          "label": "Command And Marvel",
+          "intention": "To task Edmund with rooting out the villain, then marvel at Kent's honest banishment",
+          "startChunk": 12,
+          "endChunk": 13
+        }
+      ]
+    },
+    {
+      "id": "excellent-foppery-of-the-world",
+      "title": "This is the excellent foppery of the world",
+      "character": "Edmund",
+      "act": "Act 1, Scene 2",
+      "chunks": [
+        { "front": "This is the excellent foppery of the world,", "back": "that when we are sick in fortune—" },
+        { "front": "often the surfeit", "back": "of our own behaviour—" },
+        { "front": "we make guilty of our disasters", "back": "the sun, the moon, and the stars;" },
+        { "front": "as if we were villains by necessity,", "back": "fools by heavenly compulsion," },
+        { "front": "knaves, thieves, and treachers", "back": "by spherical predominance," },
+        { "front": "drunkards, liars, and adulterers", "back": "by an enforced obedience of planetary influence;" },
+        { "front": "and all that we are evil in,", "back": "by a divine thrusting on." },
+        { "front": "An admirable evasion of whoremaster man,", "back": "to lay his goatish disposition" },
+        { "front": "to the charge of a star!", "back": "My father compounded with my mother" },
+        { "front": "under the Dragon's tail,", "back": "and my nativity was under Ursa Major," },
+        { "front": "so that it follows", "back": "I am rough and lecherous." },
+        { "front": "Fut, I should have been that I am", "back": "had the maidenliest star" },
+        { "front": "in the firmament", "back": "twinkled on my bastardizing." }
+      ],
+      "beats": [
+        {
+          "label": "Expose The Foppery",
+          "intention": "To name humanity's astrological self-deception as absurd",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "label": "List The False Excuses",
+          "intention": "To itemize the vices men blame on the stars — villainy, folly, thievery, drunkenness",
+          "startChunk": 3,
+          "endChunk": 6
+        },
+        {
+          "label": "Name The Evasion",
+          "intention": "To label the whole enterprise as men fobbing their appetites off onto the heavens",
+          "startChunk": 7,
+          "endChunk": 8
+        },
+        {
+          "label": "Ironize Himself",
+          "intention": "To mock the logic by ostentatiously applying it to his own conception",
+          "startChunk": 9,
+          "endChunk": 11
+        },
+        {
+          "label": "Reject The Whole Argument",
+          "intention": "To declare he'd be exactly who he is regardless of any star's twinkle",
+          "startChunk": 12,
+          "endChunk": 12
+        }
+      ]
     }
   ]
 }
