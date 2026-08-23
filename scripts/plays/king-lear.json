@@ -1,0 +1,73 @@
+{
+  "play": "King Lear",
+  "soliloquies": [
+    {
+      "id": "thou-nature-art-my-goddess",
+      "title": "Thou, Nature, art my goddess",
+      "character": "Edmund",
+      "act": "Act 1, Scene 2",
+      "chunks": [
+        { "front": "Thou, Nature, art my goddess;", "back": "to thy law" },
+        { "front": "My services are bound.", "back": "Wherefore should I" },
+        { "front": "Stand in the plague of custom,", "back": "and permit" },
+        { "front": "The curiosity of nations", "back": "to deprive me," },
+        { "front": "For that I am some", "back": "twelve or fourteen moon-shines" },
+        { "front": "Lag of a brother?", "back": "Why bastard? wherefore base?" },
+        { "front": "When my dimensions", "back": "are as well compact," },
+        { "front": "My mind as generous,", "back": "and my shape as true," },
+        { "front": "As honest madam's issue?", "back": "Why brand they us" },
+        { "front": "With base? with baseness?", "back": "bastardy? base, base?" },
+        { "front": "Who, in the lusty stealth of nature,", "back": "take" },
+        { "front": "More composition", "back": "and fierce quality" },
+        { "front": "Than doth, within", "back": "a dull, stale, tired bed," },
+        { "front": "Go to the creating", "back": "a whole tribe of fops," },
+        { "front": "Got 'tween asleep and wake?", "back": "Well, then," },
+        { "front": "Legitimate Edgar,", "back": "I must have your land:" },
+        { "front": "Our father's love is", "back": "to the bastard Edmund" },
+        { "front": "As to the legitimate:", "back": "fine word,—legitimate!" },
+        { "front": "Well, my legitimate,", "back": "if this letter speed," },
+        { "front": "And my invention thrive,", "back": "Edmund the base" },
+        { "front": "Shall top the legitimate.", "back": "I grow; I prosper:" },
+        { "front": "Now, gods,", "back": "stand up for bastards!" }
+      ],
+      "beats": [
+        {
+          "label": "Invoke Nature",
+          "intention": "To pledge allegiance to Nature above the customs of society",
+          "startChunk": 0,
+          "endChunk": 2
+        },
+        {
+          "label": "Challenge The Custom",
+          "intention": "To reject the label of bastard as an accident of birth timing",
+          "startChunk": 3,
+          "endChunk": 5
+        },
+        {
+          "label": "Assert Equality",
+          "intention": "To argue his body and mind are as fit as any legitimate son's",
+          "startChunk": 6,
+          "endChunk": 9
+        },
+        {
+          "label": "Boast Superior Origin",
+          "intention": "To claim that bastards, conceived in lusty stealth, carry more vigor than the legitimate",
+          "startChunk": 10,
+          "endChunk": 14
+        },
+        {
+          "label": "Plot Against Edgar",
+          "intention": "To set the letter scheme in motion and take Edgar's inheritance",
+          "startChunk": 15,
+          "endChunk": 18
+        },
+        {
+          "label": "Claim Triumph",
+          "intention": "To declare his coming victory and rally the gods to his cause",
+          "startChunk": 19,
+          "endChunk": 21
+        }
+      ]
+    }
+  ]
+}
