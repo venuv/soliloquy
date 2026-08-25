@@ -47,6 +47,10 @@ export default function Practice() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [mastered, setMastered] = useState(new Set())
+  // True if the user has mastered ≥1 chunk on *any* work — surfaces the
+  // "Ready for thy test?" chip even on works they haven't yet touched,
+  // once they've demonstrated the temperament to memorize somewhere.
+  const [hasMasteredAnywhere, setHasMasteredAnywhere] = useState(false)
 
   const [testOrder, setTestOrder] = useState([])
   const [testIndex, setTestIndex] = useState(0)
@@ -114,6 +118,11 @@ export default function Practice() {
         if (savedProgress?.masteredBeats) {
           setMasteredBeats(new Set(savedProgress.masteredBeats))
         }
+        // Cross-work "temperament to test" signal: any mastered chunks
+        // anywhere means we can show the Test chip on this work too.
+        const anyMastered = Object.values(progressData.progress || {})
+          .some(p => (p?.mastered || []).length > 0 || (p?.masteredBeats || []).length > 0)
+        setHasMasteredAnywhere(anyMastered)
         // Load word pictures
         if (vizData.wordPictures) {
           setWordPictures({
@@ -750,8 +759,8 @@ export default function Practice() {
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Commit to memory</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>line by line, at your pace</div>
           </button>
-          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: `${mastered.size > 0 ? '2px' : '1px'} solid ${mastered.size > 0 ? colors.forest : 'rgba(61,92,74,0.15)'}`, background: 'rgba(61,92,74,0.03)', position: 'relative' }}>
-            {mastered.size > 0 && (
+          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: `${(mastered.size > 0 || hasMasteredAnywhere) ? '2px' : '1px'} solid ${(mastered.size > 0 || hasMasteredAnywhere) ? colors.forest : 'rgba(61,92,74,0.15)'}`, background: 'rgba(61,92,74,0.03)', position: 'relative' }}>
+            {(mastered.size > 0 || hasMasteredAnywhere) && (
               <div style={{ position: 'absolute', top: '-0.6rem', right: '-0.4rem', background: colors.forest, color: colors.paper, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: '0.8rem', padding: '0.2rem 0.65rem', borderRadius: '10px', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(61,92,74,0.35)' }}>
                 Ready for thy test?
               </div>
