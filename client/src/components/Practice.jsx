@@ -750,7 +750,12 @@ export default function Practice() {
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Memorize</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Walk through chunks</div>
           </button>
-          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(61,92,74,0.15)', background: 'rgba(61,92,74,0.03)' }}>
+          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: `1px solid ${mastered.size > 0 ? colors.forest : 'rgba(61,92,74,0.15)'}`, background: 'rgba(61,92,74,0.03)', position: 'relative' }}>
+            {mastered.size > 0 && (
+              <div style={{ position: 'absolute', top: '-0.6rem', right: '-0.4rem', background: colors.forest, color: colors.paper, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: '0.75rem', padding: '0.15rem 0.55rem', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                Ready for thy test?
+              </div>
+            )}
             <GraduationCap size={40} style={{ color: colors.forest, marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Test</div>
             <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Voice or type answers</div>

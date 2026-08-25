@@ -118,12 +118,19 @@ router.post('/session', validateKey, async (req, res) => {
     }
 
     await writeAndSync(req.analyticsPath, analytics);
-    appendEvent({
-      key: req.userKey,
-      event: mode === 'test' ? 'test-complete' : 'session-complete',
-      authorId, workId, practiceUnit: session.practiceUnit,
-      duration, score: session.score
-    });
+    // Only emit a funnel event for substantive sessions — drive-by opens
+    // (1-3s durations, ~0 chunks reviewed) were polluting the dashboard.
+    // The per-user file above is still written unconditionally so nobody
+    // loses their own progress.
+    const isSubstantive = duration >= 30 && (chunksReviewed || 0) >= 3;
+    if (isSubstantive) {
+      appendEvent({
+        key: req.userKey,
+        event: mode === 'test' ? 'test-complete' : 'session-complete',
+        authorId, workId, practiceUnit: session.practiceUnit,
+        duration, score: session.score
+      });
+    }
     res.json({ success: true });
   } catch (err) {
     console.error('Error recording session:', err);
