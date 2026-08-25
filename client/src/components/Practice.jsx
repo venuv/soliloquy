@@ -747,28 +747,28 @@ export default function Practice() {
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           <button onClick={() => startMode('memorize')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(155,45,48,0.15)', background: 'rgba(155,45,48,0.03)' }}>
             <BookOpen size={40} style={{ color: colors.crimson, marginBottom: '0.75rem' }} />
-            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Memorize</div>
-            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Walk through chunks</div>
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Commit to memory</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>line by line, at your pace</div>
           </button>
-          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: `1px solid ${mastered.size > 0 ? colors.forest : 'rgba(61,92,74,0.15)'}`, background: 'rgba(61,92,74,0.03)', position: 'relative' }}>
+          <button onClick={() => startMode('test')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: `${mastered.size > 0 ? '2px' : '1px'} solid ${mastered.size > 0 ? colors.forest : 'rgba(61,92,74,0.15)'}`, background: 'rgba(61,92,74,0.03)', position: 'relative' }}>
             {mastered.size > 0 && (
-              <div style={{ position: 'absolute', top: '-0.6rem', right: '-0.4rem', background: colors.forest, color: colors.paper, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: '0.75rem', padding: '0.15rem 0.55rem', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+              <div style={{ position: 'absolute', top: '-0.6rem', right: '-0.4rem', background: colors.forest, color: colors.paper, fontFamily: "'Cormorant', serif", fontStyle: 'italic', fontSize: '0.8rem', padding: '0.2rem 0.65rem', borderRadius: '10px', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(61,92,74,0.35)' }}>
                 Ready for thy test?
               </div>
             )}
             <GraduationCap size={40} style={{ color: colors.forest, marginBottom: '0.75rem' }} />
-            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Test</div>
-            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Voice or type answers</div>
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Don't just read. Recall!</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>type or speak the missing lines</div>
           </button>
           <button onClick={() => startMode('recite')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(196,163,90,0.15)', background: 'rgba(196,163,90,0.03)' }}>
             <Mic size={40} style={{ color: colors.gold, marginBottom: '0.75rem' }} />
-            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Recite</div>
-            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Full poem recitation</div>
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Don't just say it. Perform it!</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>the whole soliloquy, aloud</div>
           </button>
           <Link to={`/visualize/${authorId}/${workId}`} style={{ ...cardStyle, textDecoration: 'none', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(90,74,106,0.15)', background: 'rgba(90,74,106,0.03)' }}>
             <Image size={40} style={{ color: '#5a4a6a', marginBottom: '0.75rem' }} />
-            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Visualize</div>
-            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>Text analysis & images</div>
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Picture it</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>so it sticks!</div>
           </Link>
         </div>
 
