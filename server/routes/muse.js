@@ -1,5 +1,4 @@
 import express from 'express';
-import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,13 +12,111 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 const MUSE_ANALYTICS_FILE = path.join(__dirname, '../data/muse-analytics.json');
 
-// Initialize Anthropic client
-let anthropic = null;
-function getClient() {
-  if (!anthropic && process.env.ANTHROPIC_API_KEY) {
-    anthropic = new Anthropic();
+// Migrated from Anthropic (Sonnet 4 was deprecated 2026-08 with model-not-found
+// 404s) to Groq's openai/gpt-oss family — same provider we already use for
+// beats, recite, and word-picture generation. ~5x cheaper than Sonnet, still
+// good enough for quote-selection + character-voicing tasks.
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL = 'openai/gpt-oss-120b';      // quality tasks: rerank, actor, critic
+const MODEL_FAST = 'openai/gpt-oss-20b';  // classification: parse user input
+
+function getApiKey() {
+  return process.env.GROQ_API_KEY || null;
+}
+
+/**
+ * Single-shot Groq call. Returns the assistant's text (raw string).
+ * Callers that need JSON parse it themselves — matches the existing pattern
+ * in this file (regex extract) and avoids depending on model-specific
+ * response_format quirks.
+ */
+async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 0.7 } = {}) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('GROQ_API_KEY not configured');
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Groq ${res.status}: ${errText.slice(0, 200)}`);
   }
-  return anthropic;
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+/**
+ * Streaming Groq call. Invokes onDelta(tokenText) for each incoming chunk.
+ * Returns the full concatenated text when the stream completes.
+ * OpenAI-compatible SSE format: `data: {...}\n\n` per event, `data: [DONE]` at end.
+ */
+async function streamGroq(prompt, onDelta, { model = MODEL, maxTokens = 512, temperature = 0.7 } = {}) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('GROQ_API_KEY not configured');
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      stream: true,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Groq stream ${res.status}: ${errText.slice(0, 200)}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let full = '';
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let sep;
+    while ((sep = buffer.indexOf('\n\n')) >= 0) {
+      const raw = buffer.slice(0, sep).trim();
+      buffer = buffer.slice(sep + 2);
+      if (!raw.startsWith('data:')) continue;
+      const payload = raw.slice(5).trim();
+      if (payload === '[DONE]') break;
+      try {
+        const obj = JSON.parse(payload);
+        const delta = obj.choices?.[0]?.delta?.content;
+        if (delta) {
+          full += delta;
+          onDelta(delta);
+        }
+      } catch {
+        // ignore malformed chunks
+      }
+    }
+  }
+
+  return full;
 }
 
 // Preload quotes on startup
@@ -27,9 +124,9 @@ loadQuotes();
 
 /**
  * Parse user input to extract emotions and themes.
- * Uses Haiku — this is classification, not creative work. ~3x faster than Sonnet.
+ * Uses the fast/cheap model — this is classification, not creative work.
  */
-async function parseUserInput(client, userInput) {
+async function parseUserInput(userInput) {
   const prompt = `Classify this morning check-in. JSON only, no explanation.
 
 "${userInput}"
@@ -46,25 +143,17 @@ async function parseUserInput(client, userInput) {
 Emotions: sadness, melancholy, aimlessness, searching, anxiety, restlessness, weariness, frustration, contentment, hope, gratitude, fear, anger, joy, love
 Themes: purpose, identity, time, change, decision, relationships, ambition, mortality, legacy, self_discovery, acceptance`;
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 192,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  const text = message.content[0].text;
+  const text = await callGroq(prompt, { model: MODEL_FAST, maxTokens: 256, temperature: 0.2 });
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    return JSON.parse(jsonMatch[0]);
-  }
+  if (jsonMatch) return JSON.parse(jsonMatch[0]);
   throw new Error('Failed to parse user input analysis');
 }
 
 /**
- * LLM-rerank: given algorithmic top candidates, ask Claude which quote
+ * LLM-rerank: given algorithmic top candidates, ask the model which quote
  * actually connects to what the user said.
  */
-async function rerankQuotes(client, candidates, userInput, userState) {
+async function rerankQuotes(candidates, userInput, userState) {
   const candidateSummaries = candidates.map((q, i) =>
     `${i}: "${q.quote}" — ${q.character}, ${q.play}. Situation: ${q.character_situation || 'unknown'}`
   ).join('\n');
@@ -84,12 +173,7 @@ Respond with JSON only:
 }`;
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 128,
-      messages: [{ role: 'user', content: prompt }]
-    });
-    const text = message.content[0].text;
+    const text = await callGroq(prompt, { maxTokens: 192, temperature: 0.3 });
     const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
     const idx = Math.min(Math.max(0, json.pick), candidates.length - 1);
     console.log(`[muse] Reranked: picked #${idx} — ${json.reason}`);
@@ -101,52 +185,19 @@ Respond with JSON only:
 }
 
 /**
- * Actor: Generate response with a specific quote and voice.
+ * Actor: Generate response with a specific quote and voice (batch mode).
  */
-async function generateResponse(client, quote, userInput, userState, voice, criticNotes) {
+async function generateResponse(quote, userInput, userState, voice, criticNotes) {
   const voiceConfig = VOICES[voice];
-  const revision = criticNotes
-    ? `\n\nIMPORTANT — A critic reviewed your previous attempt and said:\n"${criticNotes}"\nFix these issues in this version.`
-    : '';
-
-  const prompt = `You are the Morning Muse. Someone shared how their morning is going. You offer Shakespeare's wisdom — but only if it genuinely connects. You are NOT a Shakespeare encyclopedia. You are a friend who happens to know Shakespeare deeply.
-
-THE USER SAID:
-"${userInput}"
-
-READ CAREFULLY. What did they actually say? Reference their specific words and situation, not a generic emotional category.
-
-SHAKESPEARE QUOTE TO USE:
-Character: ${quote.character} (${quote.play})
-Situation: ${quote.character_situation}
-Quote:
-"${quote.full_text?.split('\n').slice(0, 8).join('\n')}"
-
-YOUR VOICE TODAY: ${voiceConfig.name}
-${voiceConfig.description}
-Example: "${voiceConfig.example}"
-
-RULES:
-1. Your FIRST sentence must reference something SPECIFIC the user said — their actual words, not a paraphrase into therapy-speak.
-2. Connect the quote to their situation with a concrete parallel — what the character was going through that mirrors this.
-3. Present 2-4 key lines from the quote (the ones that land hardest for THIS situation).
-4. Close with one sentence — insight, question, or reframe. Match the voice.
-5. Under 150 words total. The voice dictates everything — word choice, sentence length, attitude.${revision}`;
-
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 512,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return message.content[0].text;
+  const prompt = buildActorPrompt(quote, userInput, voiceConfig, criticNotes);
+  return await callGroq(prompt, { maxTokens: 640, temperature: 0.75 });
 }
 
 /**
  * Critic: evaluate whether the response is specific enough, whether the quote
  * actually connects, and whether the voice is consistent.
  */
-async function critiqueResponse(client, response, quote, userInput, voice) {
+async function critiqueResponse(response, quote, userInput, voice) {
   const prompt = `You are a quality critic for the Morning Muse — a Shakespeare wisdom service.
 
 THE USER SAID: "${userInput}"
@@ -175,12 +226,7 @@ Respond with JSON:
 Set pass=true if ALL scores are 3+. Set pass=false if any score is 1-2.`;
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 256,
-      messages: [{ role: 'user', content: prompt }]
-    });
-    const text = message.content[0].text;
+    const text = await callGroq(prompt, { maxTokens: 320, temperature: 0.3 });
     const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
     console.log(`[muse] Critic scores:`, json.scores, json.pass ? 'PASS' : 'FAIL');
     return json;
@@ -214,11 +260,10 @@ async function saveMuseAnalytics(analytics) {
  * Main endpoint - takes user input, returns Shakespeare wisdom
  */
 router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), async (req, res) => {
-  const client = getClient();
-  if (!client) {
+  if (!getApiKey()) {
     return res.status(503).json({
       error: 'Muse unavailable',
-      message: 'ANTHROPIC_API_KEY not configured'
+      message: 'GROQ_API_KEY not configured'
     });
   }
 
@@ -231,8 +276,8 @@ router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), a
   try {
     const t0 = Date.now();
 
-    // Step 1: Parse user input (Haiku — fast, ~300ms)
-    const userState = await parseUserInput(client, input);
+    // Step 1: Parse user input (fast model — ~300-500ms)
+    const userState = await parseUserInput(input);
     const t1 = Date.now();
     console.log(`[muse] Parse: ${t1 - t0}ms`);
 
@@ -255,7 +300,7 @@ router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), a
     // Step 4: Conditional rerank — only if algorithmic scores are tight
     let quote, rerankReason = null;
     if (!confident) {
-      const reranked = await rerankQuotes(client, candidates, input, userState);
+      const reranked = await rerankQuotes(candidates, input, userState);
       quote = reranked.quote;
       rerankReason = reranked.reason;
       console.log(`[muse] Rerank: ${Date.now() - t2}ms`);
@@ -270,7 +315,6 @@ router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), a
     const wantsStream = req.query.stream === '1' || req.headers.accept === 'text/event-stream';
 
     if (wantsStream) {
-      // SSE streaming — user sees words immediately (~1s to first token)
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
@@ -294,19 +338,10 @@ router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), a
 
       // Stream the actor response
       const voiceConfig = VOICES[voice];
-      const stream = await client.messages.stream({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 512,
-        messages: [{ role: 'user', content: buildActorPrompt(quote, input, voiceConfig, null) }]
-      });
-
-      let fullResponse = '';
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.text) {
-          fullResponse += event.delta.text;
-          res.write(`event: token\ndata: ${JSON.stringify(event.delta.text)}\n\n`);
-        }
-      }
+      const actorPrompt = buildActorPrompt(quote, input, voiceConfig, null);
+      const fullResponse = await streamGroq(actorPrompt, (delta) => {
+        res.write(`event: token\ndata: ${JSON.stringify(delta)}\n\n`);
+      }, { maxTokens: 640, temperature: 0.75 });
 
       res.write(`event: done\ndata: {}\n\n`);
       res.end();
@@ -314,10 +349,10 @@ router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), a
       console.log(`[muse] Total: ${Date.now() - t0}ms (${confident ? '2' : '3'} LLM calls, streamed)`);
 
       // Async critic + analytics
-      critiqueAndLog(client, fullResponse, quote, input, voice, responseId, userState, wisdomType, rerankReason, Date.now() - t0);
+      critiqueAndLog(fullResponse, quote, input, voice, responseId, userState, wisdomType, rerankReason, Date.now() - t0);
     } else {
-      // Batch mode — original behavior
-      const response = await generateResponse(client, quote, input, userState, voice, null);
+      // Batch mode
+      const response = await generateResponse(quote, input, userState, voice, null);
       const totalMs = Date.now() - t0;
       console.log(`[muse] Actor: ${Date.now() - t3}ms`);
       console.log(`[muse] Total: ${totalMs}ms (${confident ? '2' : '3'} LLM calls)`);
@@ -339,8 +374,7 @@ router.post('/', rateLimit({ name: 'muse', capacity: 5, windowMs: 3600_000 }), a
         }
       });
 
-      // Async critic + analytics
-      critiqueAndLog(client, response, quote, input, voice, responseId, userState, wisdomType, rerankReason, totalMs);
+      critiqueAndLog(response, quote, input, voice, responseId, userState, wisdomType, rerankReason, totalMs);
     }
   } catch (error) {
     console.error('Muse error:', error);
@@ -369,7 +403,6 @@ router.post('/feedback', async (req, res) => {
       timestamp: new Date().toISOString()
     });
 
-    // Keep last 1000 feedback entries
     if (analytics.feedback.length > 1000) {
       analytics.feedback = analytics.feedback.slice(-1000);
     }
@@ -396,7 +429,6 @@ router.get('/stats', async (req, res) => {
     const likes = analytics.feedback.filter(f => f.liked).length;
     const dislikes = totalFeedback - likes;
 
-    // Emotion distribution
     const emotions = {};
     analytics.responses.forEach(r => {
       r.userState?.emotions?.forEach(e => {
@@ -404,14 +436,12 @@ router.get('/stats', async (req, res) => {
       });
     });
 
-    // Voice distribution
     const styles = {};
     analytics.responses.forEach(r => {
       const v = r.voice || r.style;
       styles[v] = (styles[v] || 0) + 1;
     });
 
-    // Top plays
     const plays = {};
     analytics.responses.forEach(r => {
       plays[r.play] = (plays[r.play] || 0) + 1;
@@ -481,9 +511,9 @@ RULES:
 /**
  * Async critique + analytics logging (fire-and-forget after response is sent)
  */
-async function critiqueAndLog(client, response, quote, userInput, voice, responseId, userState, wisdomType, rerankReason, totalMs) {
+async function critiqueAndLog(response, quote, userInput, voice, responseId, userState, wisdomType, rerankReason, totalMs) {
   try {
-    const critique = await critiqueResponse(client, response, quote, userInput, voice);
+    const critique = await critiqueResponse(response, quote, userInput, voice);
 
     const analytics = await loadMuseAnalytics();
     analytics.responses.push({
@@ -501,7 +531,6 @@ async function critiqueAndLog(client, response, quote, userInput, voice, respons
       latencyMs: totalMs
     });
 
-    // Keep last 1000 responses
     if (analytics.responses.length > 1000) {
       analytics.responses = analytics.responses.slice(-1000);
     }
