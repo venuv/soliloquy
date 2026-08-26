@@ -341,6 +341,74 @@ Metrics at ~end of day 2 UTC (post is ~48h old):
 
 ---
 
+## 2026-08-26 — Day 5/6 (first test-complete, 533339 returns deep)
+
+### Two milestones
+
+**1. First-ever `test-complete` event.** User `121292` (own testing) on "all the world's a stage":
+```
+21:53:17  session-complete   duration 10,565s (~2h56m)  learn
+22:08:30  session-complete   duration 898s   (15m)     learn
+22:17:12  test-complete      duration 527s   (8m)     score 68  ← FIRST EVER
+```
+Whole loop verified end-to-end — the chip / lines-default / event pipeline all work. The 68% score is a realistic first-attempt result on a 28-chunk soliloquy.
+
+**2. `533339` (Euphoric-Rest1919) returned after 4.5 days** — first significant absence-then-return in the data. And she came back specifically for the content shipped for her:
+```
+07:01:27  login-return
+07:01:27  onboarding-open       ← re-fired for returning user, minor bug
+07:01:34  onboarding-close (completed)
+[navigates to catalog, opens raven-himself-hoarse multiple times]
+07:42:36  session-complete: raven-himself-hoarse   duration 1,895s (31.5 min)
+07:42:55  practice-open: double-double             ← moves to another Macbeth
+```
+**31.5-minute learn pass on the Lady M speech built for her, then explores adjacent Macbeth.** This is the deepest single-session engagement in the dataset so far, and it happened on a return visit for shipped-per-request content.
+
+### Persona update: `533339` = female, Berliner (upgraded confidence)
+
+Previously "mild lean female from subreddits" based on r/SarahJMaas + cat + self-care cluster. Owner now sees writing-style evidence in her reddit comments — upgrading to confident female pronouns.
+
+### Counter-intuitive pattern: day-1 intensity is a poor return-predictor
+
+Day-1 rankings said `MT-7543 > 533339`:
+- MT-7543: multiple opens, same-day return, public commitment to share
+- 533339: one deep session, then silent
+
+Day-5 return behavior inverted it:
+- 533339: **returned for 31.5 min of focused work + adjacent exploration**
+- MT-7543: hasn't returned yet (school term, valid reason but zero return so far)
+
+**Implications for content strategy:**
+- Don't judge which users are worth shipping content for by day-1 intensity alone
+- Even "lower-key" first-day engaged users are potentially your best long-term users
+- The real flywheel is *"content waits for the user, not user waits for content"* — ship for anyone with a specific ask, they return when life allows
+
+### Session-complete gate is working
+
+Every session-complete in the recent-events window has `duration >= 30`. No 1-3s pollution. Dashboard `session-complete` count is now honest (8 real completions vs. the previous ~11 with noise).
+
+### Reddit metrics still climbing softly
+
+- Views: 2.7K → 3K (+300 in ~2 days)
+- **Upvote ratio: 76.9% → 80%** (still improving — steady quality-of-audience improvement)
+- Comments: 9 (unchanged; user has replied twice more)
+
+### Ships since day 3
+- Edmund's "Thou, Nature, art my goddess" + Gloucester's "These late eclipses" + Edmund's "Excellent foppery" (three Lear speeches from Act 1 Sc 2 in narrative order)
+- Test mode forced to lines regardless of user preference
+- Action-oriented mode-card copy (Commit to memory / Don't just read. Recall! / Don't just say it. Perform it! / Picture it)
+- "Ready for thy test?" chip on Test card
+- Chip trigger broadened from "mastered on this work" to "mastered on any work" (any-user-with-temperament-to-test)
+- session-complete gate on duration >= 30s AND chunksReviewed >= 3
+
+### Open watches
+- **Minimum-Target-7543 return window: today through Friday.** Her Sunday comment "when we get back next week" sets the timeline. Zero return by Friday = teacher-multiplier hypothesis weakens.
+- Small bug: onboarding overlay re-fired for `533339` on return (likely localStorage cleared between sessions). Not urgent — she completed it in 7s.
+- Waiting on r/actors post trigger — currently 3 new users/day, low enough for clean attribution when we post.
+- No follow-up from MT-7543's colleagues visible yet. UK share still steady at 12%.
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
