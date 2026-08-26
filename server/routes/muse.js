@@ -30,9 +30,17 @@ function getApiKey() {
  * in this file (regex extract) and avoids depending on model-specific
  * response_format quirks.
  */
-async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 0.7 } = {}) {
+async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 0.7, json = false } = {}) {
   const apiKey = getApiKey();
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
+
+  const body = {
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    messages: [{ role: 'user', content: prompt }]
+  };
+  if (json) body.response_format = { type: 'json_object' };
 
   const res = await fetch(GROQ_URL, {
     method: 'POST',
@@ -40,12 +48,7 @@ async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      messages: [{ role: 'user', content: prompt }]
-    })
+    body: JSON.stringify(body)
   });
 
   if (!res.ok) {
@@ -143,10 +146,10 @@ async function parseUserInput(userInput) {
 Emotions: sadness, melancholy, aimlessness, searching, anxiety, restlessness, weariness, frustration, contentment, hope, gratitude, fear, anger, joy, love
 Themes: purpose, identity, time, change, decision, relationships, ambition, mortality, legacy, self_discovery, acceptance`;
 
-  const text = await callGroq(prompt, { model: MODEL_FAST, maxTokens: 256, temperature: 0.2 });
+  const text = await callGroq(prompt, { model: MODEL_FAST, maxTokens: 256, temperature: 0.2, json: true });
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) return JSON.parse(jsonMatch[0]);
-  throw new Error('Failed to parse user input analysis');
+  throw new Error('Failed to parse user input analysis: ' + text.slice(0, 200));
 }
 
 /**
@@ -173,11 +176,11 @@ Respond with JSON only:
 }`;
 
   try {
-    const text = await callGroq(prompt, { maxTokens: 192, temperature: 0.3 });
-    const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
-    const idx = Math.min(Math.max(0, json.pick), candidates.length - 1);
-    console.log(`[muse] Reranked: picked #${idx} — ${json.reason}`);
-    return { quote: candidates[idx], reason: json.reason };
+    const text = await callGroq(prompt, { maxTokens: 192, temperature: 0.3, json: true });
+    const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
+    const idx = Math.min(Math.max(0, parsed.pick), candidates.length - 1);
+    console.log(`[muse] Reranked: picked #${idx} — ${parsed.reason}`);
+    return { quote: candidates[idx], reason: parsed.reason };
   } catch (err) {
     console.warn('[muse] Rerank failed, using algorithmic top:', err.message);
     return { quote: candidates[0], reason: null };
@@ -226,10 +229,10 @@ Respond with JSON:
 Set pass=true if ALL scores are 3+. Set pass=false if any score is 1-2.`;
 
   try {
-    const text = await callGroq(prompt, { maxTokens: 320, temperature: 0.3 });
-    const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
-    console.log(`[muse] Critic scores:`, json.scores, json.pass ? 'PASS' : 'FAIL');
-    return json;
+    const text = await callGroq(prompt, { maxTokens: 320, temperature: 0.3, json: true });
+    const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
+    console.log(`[muse] Critic scores:`, parsed.scores, parsed.pass ? 'PASS' : 'FAIL');
+    return parsed;
   } catch (err) {
     console.warn('[muse] Critic failed, accepting response:', err.message);
     return { pass: true, scores: {}, notes: null };
