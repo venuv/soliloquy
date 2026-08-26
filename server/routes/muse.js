@@ -130,26 +130,24 @@ loadQuotes();
  * Uses the fast/cheap model — this is classification, not creative work.
  */
 async function parseUserInput(userInput) {
-  const prompt = `Classify this morning check-in. JSON only, no explanation.
+  const prompt = `Classify this morning check-in.
 
-"${userInput}"
+Input: "${userInput}"
 
-{
-  "emotions": ["primary", "secondary"],
-  "themes": ["theme1", "theme2"],
-  "intensity": "low|medium|high",
-  "valence": "positive|negative|mixed|neutral",
-  "needs": "validation|perspective|comfort|challenge|reflection",
-  "subtext": "one sentence: what's unsaid"
-}
+Respond with ONLY a JSON object matching this shape. No preamble, no markdown fences, no explanation. Start your response with { and end with }.
 
-Emotions: sadness, melancholy, aimlessness, searching, anxiety, restlessness, weariness, frustration, contentment, hope, gratitude, fear, anger, joy, love
-Themes: purpose, identity, time, change, decision, relationships, ambition, mortality, legacy, self_discovery, acceptance`;
+Fields (use these exact keys):
+- emotions: array of 1-2 strings from [sadness, melancholy, aimlessness, searching, anxiety, restlessness, weariness, frustration, contentment, hope, gratitude, fear, anger, joy, love]
+- themes: array of 1-2 strings from [purpose, identity, time, change, decision, relationships, ambition, mortality, legacy, self_discovery, acceptance]
+- intensity: one of "low", "medium", "high"
+- valence: one of "positive", "negative", "mixed", "neutral"
+- needs: one of "validation", "perspective", "comfort", "challenge", "reflection"
+- subtext: one sentence string describing what's unsaid`;
 
-  // Groq gpt-oss-20b was returning empty responses under strict JSON mode
-  // (json_validate_failed with failed_generation:""). Using the 120b model
-  // for the parse call as well — small extra cost, reliable JSON.
-  const text = await callGroq(prompt, { model: MODEL, maxTokens: 256, temperature: 0.2, json: true });
+  // Not using Groq's response_format:json_object — it consistently returns
+  // 400 json_validate_failed with empty failed_generation on this prompt
+  // (both 20b and 120b). Prompt engineering + regex extract is more reliable.
+  const text = await callGroq(prompt, { model: MODEL, maxTokens: 300, temperature: 0.2 });
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) return JSON.parse(jsonMatch[0]);
   throw new Error('Failed to parse user input analysis: ' + text.slice(0, 200));
@@ -179,7 +177,7 @@ Respond with JSON only:
 }`;
 
   try {
-    const text = await callGroq(prompt, { maxTokens: 192, temperature: 0.3, json: true });
+    const text = await callGroq(prompt, { maxTokens: 192, temperature: 0.3 });
     const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
     const idx = Math.min(Math.max(0, parsed.pick), candidates.length - 1);
     console.log(`[muse] Reranked: picked #${idx} — ${parsed.reason}`);
@@ -232,7 +230,7 @@ Respond with JSON:
 Set pass=true if ALL scores are 3+. Set pass=false if any score is 1-2.`;
 
   try {
-    const text = await callGroq(prompt, { maxTokens: 320, temperature: 0.3, json: true });
+    const text = await callGroq(prompt, { maxTokens: 320, temperature: 0.3 });
     const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
     console.log(`[muse] Critic scores:`, parsed.scores, parsed.pass ? 'PASS' : 'FAIL');
     return parsed;
