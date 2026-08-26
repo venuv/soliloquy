@@ -30,7 +30,7 @@ function getApiKey() {
  * in this file (regex extract) and avoids depending on model-specific
  * response_format quirks.
  */
-async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 0.7, json = false } = {}) {
+async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 0.7, json = false, reasoning = 'low' } = {}) {
   const apiKey = getApiKey();
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
 
@@ -38,6 +38,10 @@ async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 
     model,
     max_tokens: maxTokens,
     temperature,
+    // gpt-oss models emit chain-of-thought reasoning tokens that count
+    // against max_tokens. Default 'low' keeps output tight; raise to
+    // 'medium'/'high' if you need deeper reasoning on a specific call.
+    reasoning_effort: reasoning,
     messages: [{ role: 'user', content: prompt }]
   };
   if (json) body.response_format = { type: 'json_object' };
@@ -65,7 +69,7 @@ async function callGroq(prompt, { model = MODEL, maxTokens = 512, temperature = 
  * Returns the full concatenated text when the stream completes.
  * OpenAI-compatible SSE format: `data: {...}\n\n` per event, `data: [DONE]` at end.
  */
-async function streamGroq(prompt, onDelta, { model = MODEL, maxTokens = 512, temperature = 0.7 } = {}) {
+async function streamGroq(prompt, onDelta, { model = MODEL, maxTokens = 512, temperature = 0.7, reasoning = 'low' } = {}) {
   const apiKey = getApiKey();
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
 
@@ -79,6 +83,7 @@ async function streamGroq(prompt, onDelta, { model = MODEL, maxTokens = 512, tem
       model,
       max_tokens: maxTokens,
       temperature,
+      reasoning_effort: reasoning,
       stream: true,
       messages: [{ role: 'user', content: prompt }]
     })
