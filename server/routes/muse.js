@@ -146,7 +146,10 @@ async function parseUserInput(userInput) {
 Emotions: sadness, melancholy, aimlessness, searching, anxiety, restlessness, weariness, frustration, contentment, hope, gratitude, fear, anger, joy, love
 Themes: purpose, identity, time, change, decision, relationships, ambition, mortality, legacy, self_discovery, acceptance`;
 
-  const text = await callGroq(prompt, { model: MODEL_FAST, maxTokens: 256, temperature: 0.2, json: true });
+  // Groq gpt-oss-20b was returning empty responses under strict JSON mode
+  // (json_validate_failed with failed_generation:""). Using the 120b model
+  // for the parse call as well — small extra cost, reliable JSON.
+  const text = await callGroq(prompt, { model: MODEL, maxTokens: 256, temperature: 0.2, json: true });
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) return JSON.parse(jsonMatch[0]);
   throw new Error('Failed to parse user input analysis: ' + text.slice(0, 200));
