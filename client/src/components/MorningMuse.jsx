@@ -155,6 +155,8 @@ export default function MorningMuse() {
   const [response, setResponse] = useState(null)
   const [error, setError] = useState(null)
   const [feedbackGiven, setFeedbackGiven] = useState(false)
+  const [feedbackDirection, setFeedbackDirection] = useState(null) // 'up' | 'down' | null
+  const [feedbackComment, setFeedbackComment] = useState('')
   const [quotesCount, setQuotesCount] = useState(null)
   const [usedVoices, setUsedVoices] = useState([])
   const [selectedMood, setSelectedMood] = useState(null)
@@ -176,6 +178,8 @@ export default function MorningMuse() {
     setResponse(null)
     setStreamText('')
     setFeedbackGiven(false)
+    setFeedbackDirection(null)
+    setFeedbackComment('')
   }
 
   const handleSpinComplete = useCallback(async (mood, idx) => {
@@ -266,17 +270,40 @@ export default function MorningMuse() {
     }
   }, [input])
 
+  // Step 1: user hits Helpful / Not quite — record vote, reveal optional comment
   const handleFeedback = async (liked) => {
     if (!response?.id || feedbackGiven) return
+    setFeedbackDirection(liked ? 'up' : 'down')
     try {
       await api('/muse/feedback', {
         method: 'POST',
         body: JSON.stringify({ responseId: response.id, liked })
       })
-      setFeedbackGiven(true)
     } catch (err) {
       console.error('Feedback error:', err)
     }
+  }
+
+  // Step 2: user submits (or skips) the optional qualitative comment
+  const handleSubmitComment = async () => {
+    const text = feedbackComment.trim()
+    if (text && response?.id) {
+      try {
+        await api('/muse/feedback', {
+          method: 'POST',
+          body: JSON.stringify({
+            responseId: response.id,
+            liked: feedbackDirection === 'up',
+            comment: text.slice(0, 500)
+          })
+        })
+      } catch (err) {
+        console.error('Comment error:', err)
+      }
+    }
+    setFeedbackGiven(true)
+    setFeedbackComment('')
+    setFeedbackDirection(null)
   }
 
   const handleSpinAgain = () => {
@@ -285,6 +312,8 @@ export default function MorningMuse() {
     setStreamText('')
     setError(null)
     setFeedbackGiven(false)
+    setFeedbackDirection(null)
+    setFeedbackComment('')
     setSelectedMood(null)
     // Keep input pre-filled, keep usedVoices
   }
@@ -296,6 +325,8 @@ export default function MorningMuse() {
     setStreamText('')
     setError(null)
     setFeedbackGiven(false)
+    setFeedbackDirection(null)
+    setFeedbackComment('')
     setSelectedMood(null)
     setUsedVoices([])
   }
@@ -443,21 +474,54 @@ export default function MorningMuse() {
                 </div>
               )}
 
-              {/* Feedback */}
+              {/* Feedback — step 1: vote + reveal comment box */}
               {!loading && response && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                  <span style={{ color: colors.inkFaint, fontSize: '0.85rem', flex: 1 }}>
-                    {feedbackGiven ? 'Thanks for your feedback!' : 'Did this resonate?'}
-                  </span>
-                  {!feedbackGiven && (
-                    <>
-                      <button onClick={() => handleFeedback(true)} style={{ padding: '0.4rem 0.8rem', background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 6, cursor: 'pointer', color: colors.forest, display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontFamily: "'IBM Plex Sans', sans-serif" }}>
-                        <ThumbsUp size={14} /> Helpful
-                      </button>
-                      <button onClick={() => handleFeedback(false)} style={{ padding: '0.4rem 0.8rem', background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 6, cursor: 'pointer', color: colors.crimson, display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontFamily: "'IBM Plex Sans', sans-serif" }}>
-                        <ThumbsDown size={14} /> Not quite
-                      </button>
-                    </>
+                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ color: colors.inkFaint, fontSize: '0.85rem', flex: 1 }}>
+                      {feedbackGiven
+                        ? 'Thanks for your feedback!'
+                        : feedbackDirection
+                          ? (feedbackDirection === 'up' ? 'Glad it resonated. Anything to add?' : 'Sorry about that. What would have been better?')
+                          : 'Did this resonate?'}
+                    </span>
+                    {!feedbackGiven && !feedbackDirection && (
+                      <>
+                        <button onClick={() => handleFeedback(true)} style={{ padding: '0.4rem 0.8rem', background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 6, cursor: 'pointer', color: colors.forest, display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontFamily: "'IBM Plex Sans', sans-serif" }}>
+                          <ThumbsUp size={14} /> Helpful
+                        </button>
+                        <button onClick={() => handleFeedback(false)} style={{ padding: '0.4rem 0.8rem', background: 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 6, cursor: 'pointer', color: colors.crimson, display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontFamily: "'IBM Plex Sans', sans-serif" }}>
+                          <ThumbsDown size={14} /> Not quite
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Step 2: optional qualitative comment */}
+                  {feedbackDirection && !feedbackGiven && (
+                    <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+                      <textarea
+                        value={feedbackComment}
+                        onChange={e => setFeedbackComment(e.target.value.slice(0, 500))}
+                        placeholder="Optional — a sentence about what worked or didn't"
+                        rows={2}
+                        style={{
+                          flex: 1, padding: '0.5rem 0.75rem', borderRadius: 6,
+                          border: '1px solid rgba(0,0,0,0.15)', background: '#fdfcf8',
+                          fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.85rem',
+                          resize: 'vertical', color: colors.ink
+                        }}
+                      />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <button onClick={handleSubmitComment} style={{
+                          padding: '0.4rem 0.8rem', background: colors.forest, color: colors.paper,
+                          border: 'none', borderRadius: 6, cursor: 'pointer',
+                          fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.8rem'
+                        }}>
+                          {feedbackComment.trim() ? 'Send' : 'Skip'}
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}

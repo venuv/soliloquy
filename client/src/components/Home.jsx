@@ -489,7 +489,20 @@ export default function Home() {
           </Link>
 
           {/* Reflect - Active Link */}
-          <Link to="/fortune" className="band-item">
+          <Link to="/fortune" className="band-item" style={{ position: 'relative' }}>
+            {/* "New" cue — auto-hides after 2 weeks from ship (2026-09-09) */}
+            {Date.now() < new Date('2026-09-09T00:00:00Z').getTime() && (
+              <div style={{
+                position: 'absolute', top: '-0.5rem', right: '-0.25rem',
+                background: '#c4a35a', color: '#fdfcf8',
+                fontFamily: "'Cormorant', serif", fontStyle: 'italic',
+                fontSize: '0.75rem', padding: '0.2rem 0.6rem',
+                borderRadius: '10px', whiteSpace: 'nowrap',
+                boxShadow: '0 2px 6px rgba(196,163,90,0.35)'
+              }}>
+                Just fixed
+              </div>
+            )}
             <h3 className="band-title">Reflect</h3>
             <p className="band-desc">
               A daily fragment from the Bard. Brief enough for morning, resonant enough to carry.
