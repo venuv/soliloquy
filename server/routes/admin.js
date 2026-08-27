@@ -489,10 +489,17 @@ router.get('/dashboard', async (req, res) => {
     const userList = Object.values(perUser).map(u => {
       const visitDays = u.visitDays ? u.visitDays.size : 0;
       const hasDeep = u.longestSessionSec >= 300; // ≥5min session
+      // Evaluator = 2+ visit days but negligible actual practice (<60s total).
+      // These are typically curators/teachers/reviewers checking whether the
+      // app is worth sharing — not the target user themselves. Their impact
+      // shows up later as new registrations (their audience), not their own
+      // stats.
+      const isEvaluator = visitDays >= 2 && u.totalPracticeSec < 60;
       const category =
         visitDays === 0 ? 'silent' :
         visitDays === 1 && !hasDeep ? 'one-timer' :
         visitDays === 1 && hasDeep ? 'one-timer-deep' :
+        isEvaluator ? 'evaluator' :
         visitDays >= 3 && hasDeep ? 'engaged' :
         'returning';
       // Simple engagement score: visit-days weighted heavily, plus practice
@@ -520,9 +527,38 @@ router.get('/dashboard', async (req, res) => {
       silent: userList.filter(u => u.category === 'silent').length,
       oneTimers: userList.filter(u => u.category === 'one-timer').length,
       oneTimerDeep: userList.filter(u => u.category === 'one-timer-deep').length,
+      evaluator: userList.filter(u => u.category === 'evaluator').length,
       returning: userList.filter(u => u.category === 'returning').length,
       engaged: userList.filter(u => u.category === 'engaged').length
     };
+
+    // 6. Cluster detector — 5+ new keys registered within any 2-hour window
+    // (in the last 30 days). Likely signals a class, a shared link, or a
+    // sub-community discovering the app together, rather than organic trickle.
+    const CLUSTER_WINDOW_MS = 2 * 60 * 60 * 1000;
+    const CLUSTER_MIN_KEYS = 5;
+    const recentCreations = users
+      .filter(u => u.createdAt && (now - new Date(u.createdAt).getTime()) < 30 * DAY)
+      .map(u => ({ id: u.id, ts: new Date(u.createdAt).getTime() }))
+      .sort((a, b) => a.ts - b.ts);
+    const clusters = [];
+    for (let i = 0; i < recentCreations.length; i++) {
+      let j = i;
+      while (j < recentCreations.length && recentCreations[j].ts - recentCreations[i].ts <= CLUSTER_WINDOW_MS) j++;
+      const count = j - i;
+      if (count >= CLUSTER_MIN_KEYS) {
+        // Only record if this cluster starts a fresh window (dedupe overlaps)
+        const last = clusters[clusters.length - 1];
+        if (!last || recentCreations[i].ts > last.endTs) {
+          clusters.push({
+            startTs: recentCreations[i].ts,
+            endTs: recentCreations[j - 1].ts,
+            count,
+            ids: recentCreations.slice(i, j).map(x => x.id)
+          });
+        }
+      }
+    }
 
     const topEngaged = userList
       .filter(u => u.visitDays > 0)
@@ -577,8 +613,9 @@ router.get('/dashboard', async (req, res) => {
 
   <h2>Engagement (all time)</h2>
   <p class="muted" style="margin-top:-0.25rem">
-    Categories: <b>silent</b> = registered but no event; <b>one-timer</b> = visited a single day, no deep session;
-    <b>one-timer (deep)</b> = single day but ≥5min session; <b>returning</b> = 2+ visit days;
+    Categories: <b>silent</b> = registered but no event; <b>one-timer</b> = one visit day, no deep session;
+    <b>one-timer (deep)</b> = one day but ≥5min session; <b>evaluator</b> = 2+ visit days but negligible practice
+    (&lt;60s total) — typically curators / teachers reviewing to share; <b>returning</b> = 2+ days with some practice;
     <b>engaged</b> = 3+ visit days <em>and</em> at least one 5min+ session.
   </p>
   <div class="grid">
@@ -587,6 +624,7 @@ router.get('/dashboard', async (req, res) => {
         ${row('Silent (registered, no event)', engagement.silent)}
         ${row('One-timer', engagement.oneTimers)}
         ${row('One-timer (deep — 5min+ session)', engagement.oneTimerDeep)}
+        ${row('Evaluator (2+ days, <60s practice)', engagement.evaluator)}
         ${row('Returning (2+ visit days)', engagement.returning)}
         ${row('Engaged (3+ days + 5min+ session)', engagement.engaged)}
       </table>
@@ -602,6 +640,19 @@ router.get('/dashboard', async (req, res) => {
       </table>
     </div>
   </div>
+
+  <h2>Registration clusters (5+ new keys in 2h, last 30d)</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    Likely signals: a class arriving via a teacher's shared link, a social-media wave, or a sub-community
+    discovering the app together. Empty here = organic trickle only.
+  </p>
+  <table>
+    ${clusters.length ? clusters.map(c => `<tr>
+      <td class="muted">${esc(new Date(c.startTs).toISOString().slice(0, 16).replace('T', ' '))} → ${esc(new Date(c.endTs).toISOString().slice(0, 16).replace('T', ' '))} UTC</td>
+      <td><b>${c.count}</b> keys</td>
+      <td class="muted">${c.ids.map(id => `<code>${esc(id)}</code>`).join(' ')}</td>
+    </tr>`).join('') : '<tr><td class="muted">no clusters yet — all registrations are spaced apart</td></tr>'}
+  </table>
 
   <h2>Top engaged users</h2>
   <p class="muted" style="margin-top:-0.25rem">
