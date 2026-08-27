@@ -354,22 +354,80 @@ router.get('/dashboard', async (req, res) => {
       u.createdAt && (now - new Date(u.createdAt).getTime()) < windowDays * DAY
     ).length;
 
-    // 2. Session/work stats from per-user analytics files
+    // 2. Session/work stats from per-user analytics files — build a per-user
+    // engagement map at the same time so we can rank users by real engagement
+    // (distinct visit days + deep sessions + works touched) rather than just
+    // "last seen."
     const files = await fs.readdir(ANALYTICS_DIR);
     let totalSessions = 0, totalTests = 0, totalPractice = 0;
     const scores = [];
     const workOpens = {};
+    const perUser = {};  // userId -> engagement metrics
+
+    // Seed perUser from keys.json so first-visit-only users show up too
+    for (const [id, k] of Object.entries(keys)) {
+      perUser[id] = {
+        id,
+        createdAt: k.createdAt,
+        lastSeen: k.lastSeen,
+        sessions: 0,
+        testSessions: 0,
+        totalPracticeSec: 0,
+        longestSessionSec: 0,
+        worksTouched: new Set(),
+        topWork: null,
+        topWorkSessions: 0
+      };
+    }
+
+    // Session-duration buckets for the depth histogram
+    const depthBuckets = { under30: 0, s30to2m: 0, m2to10: 0, m10to30: 0, m30plus: 0 };
+
     for (const f of files) {
       if (!f.endsWith('.json')) continue;
       try {
         const data = JSON.parse(await fs.readFile(path.join(ANALYTICS_DIR, f), 'utf-8'));
+        const uid = f.replace(/\.json$/, '');
+        if (!perUser[uid]) {
+          // Orphan analytics file (user in keys.json got cleaned but file remains)
+          perUser[uid] = {
+            id: uid, createdAt: data.createdAt, lastSeen: null,
+            sessions: 0, testSessions: 0, totalPracticeSec: 0, longestSessionSec: 0,
+            worksTouched: new Set(), topWork: null, topWorkSessions: 0
+          };
+        }
+        const workSessionCounts = {};
         for (const s of (data.sessions || [])) {
           totalSessions++;
-          if (s.mode === 'test') { totalTests++; if (s.score != null) scores.push(s.score); }
-          else totalPractice++;
+          const dur = s.duration || 0;
+          if (s.mode === 'test') {
+            totalTests++;
+            perUser[uid].testSessions++;
+            if (s.score != null) scores.push(s.score);
+          } else {
+            totalPractice++;
+          }
+          perUser[uid].sessions++;
+          perUser[uid].totalPracticeSec += dur;
+          if (dur > perUser[uid].longestSessionSec) perUser[uid].longestSessionSec = dur;
           if (s.workId) {
             const wk = `${s.authorId}/${s.workId}`;
             workOpens[wk] = (workOpens[wk] || 0) + 1;
+            perUser[uid].worksTouched.add(wk);
+            workSessionCounts[wk] = (workSessionCounts[wk] || 0) + 1;
+          }
+          // Session-depth histogram
+          if (dur < 30) depthBuckets.under30++;
+          else if (dur < 120) depthBuckets.s30to2m++;
+          else if (dur < 600) depthBuckets.m2to10++;
+          else if (dur < 1800) depthBuckets.m10to30++;
+          else depthBuckets.m30plus++;
+        }
+        // Pick their top work by session count
+        for (const [wk, n] of Object.entries(workSessionCounts)) {
+          if (n > perUser[uid].topWorkSessions) {
+            perUser[uid].topWork = wk;
+            perUser[uid].topWorkSessions = n;
           }
         }
       } catch {}
@@ -409,6 +467,67 @@ router.get('/dashboard', async (req, res) => {
     }
     const topOpens = Object.entries(openCounts30).sort((a, b) => b[1] - a[1]).slice(0, 10);
     const topCompletions = Object.entries(workOpens).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+    // 4. Enrich perUser from events log — distinct visit days, reflect activity.
+    // "Visit days" is a much better repeat-visit signal than raw login-return
+    // count (which includes same-session tab refreshes).
+    for (const e of events) {
+      const uid = e.key;
+      if (!uid || !perUser[uid]) continue;
+      if (!perUser[uid].visitDays) perUser[uid].visitDays = new Set();
+      if (!perUser[uid].reflectVisits) perUser[uid].reflectVisits = 0;
+      if (!perUser[uid].reflectResponses) perUser[uid].reflectResponses = 0;
+      if (e.ts) {
+        // Bucket by UTC day
+        perUser[uid].visitDays.add(e.ts.slice(0, 10));
+      }
+      if (e.event === 'reflect-visit') perUser[uid].reflectVisits++;
+      if (e.event === 'reflect-response') perUser[uid].reflectResponses++;
+    }
+
+    // 5. Engagement classification & top-engaged leaderboard
+    const userList = Object.values(perUser).map(u => {
+      const visitDays = u.visitDays ? u.visitDays.size : 0;
+      const hasDeep = u.longestSessionSec >= 300; // ≥5min session
+      const category =
+        visitDays === 0 ? 'silent' :
+        visitDays === 1 && !hasDeep ? 'one-timer' :
+        visitDays === 1 && hasDeep ? 'one-timer-deep' :
+        visitDays >= 3 && hasDeep ? 'engaged' :
+        'returning';
+      // Simple engagement score: visit-days weighted heavily, plus practice
+      // minutes, plus works-touched breadth, plus reflect activity as a bonus.
+      const score =
+        visitDays * 20 +
+        Math.min(u.totalPracticeSec / 60, 120) + // cap at 120 mins to prevent one marathon from dominating
+        (u.worksTouched.size) * 3 +
+        (u.testSessions || 0) * 10 +
+        (u.reflectResponses || 0) * 5;
+      return {
+        ...u,
+        visitDays,
+        hasDeep,
+        category,
+        score,
+        worksTouchedCount: u.worksTouched.size,
+        practiceMin: Math.round(u.totalPracticeSec / 60),
+        longestMin: Math.round(u.longestSessionSec / 60)
+      };
+    });
+
+    const engagement = {
+      total: userList.length,
+      silent: userList.filter(u => u.category === 'silent').length,
+      oneTimers: userList.filter(u => u.category === 'one-timer').length,
+      oneTimerDeep: userList.filter(u => u.category === 'one-timer-deep').length,
+      returning: userList.filter(u => u.category === 'returning').length,
+      engaged: userList.filter(u => u.category === 'engaged').length
+    };
+
+    const topEngaged = userList
+      .filter(u => u.visitDays > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 15);
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -455,6 +574,54 @@ router.get('/dashboard', async (req, res) => {
       </table>
     </div>
   </div>
+
+  <h2>Engagement (all time)</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    Categories: <b>silent</b> = registered but no event; <b>one-timer</b> = visited a single day, no deep session;
+    <b>one-timer (deep)</b> = single day but ≥5min session; <b>returning</b> = 2+ visit days;
+    <b>engaged</b> = 3+ visit days <em>and</em> at least one 5min+ session.
+  </p>
+  <div class="grid">
+    <div>
+      <table>
+        ${row('Silent (registered, no event)', engagement.silent)}
+        ${row('One-timer', engagement.oneTimers)}
+        ${row('One-timer (deep — 5min+ session)', engagement.oneTimerDeep)}
+        ${row('Returning (2+ visit days)', engagement.returning)}
+        ${row('Engaged (3+ days + 5min+ session)', engagement.engaged)}
+      </table>
+    </div>
+    <div>
+      <h3 style="font-weight:400;color:#555;margin-top:0">Session depth (all time)</h3>
+      <table>
+        ${row('under 30s (drive-by)', depthBuckets.under30)}
+        ${row('30s – 2 min', depthBuckets.s30to2m)}
+        ${row('2 – 10 min (real learn pass)', depthBuckets.m2to10)}
+        ${row('10 – 30 min (deep)', depthBuckets.m10to30)}
+        ${row('30 min+ (marathon)', depthBuckets.m30plus)}
+      </table>
+    </div>
+  </div>
+
+  <h2>Top engaged users</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    Ranked by engagement score = visit-days×20 + practice-min (capped at 120) + works-touched×3 + tests×10 + reflect-responses×5.
+    Score is illustrative, not gospel — use it to eye-scan for the 3–4 users worth remembering by name.
+  </p>
+  <table>
+    <tr><th>user</th><th>visit days</th><th>practice min</th><th>longest (min)</th><th>works</th><th>top work</th><th>tests</th><th>reflect responses</th><th>score</th></tr>
+    ${topEngaged.length ? topEngaged.map(u => `<tr>
+      <td><code>${esc(u.id)}</code></td>
+      <td>${u.visitDays}</td>
+      <td>${u.practiceMin}</td>
+      <td>${u.longestMin}</td>
+      <td>${u.worksTouchedCount}</td>
+      <td class="muted">${esc(u.topWork || '')}</td>
+      <td>${u.testSessions || 0}</td>
+      <td>${u.reflectResponses || 0}</td>
+      <td><b>${Math.round(u.score)}</b></td>
+    </tr>`).join('') : '<tr><td colspan="9" class="muted">no engaged users yet</td></tr>'}
+  </table>
 
   <h2>Funnel (unique users, last 7d)</h2>
   <table class="funnel">
