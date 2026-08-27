@@ -391,7 +391,10 @@ router.get('/dashboard', async (req, res) => {
         catalog: uniqUsers('catalog'),
         practiceOpen: uniqUsers('practice-open'),
         sessionComplete: uniqUsers('session-complete'),
-        testComplete: uniqUsers('test-complete')
+        testComplete: uniqUsers('test-complete'),
+        reflectVisit: uniqUsers('reflect-visit'),
+        reflectResponse: uniqUsers('reflect-response'),
+        reflectFeedback: uniqUsers('reflect-feedback')
       };
     })();
     const recent = events.slice(-50).reverse();
@@ -462,6 +465,9 @@ router.get('/dashboard', async (req, res) => {
     ${row('practice-open (opened a soliloquy)', funnel7.practiceOpen)}
     ${row('session-complete (finished a memorize)', funnel7.sessionComplete)}
     ${row('test-complete (finished a test)', funnel7.testComplete)}
+    ${row('reflect-visit (opened Muse)', funnel7.reflectVisit)}
+    ${row('reflect-response (got a response)', funnel7.reflectResponse)}
+    ${row('reflect-feedback (voted on response)', funnel7.reflectFeedback)}
   </table>
 
   <div class="grid">

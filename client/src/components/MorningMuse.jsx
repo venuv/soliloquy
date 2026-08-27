@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Home, Coffee, ThumbsUp, ThumbsDown } from 'lucide-react'
-import { api, trackPageview } from '../App'
+import { api, trackPageview, trackEvent } from '../App'
 
 const colors = {
   paper: '#fdfcf8',
@@ -162,7 +162,10 @@ export default function MorningMuse() {
   const [selectedMood, setSelectedMood] = useState(null)
   const abortRef = useRef(null)
 
-  useEffect(() => { trackPageview('muse') }, [])
+  useEffect(() => {
+    trackPageview('muse')
+    trackEvent('reflect-visit')
+  }, [])
 
   useEffect(() => {
     api('/muse/quotes/count')
@@ -251,6 +254,12 @@ export default function MorningMuse() {
         meta: meta?.meta
       })
       setLoading(false)
+      trackEvent('reflect-response', {
+        play: meta?.quote?.play,
+        character: meta?.quote?.character,
+        voice: meta?.meta?.voice,
+        mode: 'stream'
+      })
     } catch (err) {
       if (err.name === 'AbortError') return
       // Fallback to batch mode
@@ -262,6 +271,12 @@ export default function MorningMuse() {
         })
         setResponse(data)
         setStreamText(data.response)
+        trackEvent('reflect-response', {
+          play: data?.quote?.play,
+          character: data?.quote?.character,
+          voice: data?.meta?.voice,
+          mode: 'batch'
+        })
       } catch (batchErr) {
         setError(batchErr.message || 'The muse is momentarily silent.')
         setPhase('input')
@@ -274,6 +289,7 @@ export default function MorningMuse() {
   const handleFeedback = async (liked) => {
     if (!response?.id || feedbackGiven) return
     setFeedbackDirection(liked ? 'up' : 'down')
+    trackEvent('reflect-feedback', { liked, play: response?.quote?.play, hasComment: false })
     try {
       await api('/muse/feedback', {
         method: 'POST',
@@ -296,6 +312,12 @@ export default function MorningMuse() {
             liked: feedbackDirection === 'up',
             comment: text.slice(0, 500)
           })
+        })
+        trackEvent('reflect-feedback', {
+          liked: feedbackDirection === 'up',
+          play: response?.quote?.play,
+          hasComment: true,
+          commentLength: text.length
         })
       } catch (err) {
         console.error('Comment error:', err)
