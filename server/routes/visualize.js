@@ -12,6 +12,24 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 const ANALYTICS_DIR = path.join(__dirname, '../data/analytics');
 const AUTHORS_DIR = path.join(__dirname, '../data/authors');
+// Canonical word pictures live on the persistent volume (analytics dir).
+// shakespeare.json is baked into the Docker image and gets restored on every
+// deploy — writes to it don't survive. This file survives deploys and gets
+// Tigris-backed up via writeAndSync.
+const CANONICAL_WP_PATH = path.join(ANALYTICS_DIR, 'canonical-word-pictures.json');
+
+async function loadCanonicalWordPictures() {
+  try {
+    return JSON.parse(await fs.readFile(CANONICAL_WP_PATH, 'utf-8'));
+  } catch (err) {
+    if (err.code === 'ENOENT') return {};
+    throw err;
+  }
+}
+
+async function saveCanonicalWordPictures(data) {
+  await writeAndSync(CANONICAL_WP_PATH, data);
+}
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 // Groq deprecated llama-3.3-70b-versatile and llama-3.1-8b-instant on 2026-08-16.
@@ -276,16 +294,18 @@ router.post('/admin-cache/:authorId/:workId', async (req, res) => {
 
   try {
     const author = JSON.parse(await fs.readFile(dataPath, 'utf-8'));
-    const workIdx = author.works.findIndex(w => w.id === workId);
-    if (workIdx < 0) return res.status(404).json({ error: 'Work not found' });
-    const work = author.works[workIdx];
+    const work = author.works.find(w => w.id === workId);
+    if (!work) return res.status(404).json({ error: 'Work not found' });
 
-    // Get or generate canonical dramatic context (cache on the work itself)
-    let dramaticContext = work.dramaticContext;
+    // Load existing canonical cache — reuse dramatic context if already there.
+    const canonical = await loadCanonicalWordPictures();
+    const workKey = `${authorId}/${workId}`;
+    const existing = canonical[workKey] || {};
+
+    let dramaticContext = existing.dramaticContext;
     if (!dramaticContext) {
       console.log(`[admin-cache ${workId}] Generating dramatic context...`);
       dramaticContext = await callGroqAPI(buildDramaticContextPrompt(work), apiKey);
-      author.works[workIdx].dramaticContext = dramaticContext;
     }
 
     // Step 1: initial pictures
@@ -301,12 +321,13 @@ router.post('/admin-cache/:authorId/:workId', async (req, res) => {
       console.warn(`[admin-cache ${workId}] reflect failed, using initial:`, err.message);
     }
 
-    author.works[workIdx].wordPictures = {
+    canonical[workKey] = {
       generated: finalPictures,
+      dramaticContext,
       generatedAt: new Date().toISOString(),
       source: 'admin-cache'
     };
-    await writeAndSync(dataPath, author);
+    await saveCanonicalWordPictures(canonical);
 
     res.json({
       success: true,
@@ -340,7 +361,8 @@ router.get('/word-pictures/:authorId/:workId', validateKey, async (req, res) => 
     const content = await fs.readFile(req.analyticsPath, 'utf-8');
     const analytics = JSON.parse(content);
     const workKey = `${authorId}/${workId}`;
-    const canonical = work.wordPictures || null;
+    const canonicalAll = await loadCanonicalWordPictures();
+    const canonical = canonicalAll[workKey] || null;
     const perUser = analytics.progress?.[workKey]?.wordPictures || null;
     let mergedWordPictures = null;
     if (canonical || perUser) {
