@@ -188,7 +188,12 @@ Respond with valid JSON:
 }`;
 };
 
-// Call Groq API helper
+// Call Groq API helper.
+// Note: response_format:{type:'json_object'} 400s on large prompts (the
+// 3 biggest soliloquies triggered it). Removed and using prompt-engineered
+// JSON + regex extract instead, matching the pattern in muse.js.
+// reasoning_effort:'low' prevents gpt-oss chain-of-thought from eating the
+// max_tokens budget.
 const callGroqAPI = async (prompt, apiKey, fast = false) => {
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
@@ -204,14 +209,14 @@ const callGroqAPI = async (prompt, apiKey, fast = false) => {
       }],
       temperature: fast ? 0.7 : 0.8,
       max_tokens: fast ? 256 : 8192,
-      response_format: { type: 'json_object' }
+      reasoning_effort: 'low'
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
     console.error('Groq API error:', errorText);
-    throw new Error(`Groq API error: ${response.status}`);
+    throw new Error(`Groq API error: ${response.status} — ${errorText.slice(0, 200)}`);
   }
 
   const result = await response.json();
@@ -221,7 +226,13 @@ const callGroqAPI = async (prompt, apiKey, fast = false) => {
     throw new Error('No content in Groq response');
   }
 
-  return JSON.parse(content);
+  // Extract the JSON object from the response (model may wrap it in
+  // preamble/markdown fences despite prompt instructions).
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('No JSON in Groq response: ' + content.slice(0, 200));
+  }
+  return JSON.parse(jsonMatch[0]);
 };
 
 // Helper: Get or generate dramatic context for a work (cached in analytics)
