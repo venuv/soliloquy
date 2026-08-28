@@ -202,7 +202,7 @@ export default function Visualize() {
         </div>
 
         <p style={{ color: colors.faded, fontSize: '0.85rem', marginBottom: '1rem' }}>
-          Review your complete journey. Build mnemonics chunk-by-chunk in Practice → Advanced tab.
+          Memory palace — a mnemonic image per line, anchored to what the character physically feels. Click any chunk below to see 3 options and pick one. Currently pre-populated for the most-opened soliloquies; more coming.
         </p>
 
         {/* Word-Initial Grid with Trouble Spot Overlay */}
@@ -346,7 +346,7 @@ export default function Visualize() {
             {!hasGenerated && (
               <div style={{ textAlign: 'center', padding: '3rem 0', color: colors.faded }}>
                 <Sparkles size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                <p>Click "Generate" to create word picture mnemonics for each chunk</p>
+                <p style={{ maxWidth: '28rem', margin: '0 auto' }}>Memory palace isn't populated for this soliloquy yet — being rolled out on the most-opened works first. Try <em>all-the-worlds-a-stage</em>, <em>to-be-or-not-to-be</em>, or <em>raven-himself-hoarse</em> to see it in action.</p>
               </div>
             )}
 
