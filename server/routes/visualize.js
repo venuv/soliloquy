@@ -364,13 +364,22 @@ router.get('/word-pictures/:authorId/:workId', validateKey, async (req, res) => 
     const canonicalAll = await loadCanonicalWordPictures();
     const canonical = canonicalAll[workKey] || null;
     const perUser = analytics.progress?.[workKey]?.wordPictures || null;
+    // Filter per-user overrides to only entries that match the expected shape
+    // (array of option strings). Legacy Coach-button data stored objects
+    // ({action, anchors, …}) under the same field, which broke the client's
+    // .length check on merge. Skipping shape-mismatched entries lets canonical
+    // fill in without sabotage.
+    const isValidOptionArray = (v) => Array.isArray(v) && v.every(o => typeof o === 'string');
+    const validPerUserGen = Object.fromEntries(
+      Object.entries(perUser?.generated || {}).filter(([, v]) => isValidOptionArray(v))
+    );
     let mergedWordPictures = null;
     if (canonical || perUser) {
       mergedWordPictures = {
-        generated: { ...(canonical?.generated || {}), ...(perUser?.generated || {}) },
+        generated: { ...(canonical?.generated || {}), ...validPerUserGen },
         selected: perUser?.selected || {},
         rooms: perUser?.rooms || {},
-        source: canonical && !perUser?.generated ? 'canonical' : (perUser ? 'user' : 'canonical')
+        source: canonical && Object.keys(validPerUserGen).length === 0 ? 'canonical' : (perUser ? 'user' : 'canonical')
       };
     }
 
