@@ -772,7 +772,7 @@ export default function Practice() {
           <button onClick={() => startMode('recite')} style={{ ...cardStyle, cursor: 'pointer', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(196,163,90,0.15)', background: 'rgba(196,163,90,0.03)' }}>
             <Mic size={40} style={{ color: colors.gold, marginBottom: '0.75rem' }} />
             <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.2rem', color: colors.ink }}>Don't just say it. Perform it!</div>
-            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>the whole soliloquy, aloud</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem', marginTop: '0.25rem' }}>aloud — catches hesitations and stutters</div>
           </button>
           <Link to={`/visualize/${authorId}/${workId}`} style={{ ...cardStyle, textDecoration: 'none', textAlign: 'center', width: isMobile ? '100%' : '12rem', border: '1px solid rgba(90,74,106,0.15)', background: 'rgba(90,74,106,0.03)' }}>
             <Image size={40} style={{ color: '#5a4a6a', marginBottom: '0.75rem' }} />
