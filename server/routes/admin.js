@@ -654,22 +654,32 @@ router.get('/dashboard', async (req, res) => {
     </tr>`).join('') : '<tr><td class="muted">no clusters yet — all registrations are spaced apart</td></tr>'}
   </table>
 
-  <h2>Traffic sources (arrived-from events, last 30d)</h2>
+  <h2>Traffic sources (last 30d, unique users)</h2>
   <p class="muted" style="margin-top:-0.25rem">
-    Users who landed via a tagged URL (<code>?src=NAME</code>). Users without a source came in organically or via untagged links.
+    Users with a tagged URL land in named sources (<code>?src=NAME</code>).
+    Everything else is attributed to <b>r/shakespeare (baseline)</b> — since that was the only public push before tagging existed, any un-tagged arrival almost certainly came from the r/shakespeare tail.
   </p>
   <table>
     ${(() => {
       const srcCounts = {};
+      const taggedUsers = new Set();
       for (const e of eventsWindow(30)) {
         if (e.event === 'arrived-from' && e.source) {
           if (!srcCounts[e.source]) srcCounts[e.source] = new Set();
           srcCounts[e.source].add(e.key);
+          taggedUsers.add(e.key);
         }
       }
+      // Count users in the 30d window who registered but never fired arrived-from
+      const newIn30 = users.filter(u =>
+        u.createdAt && (now - new Date(u.createdAt).getTime()) < 30 * DAY
+      );
+      const untagged = newIn30.filter(u => !taggedUsers.has(u.id)).length;
+
       const rows = Object.entries(srcCounts).sort((a, b) => b[1].size - a[1].size);
-      if (!rows.length) return '<tr><td class="muted">no source-tagged arrivals yet</td></tr>';
-      return rows.map(([src, users]) => row(`?src=${src}`, `${users.size} users`)).join('');
+      const namedRows = rows.map(([src, u]) => row(`?src=${src}`, `${u.size} users`)).join('');
+      const baselineRow = row('r/shakespeare (baseline / untagged)', `${untagged} users`);
+      return namedRows + baselineRow;
     })()}
   </table>
 
