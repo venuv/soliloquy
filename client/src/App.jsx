@@ -64,6 +64,30 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [showTour, setShowTour] = useState(false)
 
+  // Traffic-source attribution: sniff ?src=X or #src=X on first visit,
+  // save to localStorage, and fire a one-time arrived-from event so we can
+  // see on the dashboard which community delivered which users. Supports
+  // both query and hash param because reddit sometimes rewrites URLs.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const src = params.get('src') || hashParams.get('src')
+    if (src) {
+      const existing = localStorage.getItem('soliloquy_source')
+      if (!existing) {
+        localStorage.setItem('soliloquy_source', src)
+      }
+      // Fire once per browser (regardless of session)
+      if (!localStorage.getItem('soliloquy_source_reported')) {
+        localStorage.setItem('soliloquy_source_reported', '1')
+        // Send even before userKey exists — the /event endpoint requires a
+        // userKey header, so wait until we have one. Do this via a small
+        // deferred fire in the login/validate paths.
+        window.__pendingSourceEvent = src
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const savedKey = localStorage.getItem('userKey')
     if (savedKey) {
@@ -74,6 +98,11 @@ function App() {
       })
         .then(() => {
           setUserKey(savedKey)
+          // Fire pending arrived-from event now that we have auth
+          if (window.__pendingSourceEvent) {
+            trackEvent('arrived-from', { source: window.__pendingSourceEvent })
+            delete window.__pendingSourceEvent
+          }
         })
         .catch(() => {
           localStorage.removeItem('userKey')
@@ -88,6 +117,11 @@ function App() {
     localStorage.setItem('userKey', key)
     setUserKey(key)
     if (shouldShowOnboarding()) setShowTour(true)
+    // Fire pending arrived-from event on first-ever login too
+    if (window.__pendingSourceEvent) {
+      trackEvent('arrived-from', { source: window.__pendingSourceEvent })
+      delete window.__pendingSourceEvent
+    }
   }
 
   const logout = () => {

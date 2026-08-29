@@ -654,6 +654,25 @@ router.get('/dashboard', async (req, res) => {
     </tr>`).join('') : '<tr><td class="muted">no clusters yet — all registrations are spaced apart</td></tr>'}
   </table>
 
+  <h2>Traffic sources (arrived-from events, last 30d)</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    Users who landed via a tagged URL (<code>?src=NAME</code>). Users without a source came in organically or via untagged links.
+  </p>
+  <table>
+    ${(() => {
+      const srcCounts = {};
+      for (const e of eventsWindow(30)) {
+        if (e.event === 'arrived-from' && e.source) {
+          if (!srcCounts[e.source]) srcCounts[e.source] = new Set();
+          srcCounts[e.source].add(e.key);
+        }
+      }
+      const rows = Object.entries(srcCounts).sort((a, b) => b[1].size - a[1].size);
+      if (!rows.length) return '<tr><td class="muted">no source-tagged arrivals yet</td></tr>';
+      return rows.map(([src, users]) => row(`?src=${src}`, `${users.size} users`)).join('');
+    })()}
+  </table>
+
   <h2>Top engaged users</h2>
   <p class="muted" style="margin-top:-0.25rem">
     Ranked by engagement score = visit-days×20 + practice-min (capped at 120) + works-touched×3 + tests×10 + reflect-responses×5.
