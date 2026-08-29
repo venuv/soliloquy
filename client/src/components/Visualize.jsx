@@ -301,7 +301,7 @@ export default function Visualize() {
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               disabled
-              title="Word picture generation is disabled during the public beta"
+              title="Regenerate would request 3 fresh mnemonic image options if none of the current ones fit. Disabled during the beta to control LLM cost — the pre-populated set is a shared baseline for now."
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
                 background: 'rgba(0,0,0,0.08)', color: colors.faded,
@@ -468,9 +468,25 @@ export default function Visualize() {
         {view === 'bingo' && (
           <div>
             {Object.keys(selectedPictures).length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem 0', color: colors.faded }}>
-                <Grid3X3 size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                <p style={{ maxWidth: '28rem', margin: '0 auto' }}>Pick a favorite image for each chunk in the Editor tab first — the floor plan arranges your picks into a snaking memory palace (Foyer → Great Hall → Parlor → …).</p>
+              <div style={{ padding: '2rem 1rem', color: colors.muted, maxWidth: '36rem', margin: '0 auto' }}>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                  <Grid3X3 size={48} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
+                  <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', fontWeight: 400, color: colors.ink, margin: 0 }}>
+                    How the Memory Palace works
+                  </h3>
+                </div>
+                <p style={{ marginTop: 0 }}>
+                  A spatial-memory technique. Each line gets a mnemonic image; you place each image in an imagined room. Walking through the rooms in order helps you recite in order.
+                </p>
+                <p style={{ fontWeight: 500, color: colors.ink, marginBottom: '0.5rem' }}>To activate:</p>
+                <ol style={{ paddingLeft: '1.25rem', margin: '0 0 1rem' }}>
+                  <li style={{ marginBottom: '0.35rem' }}>In the <b>Editor</b> tab, click each line to see 3 mnemonic image options.</li>
+                  <li style={{ marginBottom: '0.35rem' }}>Pick the one you like best.</li>
+                  <li>Come back to <b>Floor Plan</b> — your picks appear in a snaking layout (Foyer → Great Hall → Parlor → …).</li>
+                </ol>
+                <p style={{ fontSize: '0.85rem', color: colors.faded, marginTop: '1rem' }}>
+                  The <b>Regenerate</b> button (top right, currently greyed) will request 3 fresh mnemonic options if none of the current ones fit. Disabled during the beta to control LLM cost.
+                </p>
               </div>
             ) : (() => {
               // Room names for memory palace
