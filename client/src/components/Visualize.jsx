@@ -202,13 +202,13 @@ export default function Visualize() {
         </div>
 
         <p style={{ color: colors.faded, fontSize: '0.85rem', marginBottom: '1rem' }}>
-          Memory palace — a mnemonic image per line, anchored to what the character physically feels. Click any chunk below to see 3 options and pick one. Currently pre-populated for the most-opened soliloquies; more coming.
+          A first-letter-of-each-word memory aid, plus a mnemonic image palace for each line. Two independent aids on the same page.
         </p>
 
         {/* Word-Initial Grid with Trouble Spot Overlay */}
         <div style={{ background: 'rgba(196,163,90,0.08)', border: '1px solid rgba(196,163,90,0.2)', borderRadius: '12px', padding: '1rem', marginBottom: '1rem', overflowX: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <div style={{ color: colors.muted, fontSize: '0.85rem' }}>Word Initials</div>
+            <div style={{ color: colors.muted, fontSize: '0.85rem' }}>Word Initials <span style={{ color: colors.faded, fontWeight: 400 }}>— glance at the shape of a line; each letter is the first character of a word.</span></div>
             {troubleSpots.length > 0 && (
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontSize: '0.75rem', color: colors.muted }}>
                 <input type="checkbox" checked={showTroubleOverlay} onChange={(e) => setShowTroubleOverlay(e.target.checked)} />
@@ -343,6 +343,11 @@ export default function Visualize() {
         {/* Editor View */}
         {view === 'editor' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {hasGenerated && (
+              <p style={{ color: colors.faded, fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                Memory palace — a mnemonic image per line, anchored to what the character physically feels. Click any chunk below to see 3 options and pick one. Pre-populated for the most-opened soliloquies; more coming.
+              </p>
+            )}
             {!hasGenerated && (
               <div style={{ textAlign: 'center', padding: '3rem 0', color: colors.faded }}>
                 <Sparkles size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
@@ -465,7 +470,7 @@ export default function Visualize() {
             {Object.keys(selectedPictures).length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem 0', color: colors.faded }}>
                 <Grid3X3 size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                <p>Generate and select word pictures to see your floor plan</p>
+                <p style={{ maxWidth: '28rem', margin: '0 auto' }}>Pick a favorite image for each chunk in the Editor tab first — the floor plan arranges your picks into a snaking memory palace (Foyer → Great Hall → Parlor → …).</p>
               </div>
             ) : (() => {
               // Room names for memory palace
