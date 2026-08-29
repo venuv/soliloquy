@@ -377,8 +377,20 @@ router.post('/transcribe/:authorId/:workId', validateKey, rateLimit({ name: 'rec
     console.log(`[recite] Running triple analysis (accuracy, fluency, drama coach)...`);
     const analysis = await runTripleAnalysis(work.chunks, whisperResult, apiKey);
 
-    // 3. Build stats
-    const troubleSpots = analysis.consensus;
+    // 3. Build stats — normalize the LLM's freeform type labels into the
+    // canonical buckets before counting, so no trouble spot is invisible
+    // to the summary. The LLM emits things like "insertion", "missing",
+    // "skipped", "wrong-word" that don't literally match our bucket keys.
+    const normalizeType = (raw) => {
+      const t = String(raw || '').toLowerCase().trim();
+      if (['omission', 'omitted', 'missing', 'skipped', 'dropped', 'skip'].includes(t)) return 'omission';
+      if (['substitution', 'substituted', 'wrong', 'wrong-word', 'wrong_word'].includes(t)) return 'substitution';
+      if (['insertion', 'inserted', 'addition', 'added', 'extra'].includes(t)) return 'insertion';
+      if (['hesitation', 'hesitated', 'pause', 'long-pause'].includes(t)) return 'hesitation';
+      if (['stumble', 'stumbled', 'stutter', 'stuttered', 'self-correction', 'filler'].includes(t)) return 'stumble';
+      return t || 'other';
+    };
+    const troubleSpots = analysis.consensus.map(s => ({ ...s, type: normalizeType(s.type) }));
     const totalWords = work.chunks.reduce((sum, c) =>
       sum + `${c.front} ${c.back}`.split(/\s+/).filter(w => w).length, 0);
 
@@ -387,8 +399,9 @@ router.post('/transcribe/:authorId/:workId', validateKey, rateLimit({ name: 'rec
       troubleSpotCount: troubleSpots.length,
       substitutions: troubleSpots.filter(s => s.type === 'substitution').length,
       omissions: troubleSpots.filter(s => s.type === 'omission').length,
+      insertions: troubleSpots.filter(s => s.type === 'insertion').length,
       hesitations: troubleSpots.filter(s => s.type === 'hesitation').length,
-      stumbles: troubleSpots.filter(s => s.type === 'stumble' || s.type === 'filler').length,
+      stumbles: troubleSpots.filter(s => s.type === 'stumble').length,
       unanimousSpots: troubleSpots.filter(s => s.confidence >= 1).length
     };
 

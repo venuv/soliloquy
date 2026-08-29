@@ -1649,6 +1649,10 @@ export default function Practice() {
                 <div style={{ fontSize: '0.7rem', color: colors.faded }}>Omissions</div>
               </div>
               <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: colors.crimson }}>{reciteResult.stats?.insertions || 0}</div>
+                <div style={{ fontSize: '0.7rem', color: colors.faded }}>Insertions</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '1.75rem', fontFamily: "'Cormorant', serif", color: '#d4860a' }}>{reciteResult.stats?.hesitations || 0}</div>
                 <div style={{ fontSize: '0.7rem', color: colors.faded }}>Hesitations</div>
               </div>
