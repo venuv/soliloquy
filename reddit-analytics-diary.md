@@ -409,6 +409,99 @@ Every session-complete in the recent-events window has `duration >= 30`. No 1-3s
 
 ---
 
+## 2026-08-28 — Day 7 (Reflect release, memory palace ships, r/Actingclass mishap, strategy fork)
+
+Big day. Multiple features shipped, one bad-community post caught and killed fast, and a real product-strategy decision.
+
+### What shipped today
+
+**Reflect (Muse) revived and released**
+- Anthropic Sonnet 4 was silently deprecated → migrated all four Muse LLM points to Groq `openai/gpt-oss-120b` (parse + rerank + actor + critic). ~5x cheaper than Sonnet.
+- Two Groq gotchas discovered and captured in memory: (1) `response_format:json_object` 400s on many prompts — use prompt-engineered JSON + regex extract instead; (2) gpt-oss reasoning tokens eat max_tokens — set `reasoning_effort: 'low'`.
+- Test recitation from own testing: sub-2-second latency, real Shakespeare quote (Fluellen from Henry V), character-voice held, cost ~$0.003/call. Meaningfully faster than Sonnet was.
+- Release cues: "Just fixed" chip on Reflect band (auto-hides Sept 9), optional qualitative comment textarea on feedback vote, new `reflect-visit/response/feedback` events + dashboard funnel rows.
+
+**Memory palace pre-generation (top 10 works)**
+- New `POST /api/visualize/admin-cache/:workId` — admin-authenticated, runs the same 2-step generate, saves canonical word pictures to persistent volume.
+- First attempt wrote to `shakespeare.json` — got wiped by the very next deploy because that file is baked into the Docker image. Fixed by moving canonical to `analytics/canonical-word-pictures.json` on the mounted volume (Tigris-backed).
+- Same Groq gotchas applied here (json/reasoning); fixed once and re-ran.
+- Merge logic (GET) blends canonical + per-user; per-user wins per-chunk.
+- Shape-filter fix: old Coach-button per-user data (`{action, anchors}` objects) had been overwriting canonical (array of strings) → client's `options.length` check silently failed → chunks looked dead. Now filter per-user overrides to array-of-string shape only.
+- Copy repositioning on Visualize: page-level intro names both aids; Word-Initials caption is inline; memory palace intro moved to Editor view where it applies; Floor Plan empty state now explains the concept + 3-step activation + what Regenerate does.
+
+**Recite (Perform it!) polish**
+- Card subtitle upgraded from "the whole soliloquy, aloud" → "aloud — catches hesitations and stutters" (names the actor-relevant coaching feedback).
+- Trouble-spot type normalization bug fixed: LLM analysts return freeform types (`insertion`, `missing`, `skipped`, `wrong-word`) that didn't match the 5 canonical counter buckets. On the own user test, 6 real trouble spots showed as "0 wrong / 1 omission" in stats. Added `normalizeType()` mapper + new "Insertions" bucket on the scorecard.
+- User verified end-to-end with intentional errors: analysts correctly caught the 9-word "to be or not to be" preamble as an insertion, dropped "And" as omission, distinguished fluency (correctly OK) from accuracy (correctly not OK).
+
+**Dashboard enrichments**
+- Engagement categories (silent / one-timer / one-timer-deep / evaluator / returning / engaged) — evaluator specifically added after noticing MT-7543 returns without practicing.
+- Session-depth histogram (under 30s, 30s–2min, 2–10min, 10–30min, 30min+).
+- Top engaged users leaderboard (up to 15, ranked by composite score).
+- Registration cluster detector (5+ new keys in 2h window).
+- Reflect funnel rows.
+- Traffic-source attribution: `?src=NAME` URL sniff + dashboard section with r/shakespeare (baseline / untagged) row so tagged sources are readable in context.
+
+### The r/Actingclass mishap (60-second recovery)
+
+Posted the adapted post to r/Actingclass. **Discovered post-facto** that r/Actingclass is not a general acting-discussion sub — it's a single-teacher's Zoom class subreddit where all posts must support their specific technique. Post was competitive to the teacher and violated pinned rules. Deleted within minutes.
+
+**Lesson (saved to memory):** for any sub I haven't posted to before, verify sidebar rules AND pinned posts before drafting the post. Named-in-a-familiar-way is not the same as familiar-in-content. My mistake to not double-check.
+
+Zero harm: caught fast, no visible damage on the sub, no attribution needed.
+
+### Product-strategy decision: stay niche
+
+Real fork surfaced: the app's Shakespeare-only corpus makes broad actor-community posts (r/acting, r/actors) awkward. Options were:
+
+- **Path A: Stay niche.** Accept the Shakespeare boundary. Target: Shakespeare enthusiasts, drama teachers, GCSE/A-level students, serious classical actors. Real audience, bounded.
+- **Path B: Add BYO-text.** Let users paste their own monologue (audition sides, contemporary text). Recite pipeline is text-agnostic already; just needs UI + storage. ~3-4h of focused work + rate-limit management for on-demand LLM generation. Would legitimately unlock r/acting.
+
+**Decision: Path A for now.** "See what useful looks like." The bet: 40-50 Shakespeare-committed users beats 500 mixed-interest bouncers. Path B stays available as a real product expansion if the current audience pattern proves too small.
+
+### Next week/2 plan (Sept 1-14)
+
+**Watches:**
+- **MT-7543 (teacher) return window Sept 1-7.** If her class starts and she shares with students, expect a UK cluster in the dashboard's cluster detector — that's the teacher-multiplier hypothesis validating.
+- **Reflect adoption.** Reflect release went out today with new tracking. Watch reflect-visit/response/feedback numbers for early signal on whether the feature discovers itself.
+- **Memory palace usage.** Now un-veiled on 10 works with proper copy. Watch dashboard for anyone hitting `/visualize` and picking mnemonics.
+
+**Posts (spaced, one per week):**
+1. **r/theatre** (~200K, more classical-friendly than r/acting) — post ~Sept 3-5. Fresh body copy that leans into "Shakespeare-specific" honestly, doesn't try to widen to non-classical.
+2. **r/anki** (~200K, memorization angle) — post ~Sept 8-10. Framing: "Not spaced-repetition per se, but line-by-line verse cards with beat-based intention grouping." Different vocabulary; different audience.
+3. **r/Shakespeare_UK** or similar UK-focused Shakespeare sub — post ~Sept 12-14. Leverages the UK teacher/student vector that's already opening up.
+
+**All future posts use `?src=NAME` URL** so the traffic-sources table on the dashboard shows clean attribution.
+
+**Don't post to (until BYO-text or a real technical hook):**
+- r/acting, r/actors — need broader appeal
+- HN — need a technical writeup worth the audience
+
+**Content adds queued:**
+- Watch for specific requests in comments (proven flywheel from Euphoric-Rest + MT-7543)
+- Prioritize Macbeth, R&J, Othello per MT-7543's exam-board note if no specific requests
+
+### Persona archive after today
+
+| App ID | Reddit handle | Category | Notes |
+|---|---|---|---|
+| `533339` | Euphoric-Rest1919 | **Engaged** | Berlin hobbyist. 31.5min return session. Shipped Lady M raven per her ask. |
+| `850945` | Minimum-Target-7543 | **Evaluator** | UK A-level English teacher. Multiple returns, minimal practice. Sept 1-7 return window for the school-cohort test. |
+| `497990` | (no comment) | one-timer-deep | Beats-mode power user. 2 sessions in 3min then silent. |
+| `361833` | (no comment) | returning | Lady M / tragic-female-roles cluster. Multi-day but shallow practice. |
+| `156093` | (no comment) | one-timer | Prospero's "our revels" pick. |
+| `498301`, `837803` | (no comment) | returning | Day-2 returners, shallow. |
+
+Dashboard now surfaces these categories automatically. Watching for the count of "engaged" to grow past 1 as the leading indicator.
+
+### Open questions
+- Does MT-7543's Sept 1-7 return produce a student cluster in the detector? [carried]
+- Does the memory palace get any un-solicited use over the next week? [new]
+- Does Reflect get any visits after the release chip is up? [new]
+- Path B (BYO-text) revisited after 2-3 more weeks of Shakespeare-audience data. [new]
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
