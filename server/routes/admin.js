@@ -364,20 +364,46 @@ router.get('/dashboard', async (req, res) => {
     const workOpens = {};
     const perUser = {};  // userId -> engagement metrics
 
-    // Seed perUser from keys.json so first-visit-only users show up too
+    // Load shakespeare.json once so we can map workId → play + get chunk counts
+    // for mastery % (both needed for the enriched per-user metrics).
+    const workMeta = {}; // workKey -> { play, chunkCount }
+    try {
+      const shakespeare = JSON.parse(await fs.readFile(path.join(DATA_DIR, 'authors', 'shakespeare.json'), 'utf-8'));
+      for (const w of (shakespeare.works || [])) {
+        workMeta[`shakespeare/${w.id}`] = { play: w.source, chunkCount: (w.chunks || []).length };
+      }
+    } catch {}
+
+    // Seed perUser from keys.json so first-visit-only users show up too.
+    // Rich schema: engagement (sessions, visit days) + learning depth
+    // (mastered chunks, mastery %) + fanout (feature breadth) + content
+    // spread (plays touched) + habit rhythm (streaks, gaps).
+    const initUser = (id, k = {}) => ({
+      id,
+      createdAt: k.createdAt || null,
+      lastSeen: k.lastSeen || null,
+      // Engagement
+      sessions: 0,
+      testSessions: 0,
+      totalPracticeSec: 0,
+      longestSessionSec: 0,
+      worksTouched: new Set(),
+      topWork: null,
+      topWorkSessions: 0,
+      // Learning depth
+      masteredChunks: 0,
+      touchedChunkTotal: 0,
+      peakMasteryPercent: 0,
+      peakMasteryWork: null,
+      // Fanout — features used
+      features: new Set(), // 'memorize' | 'test' | 'recite' | 'beats' | 'reflect'
+      // Content spread
+      playsSet: new Set(),
+      playSessions: {}, // { play: sessionCount }
+      // Habit rhythm — collected first, computed after
+    });
     for (const [id, k] of Object.entries(keys)) {
-      perUser[id] = {
-        id,
-        createdAt: k.createdAt,
-        lastSeen: k.lastSeen,
-        sessions: 0,
-        testSessions: 0,
-        totalPracticeSec: 0,
-        longestSessionSec: 0,
-        worksTouched: new Set(),
-        topWork: null,
-        topWorkSessions: 0
-      };
+      perUser[id] = initUser(id, k);
     }
 
     // Session-duration buckets for the depth histogram
@@ -388,47 +414,65 @@ router.get('/dashboard', async (req, res) => {
       try {
         const data = JSON.parse(await fs.readFile(path.join(ANALYTICS_DIR, f), 'utf-8'));
         const uid = f.replace(/\.json$/, '');
-        if (!perUser[uid]) {
-          // Orphan analytics file (user in keys.json got cleaned but file remains)
-          perUser[uid] = {
-            id: uid, createdAt: data.createdAt, lastSeen: null,
-            sessions: 0, testSessions: 0, totalPracticeSec: 0, longestSessionSec: 0,
-            worksTouched: new Set(), topWork: null, topWorkSessions: 0
-          };
-        }
+        if (!perUser[uid]) perUser[uid] = initUser(uid, { createdAt: data.createdAt });
+        const u = perUser[uid];
         const workSessionCounts = {};
         for (const s of (data.sessions || [])) {
           totalSessions++;
           const dur = s.duration || 0;
           if (s.mode === 'test') {
             totalTests++;
-            perUser[uid].testSessions++;
+            u.testSessions++;
             if (s.score != null) scores.push(s.score);
+            u.features.add('test');
+          } else if (s.mode === 'recite') {
+            u.features.add('recite');
           } else {
             totalPractice++;
+            u.features.add('memorize');
           }
-          perUser[uid].sessions++;
-          perUser[uid].totalPracticeSec += dur;
-          if (dur > perUser[uid].longestSessionSec) perUser[uid].longestSessionSec = dur;
+          if (s.practiceUnit === 'beats') u.features.add('beats');
+          u.sessions++;
+          u.totalPracticeSec += dur;
+          if (dur > u.longestSessionSec) u.longestSessionSec = dur;
           if (s.workId) {
             const wk = `${s.authorId}/${s.workId}`;
             workOpens[wk] = (workOpens[wk] || 0) + 1;
-            perUser[uid].worksTouched.add(wk);
+            u.worksTouched.add(wk);
             workSessionCounts[wk] = (workSessionCounts[wk] || 0) + 1;
+            const play = workMeta[wk]?.play;
+            if (play) {
+              u.playsSet.add(play);
+              u.playSessions[play] = (u.playSessions[play] || 0) + 1;
+            }
           }
-          // Session-depth histogram
           if (dur < 30) depthBuckets.under30++;
           else if (dur < 120) depthBuckets.s30to2m++;
           else if (dur < 600) depthBuckets.m2to10++;
           else if (dur < 1800) depthBuckets.m10to30++;
           else depthBuckets.m30plus++;
         }
-        // Pick their top work by session count
         for (const [wk, n] of Object.entries(workSessionCounts)) {
-          if (n > perUser[uid].topWorkSessions) {
-            perUser[uid].topWork = wk;
-            perUser[uid].topWorkSessions = n;
+          if (n > u.topWorkSessions) {
+            u.topWork = wk;
+            u.topWorkSessions = n;
           }
+        }
+        // Learning depth: mastered chunks per work + per-work mastery %
+        for (const [wk, p] of Object.entries(data.progress || {})) {
+          const mastered = (p.mastered || []).length;
+          const chunkCount = workMeta[wk]?.chunkCount || 0;
+          if (mastered > 0) {
+            u.masteredChunks += mastered;
+            u.touchedChunkTotal += chunkCount;
+            u.worksTouched.add(wk);
+            const pct = chunkCount > 0 ? Math.round((mastered / chunkCount) * 100) : 0;
+            if (pct > u.peakMasteryPercent) {
+              u.peakMasteryPercent = pct;
+              u.peakMasteryWork = wk;
+            }
+          }
+          if ((p.recitations || []).length > 0) u.features.add('recite');
         }
       } catch {}
     }
@@ -468,32 +512,54 @@ router.get('/dashboard', async (req, res) => {
     const topOpens = Object.entries(openCounts30).sort((a, b) => b[1] - a[1]).slice(0, 10);
     const topCompletions = Object.entries(workOpens).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
-    // 4. Enrich perUser from events log — distinct visit days, reflect activity.
-    // "Visit days" is a much better repeat-visit signal than raw login-return
-    // count (which includes same-session tab refreshes).
+    // 4. Enrich perUser from events log — visit days, reflect activity, feature usage.
     for (const e of events) {
       const uid = e.key;
       if (!uid || !perUser[uid]) continue;
-      if (!perUser[uid].visitDays) perUser[uid].visitDays = new Set();
-      if (!perUser[uid].reflectVisits) perUser[uid].reflectVisits = 0;
-      if (!perUser[uid].reflectResponses) perUser[uid].reflectResponses = 0;
-      if (e.ts) {
-        // Bucket by UTC day
-        perUser[uid].visitDays.add(e.ts.slice(0, 10));
-      }
-      if (e.event === 'reflect-visit') perUser[uid].reflectVisits++;
-      if (e.event === 'reflect-response') perUser[uid].reflectResponses++;
+      const u = perUser[uid];
+      if (!u.visitDays) u.visitDays = new Set();
+      if (!u.reflectVisits) u.reflectVisits = 0;
+      if (!u.reflectResponses) u.reflectResponses = 0;
+      if (e.ts) u.visitDays.add(e.ts.slice(0, 10));
+      if (e.event === 'reflect-visit') { u.reflectVisits++; u.features.add('reflect'); }
+      if (e.event === 'reflect-response') { u.reflectResponses++; u.features.add('reflect'); }
+      if (e.event === 'test-complete') u.features.add('test');
     }
 
-    // 5. Engagement classification & top-engaged leaderboard
+    // Compute habit rhythm per user — consecutive-day streak + median gap +
+    // categorical label. Data comes from visitDays already collected above.
+    const computeRhythm = (u) => {
+      const days = Array.from(u.visitDays || []).sort();
+      if (days.length < 2) return { longestStreak: days.length, medianGap: null, category: 'insufficient' };
+      // Consecutive-day streaks
+      let longest = 1, current = 1;
+      for (let i = 1; i < days.length; i++) {
+        const prev = new Date(days[i - 1]).getTime();
+        const curr = new Date(days[i]).getTime();
+        const gapDays = Math.round((curr - prev) / DAY);
+        if (gapDays === 1) { current++; if (current > longest) longest = current; }
+        else current = 1;
+      }
+      // Median gap
+      const gaps = [];
+      for (let i = 1; i < days.length; i++) {
+        gaps.push(Math.round((new Date(days[i]).getTime() - new Date(days[i - 1]).getTime()) / DAY));
+      }
+      gaps.sort((a, b) => a - b);
+      const medianGap = gaps[Math.floor(gaps.length / 2)];
+      // Category
+      let category;
+      if (longest >= 3) category = 'daily-habit';
+      else if (medianGap <= 2) category = 'near-daily';
+      else if (medianGap <= 8) category = 'weekly';
+      else category = 'bursty';
+      return { longestStreak: longest, medianGap, category };
+    };
+
+    // 5. Engagement classification + derived metrics + top-engaged leaderboard
     const userList = Object.values(perUser).map(u => {
       const visitDays = u.visitDays ? u.visitDays.size : 0;
-      const hasDeep = u.longestSessionSec >= 300; // ≥5min session
-      // Evaluator = 2+ visit days but negligible actual practice (<60s total).
-      // These are typically curators/teachers/reviewers checking whether the
-      // app is worth sharing — not the target user themselves. Their impact
-      // shows up later as new registrations (their audience), not their own
-      // stats.
+      const hasDeep = u.longestSessionSec >= 300;
       const isEvaluator = visitDays >= 2 && u.totalPracticeSec < 60;
       const category =
         visitDays === 0 ? 'silent' :
@@ -502,25 +568,80 @@ router.get('/dashboard', async (req, res) => {
         isEvaluator ? 'evaluator' :
         visitDays >= 3 && hasDeep ? 'engaged' :
         'returning';
-      // Simple engagement score: visit-days weighted heavily, plus practice
-      // minutes, plus works-touched breadth, plus reflect activity as a bonus.
+
+      // Learning depth: overall mastery % + peak
+      const masteryPercent = u.touchedChunkTotal > 0
+        ? Math.round((u.masteredChunks / u.touchedChunkTotal) * 100)
+        : 0;
+
+      // Fanout: feature breadth (out of 5 tracked features)
+      const featureBreadth = u.features.size;
+      const featureList = Array.from(u.features).sort();
+
+      // Content spread
+      const playCount = u.playsSet.size;
+      const topPlay = Object.entries(u.playSessions).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+      const topPlayShare = topPlay && u.sessions > 0
+        ? Math.round((u.playSessions[topPlay] / u.sessions) * 100)
+        : 0;
+
+      // Habit rhythm
+      const rhythm = computeRhythm(u);
+
+      // Sub-persona auto-tag — heuristic labels that emerge from combined metrics
+      let subPersona = null;
+      if (u.features.has('recite') && u.features.has('beats')) subPersona = 'actor-craft';
+      else if (playCount >= 3 && u.worksTouched.size >= 4) subPersona = 'explorer';
+      else if (u.worksTouched.size <= 2 && masteryPercent >= 30) subPersona = 'focused-rehearser';
+      else if (isEvaluator && visitDays >= 3) subPersona = 'curator';
+      else if (topPlayShare >= 60 && u.sessions >= 3) subPersona = `${topPlay}-fan`;
+
+      // Composite engagement score — now also rewards learning depth + feature
+      // fanout + rhythm quality. Weightings still illustrative.
       const score =
         visitDays * 20 +
-        Math.min(u.totalPracticeSec / 60, 120) + // cap at 120 mins to prevent one marathon from dominating
-        (u.worksTouched.size) * 3 +
+        Math.min(u.totalPracticeSec / 60, 120) +
+        u.worksTouched.size * 3 +
         (u.testSessions || 0) * 10 +
-        (u.reflectResponses || 0) * 5;
+        (u.reflectResponses || 0) * 5 +
+        u.masteredChunks * 2 +
+        featureBreadth * 8 +
+        (rhythm.category === 'daily-habit' ? 30 : rhythm.category === 'near-daily' ? 15 : 0);
+
       return {
         ...u,
         visitDays,
         hasDeep,
         category,
+        subPersona,
         score,
         worksTouchedCount: u.worksTouched.size,
         practiceMin: Math.round(u.totalPracticeSec / 60),
-        longestMin: Math.round(u.longestSessionSec / 60)
+        longestMin: Math.round(u.longestSessionSec / 60),
+        masteryPercent,
+        featureBreadth,
+        featureList,
+        playCount,
+        topPlay,
+        topPlayShare,
+        rhythm
       };
     });
+
+    // Feature-adoption tally across all users
+    const featureAdoption = { memorize: 0, test: 0, recite: 0, beats: 0, reflect: 0 };
+    for (const u of userList) {
+      for (const f of u.featureList) if (featureAdoption[f] != null) featureAdoption[f]++;
+    }
+
+    // Content spread across users — for each play, how many DISTINCT users touched it
+    const playTouchCounts = {};
+    for (const u of userList) {
+      for (const play of u.playsSet) {
+        playTouchCounts[play] = (playTouchCounts[play] || 0) + 1;
+      }
+    }
+    const topPlaysByUsers = Object.entries(playTouchCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
     const engagement = {
       total: userList.length,
@@ -683,24 +804,64 @@ router.get('/dashboard', async (req, res) => {
     })()}
   </table>
 
-  <h2>Top engaged users</h2>
+  <h2>Feature adoption (all-time, unique users)</h2>
   <p class="muted" style="margin-top:-0.25rem">
-    Ranked by engagement score = visit-days×20 + practice-min (capped at 120) + works-touched×3 + tests×10 + reflect-responses×5.
-    Score is illustrative, not gospel — use it to eye-scan for the 3–4 users worth remembering by name.
+    How many distinct users have ever used each feature. A high spread here means users are exploring
+    beyond just Memorize — the closer these numbers get to each other, the more feature-fluent your audience is.
   </p>
   <table>
-    <tr><th>user</th><th>visit days</th><th>practice min</th><th>longest (min)</th><th>works</th><th>top work</th><th>tests</th><th>reflect responses</th><th>score</th></tr>
+    ${row('Memorize (any practice session)', featureAdoption.memorize)}
+    ${row('Test (typed/spoken recall)', featureAdoption.test)}
+    ${row('Recite (mic recording)', featureAdoption.recite)}
+    ${row('Beats mode (Stanislavsky)', featureAdoption.beats)}
+    ${row('Reflect (Shakespeare Muse)', featureAdoption.reflect)}
+  </table>
+
+  <h2>Content spread — plays by distinct users touched (30d)</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    How broadly the corpus is being explored. A play with many distinct users indicates it's a
+    common entry point; a play with 1-2 users may be a persona-specific interest.
+  </p>
+  <table>
+    ${topPlaysByUsers.length ? topPlaysByUsers.map(([play, n]) => row(play, `${n} distinct users`)).join('') : '<tr><td class="muted">no play-touch data yet</td></tr>'}
+  </table>
+
+  <h2>Top engaged users</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    Ranked by composite score = visit-days×20 + practice-min (capped at 120) + works-touched×3 + tests×10 + reflect-responses×5 + mastered-chunks×2 + feature-breadth×8 + daily-habit bonus.
+    Sub-persona is a heuristic auto-tag from combined metrics — <b>actor-craft</b> (uses Recite + Beats), <b>focused-rehearser</b> (few works, high mastery), <b>explorer</b> (many works low mastery), <b>curator</b> (returns without practicing), or <b>&lt;Play&gt;-fan</b> (60%+ sessions in one play).
+  </p>
+  <table style="font-size:12px">
+    <tr>
+      <th>user</th>
+      <th>persona</th>
+      <th>days</th>
+      <th>works / plays</th>
+      <th>mastery</th>
+      <th>features</th>
+      <th>rhythm</th>
+      <th>longest (min)</th>
+      <th>top play</th>
+      <th>score</th>
+    </tr>
     ${topEngaged.length ? topEngaged.map(u => `<tr>
       <td><code>${esc(u.id)}</code></td>
+      <td>${u.subPersona ? `<span style="color:${
+        u.subPersona === 'actor-craft' ? '#9b2d30' :
+        u.subPersona === 'focused-rehearser' ? '#3d5c4a' :
+        u.subPersona === 'explorer' ? '#2a4a5e' :
+        u.subPersona === 'curator' ? '#8a7a3a' :
+        '#5a4a6a'
+      }">${esc(u.subPersona)}</span>` : '<span class="muted">—</span>'}</td>
       <td>${u.visitDays}</td>
-      <td>${u.practiceMin}</td>
+      <td>${u.worksTouchedCount} / ${u.playCount}</td>
+      <td>${u.masteredChunks}${u.masteryPercent > 0 ? ` (${u.masteryPercent}%)` : ''}</td>
+      <td title="${esc(u.featureList.join(', '))}">${u.featureBreadth}/5</td>
+      <td class="muted" title="streak: ${u.rhythm.longestStreak}, median gap: ${u.rhythm.medianGap ?? '—'}d">${esc(u.rhythm.category)}</td>
       <td>${u.longestMin}</td>
-      <td>${u.worksTouchedCount}</td>
-      <td class="muted">${esc(u.topWork || '')}</td>
-      <td>${u.testSessions || 0}</td>
-      <td>${u.reflectResponses || 0}</td>
+      <td class="muted">${esc(u.topPlay || '')}</td>
       <td><b>${Math.round(u.score)}</b></td>
-    </tr>`).join('') : '<tr><td colspan="9" class="muted">no engaged users yet</td></tr>'}
+    </tr>`).join('') : '<tr><td colspan="10" class="muted">no engaged users yet</td></tr>'}
   </table>
 
   <h2>Funnel (unique users, last 7d)</h2>
