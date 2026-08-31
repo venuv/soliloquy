@@ -505,6 +505,57 @@ Dashboard now surfaces categories + auto-tagged sub-personas. Watch for "engaged
 
 ---
 
+## 2026-08-30/31 — Day 9/10 (audience taxonomy, personas named, deep-and-small thesis)
+
+### Corrected priors
+
+Yesterday I recorded a chain of analysis based on the assumption that r/theatre had been posted and bombed with -9 karma. **Not true.** The user sent the modmail I drafted and is still awaiting a response — no r/theatre post has gone live. Memory was corrected and the "performance-native = hostile" claim removed for lack of evidence. Only observed community data so far:
+
+- **r/shakespeare** (posted Aug 21) — positive; 30+ signups
+- **r/classiclit** (posted Aug 30, discussion format) — 2.5K views, 13 civil comments, 0 karma, aesthetic disagreement (Emerson quote at 21 upvotes: "impressions stick, details don't"). Zero conversion; discussion held its own on its own terms.
+- **r/actingclass** (posted Aug 28, deleted) — wrong-sub-by-name (was a single-teacher's channel)
+- **r/theatre** — modmail pending
+- **r/anki** — deferred; needs community equity first
+
+### Persona nicknames
+
+Formalized shorthand for the 8+ named engaged users. See `~/.claude/projects/…/memory/project_persona_nicknames.md` for the roster. Diary now uses the nicknames: Berlin Avant-Garde Macbethian, English A-Level Teacher, Tragic-Heroine Explorer, Beats-Mode Mode-Comparer, Silent Deep Learner, 80% Marathoner, Prospero Elegist, Curator.
+
+Cross-persona narrative reads better with nicknames than with IDs. Also makes the roster feel like a small community you can hold in mind, not a pool of anonymous rows.
+
+### Direct outreach to engaged users (new pattern)
+
+Owner started DM'ing engaged users directly — the Berlin Macbethian already got a note offering to add content she requested OR add an in-app "request content" feature. The English A-Level Teacher is next this week (framing note: she hasn't touched Recite or Reflect; the DM should mention the Recite mic-based grading as potentially useful for her students prepping monologue exams — she's 1/5 features and doesn't know the others exist).
+
+**In-app "request content" form queued as a small feature (~30 min).** Would create a durable feedback channel independent of reddit — captures requests from silent engaged users (Silent Deep Learner, 80% Marathoner) who have no comment-thread vector to voice what they want. If nobody uses the form, that IS data (means DMs are the actual vector).
+
+### Product philosophy captured — "deep and small is the post-AI future"
+
+Named by the owner today. The thesis: understand your 1000 users minutely; a community small enough to engage 1:1 (as long as not all at the same time — async-tolerable) is the shape that survives when AI has commoditized breadth. Kevin-Kelly-1000-True-Fans with a post-AI twist.
+
+Implications for how this app should evolve:
+- Feature decisions prioritize *deepening* the relationship with the current 60 users over *widening* to a broader Shakespeare audience
+- Direct 1:1 outreach is the primary marketing channel, not scale-oriented pushes
+- Persona nicknames + a durable content-request feedback loop are aligned with this thesis — both let the owner engage individuals as individuals
+- Community-post pushes (r/anki, r/GCSE, etc.) are for finding the *next* 60 users, not the next 6,000
+- Discourages any temptation to build for breadth (BYO-text, non-Shakespeare) before deepening current use cases
+
+Saved to memory as a project-level design principle so future sessions weight this in feature/scope decisions.
+
+### Ships today
+- Dashboard: 4-dimension engagement segmentation (learning depth, feature fanout, habit rhythm, content spread) + sub-persona auto-tagging
+- Dashboard: two aggregate summary sections (feature adoption by unique users, content spread by play)
+- Dashboard: r/shakespeare baseline label in Traffic Sources
+- Memory: audience taxonomy corrected, highbrow-lit lesson added, persona nicknames added, product philosophy saved
+
+### Open questions
+- Will the English A-Level Teacher's Sept 1 school-term start produce a UK cluster? (cluster detector will fire if yes)
+- Does the r/theatre modmail get a response, or should we move on?
+- Does the direct-DM approach produce more actionable requests than reddit comments do?
+- If the "deep and small" thesis is right, what's the natural ceiling for this app — 200 users? 1000? And at what point does the owner-in-the-loop DM pattern stop scaling?
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
