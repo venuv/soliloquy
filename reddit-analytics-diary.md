@@ -529,18 +529,25 @@ Owner started DM'ing engaged users directly — the Berlin Macbethian already go
 
 **In-app "request content" form queued as a small feature (~30 min).** Would create a durable feedback channel independent of reddit — captures requests from silent engaged users (Silent Deep Learner, 80% Marathoner) who have no comment-thread vector to voice what they want. If nobody uses the form, that IS data (means DMs are the actual vector).
 
-### Product philosophy captured — "deep and small is the post-AI future"
+### Project framing — learning mode, three hypotheses (not fixed philosophy)
 
-Named by the owner today. The thesis: understand your 1000 users minutely; a community small enough to engage 1:1 (as long as not all at the same time — async-tolerable) is the shape that survives when AI has commoditized breadth. Kevin-Kelly-1000-True-Fans with a post-AI twist.
+Corrected earlier phrasing. The app isn't built on a "deep and small" ideology. It's a personal project exploring three questions in parallel:
 
-Implications for how this app should evolve:
-- Feature decisions prioritize *deepening* the relationship with the current 60 users over *widening* to a broader Shakespeare audience
-- Direct 1:1 outreach is the primary marketing channel, not scale-oriented pushes
-- Persona nicknames + a durable content-request feedback loop are aligned with this thesis — both let the owner engage individuals as individuals
-- Community-post pushes (r/anki, r/GCSE, etc.) are for finding the *next* 60 users, not the next 6,000
-- Discourages any temptation to build for breadth (BYO-text, non-Shakespeare) before deepening current use cases
+- **H1** — Can we build something beautiful that people enjoy, using AI? (Craft-first counter to "AI slop.")
+- **H2** — Can my philanthropy be software? Building for people with passion but no money (actors, teachers, students).
+- **H3** — Is there an adjacency where an actual education project could seek funding? (Longer-term optionality.)
 
-Saved to memory as a project-level design principle so future sessions weight this in feature/scope decisions.
+**Priority: H1 and H2 > H3 for now.** Fund-seeking behavior would distort the design decisions H1 and H2 depend on. Keep H3 in the periphery.
+
+**Methodological choice: passionate / extreme users teach us most.** That's why current work leans toward deeply understanding the 8-ish named engaged personas rather than pushing for reach — *not* because small-is-beautiful as principle, but because product learnings come faster from the users who really care.
+
+Implications:
+- Persona nicknames + engagement-segmentation dashboards + direct-DMs are aligned with the learning methodology
+- Community-post pushes should target memorization-native audiences (rich in extreme users) rather than chase numbers
+- BYO-text / contemporary corpus / broader expansion are deprioritized now but not off the table forever — could become relevant if H3 crystallizes or a specific engaged user's needs pull us there
+- Don't over-cite "deep and small" as gospel — it's a phase, not a permanent stance
+
+Saved to memory with the corrected framing.
 
 ### Ships today
 - Dashboard: 4-dimension engagement segmentation (learning depth, feature fanout, habit rhythm, content spread) + sub-persona auto-tagging
