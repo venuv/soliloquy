@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api, trackEvent } from '../App'
+import RequestContent from './RequestContent'
 import { Home, ChevronRight } from 'lucide-react'
 import useIsMobile from '../hooks/useIsMobile'
 
@@ -132,6 +133,7 @@ export default function AuthorWorks() {
   const [preferences, setPreferences] = useState({})
   const [loading, setLoading] = useState(true)
   const [playFilter, setPlayFilter] = useState(null)
+  const [requestOpen, setRequestOpen] = useState(false)
 
   useEffect(() => {
     trackEvent('catalog', { authorId })
@@ -458,6 +460,33 @@ export default function AuthorWorks() {
           )
         })}
       </div>
+
+      {/* Request-content card at the bottom of the catalog */}
+      <div style={{ maxWidth: '48rem', margin: '2rem auto 0', padding: '0 1rem' }}>
+        <button
+          onClick={() => setRequestOpen(true)}
+          style={{
+            width: '100%', background: 'rgba(155,45,48,0.03)',
+            border: '1px dashed rgba(155,45,48,0.25)', borderRadius: '10px',
+            padding: '1rem 1.5rem', cursor: 'pointer',
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: '1rem', color: '#4a4a4a'
+          }}
+        >
+          <div>
+            <div style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: '#1a1a1a', marginBottom: '0.15rem' }}>
+              Missing something?
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#4a4a4a' }}>
+              Request a soliloquy or scene. I read every one — added same-day when I can.
+            </div>
+          </div>
+          <div style={{ color: '#9b2d30', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>Request →</div>
+        </button>
+      </div>
+
+      {requestOpen && <RequestContent source="catalog" onClose={() => setRequestOpen(false)} />}
 
       {/* Footer breathing room */}
       <div style={{ height: '3rem' }} />

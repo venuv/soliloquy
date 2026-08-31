@@ -14,6 +14,24 @@ const ANALYTICS_DIR = path.join(__dirname, '../data/analytics');
 const KEYS_FILE = path.join(__dirname, '../data/keys.json');
 const EVENTS_PATH = path.join(ANALYTICS_DIR, 'events.jsonl');
 const EVENTS_ARCHIVE_DIR = path.join(ANALYTICS_DIR, 'archive');
+const REQUESTS_PATH = path.join(ANALYTICS_DIR, 'requests.jsonl');
+
+// Owner-facing nickname map — humanizes the userKey column across the
+// dashboard (Traffic Sources, Top Engaged Users, Content Requests, Users
+// Detail). Nicknames are ADMIN-ONLY — never surfaced to users. Update
+// when new personas emerge; source-of-truth lives in the memory file
+// project_persona_nicknames.md.
+const NICKNAMES = {
+  '121292': 'The Builder',
+  '533339': 'Berlin Avant-Garde Macbethian',
+  '850945': 'English A-Level Teacher',
+  '361833': 'Tragic-Heroine Explorer',
+  '497990': 'Beats-Mode Mode-Comparer',
+  '992673': 'Silent Deep Learner',
+  '932276': '80% Marathoner',
+  '156093': 'Prospero Elegist',
+  '563665': 'The Curator'
+};
 
 // Simple admin key check (set via env var or defaults to a random value)
 const ADMIN_KEY = process.env.ADMIN_KEY || 'change-me-in-production';
@@ -643,6 +661,16 @@ router.get('/dashboard', async (req, res) => {
     }
     const topPlaysByUsers = Object.entries(playTouchCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
+    // 7. Content requests — read from persistent JSONL, decorate with nicknames.
+    let contentRequests = [];
+    try {
+      const raw = await fs.readFile(REQUESTS_PATH, 'utf-8');
+      contentRequests = raw.split('\n').filter(Boolean).map(line => {
+        try { return JSON.parse(line); } catch { return null; }
+      }).filter(Boolean).reverse().slice(0, 30);
+    } catch {}
+    const nickname = (uid) => NICKNAMES[uid] || null;
+
     const engagement = {
       total: userList.length,
       silent: userList.filter(u => u.category === 'silent').length,
@@ -731,6 +759,22 @@ router.get('/dashboard', async (req, res) => {
       </table>
     </div>
   </div>
+
+  <h2>Content requests (most recent 30)</h2>
+  <p class="muted" style="margin-top:-0.25rem">
+    Direct feedback channel — users can request soliloquies via the header link or the bottom of the catalog.
+    Nickname column shows the requester's persona if named; otherwise the raw userKey.
+  </p>
+  <table>
+    <tr><th>time</th><th>from</th><th>source</th><th>request</th><th>context</th></tr>
+    ${contentRequests.length ? contentRequests.map(r => `<tr>
+      <td class="muted">${esc((r.ts || '').slice(0, 16).replace('T', ' '))}</td>
+      <td>${nickname(r.key) ? `<b>${esc(nickname(r.key))}</b>` : `<code>${esc(r.key || '')}</code>`}</td>
+      <td class="muted">${esc(r.source || '')}</td>
+      <td>${esc(r.request || '')}</td>
+      <td class="muted">${esc(r.context || '')}</td>
+    </tr>`).join('') : '<tr><td colspan="5" class="muted">no requests yet — feature just shipped or nobody has clicked through</td></tr>'}
+  </table>
 
   <h2>Engagement (all time)</h2>
   <p class="muted" style="margin-top:-0.25rem">
@@ -845,7 +889,7 @@ router.get('/dashboard', async (req, res) => {
       <th>score</th>
     </tr>
     ${topEngaged.length ? topEngaged.map(u => `<tr>
-      <td><code>${esc(u.id)}</code></td>
+      <td>${nickname(u.id) ? `<b>${esc(nickname(u.id))}</b><br><code style="font-size:11px;color:#888">${esc(u.id)}</code>` : `<code>${esc(u.id)}</code>`}</td>
       <td>${u.subPersona ? `<span style="color:${
         u.subPersona === 'actor-craft' ? '#9b2d30' :
         u.subPersona === 'focused-rehearser' ? '#3d5c4a' :

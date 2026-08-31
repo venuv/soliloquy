@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth, api, trackEvent } from '../App'
-import { LogOut, BarChart2, KeyRound } from 'lucide-react'
+import { LogOut, BarChart2, KeyRound, Send } from 'lucide-react'
 import useIsMobile from '../hooks/useIsMobile'
+import RequestContent from './RequestContent'
 import './Home.css'
 
 export default function Home() {
@@ -10,6 +11,7 @@ export default function Home() {
   const isMobile = useIsMobile()
   const [authors, setAuthors] = useState([])
   const [loading, setLoading] = useState(true)
+  const [requestSource, setRequestSource] = useState(null) // null | 'header'
 
   useEffect(() => {
     trackEvent('home')
@@ -140,6 +142,19 @@ export default function Home() {
             <BarChart2 size={14} />
             Stats
           </Link>
+          <button
+            onClick={() => setRequestSource('header')}
+            style={{
+              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              fontSize: '0.8rem', color: '#4a4a4a', letterSpacing: '0.03em',
+              display: 'flex', alignItems: 'center', gap: '0.25rem',
+              fontFamily: 'inherit'
+            }}
+            title="Request a speech to be added"
+          >
+            <Send size={12} />
+            Request
+          </button>
           <span style={{
             fontSize: '0.8rem',
             color: '#9a9a9a',
@@ -165,6 +180,8 @@ export default function Home() {
           </button>
         </nav>
       </header>
+
+      {requestSource && <RequestContent source={requestSource} onClose={() => setRequestSource(null)} />}
 
       {/* Hero */}
       <section style={{
