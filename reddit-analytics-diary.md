@@ -481,18 +481,21 @@ Real fork surfaced: the app's Shakespeare-only corpus makes broad actor-communit
 - Watch for specific requests in comments (proven flywheel from Euphoric-Rest + MT-7543)
 - Prioritize Macbeth, R&J, Othello per MT-7543's exam-board note if no specific requests
 
-### Persona archive after today
+### Persona archive after today (with nicknames)
 
-| App ID | Reddit handle | Category | Notes |
-|---|---|---|---|
-| `533339` | Euphoric-Rest1919 | **Engaged** | Berlin hobbyist. 31.5min return session. Shipped Lady M raven per her ask. |
-| `850945` | Minimum-Target-7543 | **Evaluator** | UK A-level English teacher. Multiple returns, minimal practice. Sept 1-7 return window for the school-cohort test. |
-| `497990` | (no comment) | one-timer-deep | Beats-mode power user. 2 sessions in 3min then silent. |
-| `361833` | (no comment) | returning | Lady M / tragic-female-roles cluster. Multi-day but shallow practice. |
-| `156093` | (no comment) | one-timer | Prospero's "our revels" pick. |
-| `498301`, `837803` | (no comment) | returning | Day-2 returners, shallow. |
+| App ID | Nickname | Reddit handle | Category | Notes |
+|---|---|---|---|---|
+| `121292` | **The Builder** | — (owner) | **Engaged** | Daily user, 32 chunks mastered, actor-craft persona. |
+| `533339` | **Berlin Avant-Garde Macbethian** | Euphoric-Rest1919 | **Engaged** | 31 Macbeth chunks / 53% mastery. Requested Lady M's raven; returned after 4.5-day gap for 31.5-min learn pass. |
+| `850945` | **English A-Level Teacher** | Minimum-Target-7543 | **Evaluator** | Multiple returns, minimal practice. Sept 1-7 window for school-cohort test — if her students land as a cluster, teacher-multiplier validated. |
+| `361833` | **The Tragic-Heroine Explorer** | (no comment) | **Explorer** | Lady M + Cleopatra + Leontes + Oberon across 3 plays. First non-owner to use Reflect (got Hector via "Challenge me"). |
+| `497990` | **The Beats-Mode Mode-Comparer** | (no comment) | one-timer-deep | 2 works in 3 min, beats vs lines. Not returned. |
+| `992673` | **The Silent Deep Learner** | (no comment) | one-timer-deep | 15 chunks mastered at 48% in a single visit. |
+| `932276` | **The 80% Marathoner** | (no comment) | one-timer-deep | 8 chunks at 80% mastery — highest single-visit mastery in the data set. |
+| `156093` | **The Prospero Elegist** | (no comment) | one-timer | Opened "our revels now are ended" — reflective/farewell pick. |
+| `563665` | **The Curator** | (no comment) | evaluator | 3 days, 1 work touched, 4% mastery — returns without engaging. |
 
-Dashboard now surfaces these categories automatically. Watching for the count of "engaged" to grow past 1 as the leading indicator.
+Dashboard now surfaces categories + auto-tagged sub-personas. Watch for "engaged" count to grow past 2 as the leading indicator — nicknames from this table double as the persona-shorthand for future analysis.
 
 ### Open questions
 - Does MT-7543's Sept 1-7 return produce a student cluster in the detector? [carried]
