@@ -71,7 +71,7 @@ export default function RequestContent({ source = 'unknown', onClose }) {
         {submitted ? (
           <>
             <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: '#4a4a4a', margin: '0 0 1.5rem' }}>
-              I read every one. If it fits the current set of speeches I'm adding, expect it within a few days. Requests from folks who use the app tend to jump the queue.
+              By my faith, marked and welcome. I read every one — those who tread these boards themselves are served first.
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
