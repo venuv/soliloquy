@@ -17,6 +17,7 @@ import videosRoutes from './routes/videos.js';
 import reciteRoutes from './routes/recite.js';
 import beatsRoutes from './routes/beats.js';
 import requestsRoutes from './routes/requests.js';
+import intentionsRoutes from './routes/intentions.js';
 import { restoreFromTigris } from './tigris.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +48,7 @@ app.use('/api/videos', videosRoutes);
 app.use('/api/recite', reciteRoutes);
 app.use('/api/beats', beatsRoutes);
 app.use('/api/requests', requestsRoutes);
+app.use('/api/intentions', intentionsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
