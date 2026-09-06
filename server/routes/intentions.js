@@ -106,17 +106,36 @@ function buildPrompt({ work, beat, beatIdx, beatTextStr, fullText, sources }) {
     .filter(s => s.ok)
     .map(s => `--- ${s.url} ---\n${s.text}`)
     .join('\n\n');
-  return `You are annotating a Shakespeare soliloquy for a memorization app. Write ONE Stanislavsky-style "verb + object" intention for the SPECIFIC BEAT below, grounded in the retrieved passages.
+  return `You are annotating a Shakespeare soliloquy for a memorization app. Write ONE Stanislavsky-style "verb + object" intention for the SPECIFIC BEAT below.
 
-Rules:
+CRITICAL — WHAT AN INTENTION IS:
+An intention is the character's TACTICAL WANT in this moment — the strategic move they are making on the listener (or themselves).
+It is NOT a paraphrase of what they say. It is the manipulative purpose behind the words.
+
+BAD examples (all paraphrase the verse — REJECT these):
+- "to define mercy as a gentle rain that blesses both giver and receiver"    ← describes the metaphor
+- "to compare mercy to rain from heaven"                                     ← describes the image
+- "to say mercy is twice blessed"                                            ← restates the content
+
+GOOD examples (state the tactic — the character's move):
+- "to soften Shylock's resolve by casting mercy as a natural, inescapable blessing"
+- "to raise mercy's status above earthly power so refusing it seems mean"
+- "to trap Shylock in his own logic — he too will one day need what he denies"
+
+STEP-BY-STEP:
+1. First, infer the CHARACTER'S LARGER GOAL across the whole soliloquy (whom are they trying to move, and toward what?)
+2. Then ask: what tactic is THIS specific beat using in service of that larger goal?
+3. Write the intention as that tactic — a verb of ACTION ON A LISTENER (soften, trap, disarm, shame, elevate, undercut, seduce, indict), not a verb of description (define, illustrate, show, describe).
+
+RULES:
 - Format: "to [verb] [object]" (lowercase 'to'), one sentence, under 25 words
-- Must be grounded in the retrieved passages — do not invent psychology absent from the sources
-- Cite which source URL(s) most directly supported your reading
-- Speak in the character's voice-of-want, not in scholarly voice
-- If the retrieved passages do not clearly support any intention for THIS beat, respond with INTENTION: null
+- Grounded in retrieved passages — do not invent psychology absent from sources
+- If the passages don't clearly support any tactical reading, respond with INTENTION: null
+- Cite which URL(s) most directly supported your reading
 
 WORK: ${work.source} (character: ${work.character})
-FULL SOLILOQUY (context only, do not summarize this — focus on the beat):
+
+FULL SOLILOQUY (context — infer the character's larger goal from this):
 ${fullText}
 
 CURRENT BEAT (beat ${beatIdx}${beat.label ? `, "${beat.label}"` : ''}):
@@ -126,7 +145,7 @@ RETRIEVED PASSAGES:
 ${sourceBlocks || '(no sources retrieved successfully)'}
 
 Respond EXACTLY in this format, nothing else:
-INTENTION: <one-sentence intention or the word null>
+INTENTION: <one-sentence tactical intention, or the word null>
 SOURCES: <comma-separated URLs you drew from, or none>`;
 }
 
