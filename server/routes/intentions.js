@@ -38,16 +38,34 @@ async function loadWork(authorId, workId) {
   return (data.works || []).find(w => w.id === workId) || null;
 }
 
+// Extract the text of a chunk. Chunks are objects with .front + .back
+// (flashcard-style split); we join them with a space to reconstitute prose.
+// Older/simpler chunks may be plain strings.
+function chunkText(c) {
+  if (typeof c === 'string') return c;
+  const front = c.front || '';
+  const back = c.back || '';
+  return (front && back) ? `${front} ${back}` : (front || back || c.text || '');
+}
+
 // Extract the text of a beat by concatenating its chunk range.
 function beatText(work, beat) {
   const chunks = work.chunks || [];
   const start = beat.startChunk ?? 0;
   const end = beat.endChunk ?? chunks.length - 1;
-  return chunks.slice(start, end + 1).map(c => (typeof c === 'string' ? c : c.text || '')).join(' ');
+  return chunks.slice(start, end + 1).map(chunkText).join(' ');
 }
 
 function fullSoliloquyText(work) {
-  return (work.chunks || []).map(c => (typeof c === 'string' ? c : c.text || '')).join(' ');
+  return (work.chunks || []).map(chunkText).join(' ');
+}
+
+// Build a small context object for an adjacent beat: label + text. Returns
+// null if the beat index is out of range.
+function beatContext(work, beatIdx) {
+  const beat = (work.beats || [])[beatIdx];
+  if (!beat) return null;
+  return { label: beat.label || null, text: beatText(work, beat) };
 }
 
 // Strip HTML tags + collapse whitespace. Not a real parser — but sufficient
@@ -101,11 +119,22 @@ async function callGroq(prompt, { maxTokens = 400, temperature = 0.3 } = {}) {
   return data.choices?.[0]?.message?.content || '';
 }
 
-function buildPrompt({ work, beat, beatIdx, beatTextStr, fullText, sources }) {
+// Sources that returned very little visible text (e.g. SPA shells that need
+// JS to render) are effectively useless as evidence — drop them from the
+// prompt so the LLM can't cite them as if they mattered.
+const MIN_SOURCE_BYTES = 500;
+
+function buildPrompt({ work, beat, beatIdx, beatTextStr, fullText, sources, prevBeatCtx, nextBeatCtx }) {
   const sourceBlocks = sources
-    .filter(s => s.ok)
+    .filter(s => s.ok && s.text && s.text.length >= MIN_SOURCE_BYTES)
     .map(s => `--- ${s.url} ---\n${s.text}`)
     .join('\n\n');
+  const adjacent = [];
+  if (prevBeatCtx) adjacent.push(`PREVIOUS BEAT (${prevBeatCtx.label || 'unlabeled'}): ${prevBeatCtx.text}`);
+  if (nextBeatCtx) adjacent.push(`NEXT BEAT (${nextBeatCtx.label || 'unlabeled'}): ${nextBeatCtx.text}`);
+  const adjacentBlock = adjacent.length
+    ? `\nADJACENT BEATS (your intention must contrast with these — each beat is a distinct rhetorical move):\n${adjacent.join('\n')}\n`
+    : '';
   return `You are annotating a Shakespeare soliloquy for a memorization app. Write ONE Stanislavsky-style "verb + object" intention for the SPECIFIC BEAT below.
 
 CRITICAL — WHAT AN INTENTION IS:
@@ -130,6 +159,7 @@ STEP-BY-STEP:
 RULES:
 - Format: "to [verb] [object]" (lowercase 'to'), one sentence, under 25 words
 - Grounded in retrieved passages — do not invent psychology absent from sources
+- MUST be distinct from adjacent beats' tactics (see ADJACENT BEATS below) — do not repeat verb+object shapes across neighbors
 - If the passages don't clearly support any tactical reading, respond with INTENTION: null
 - Cite which URL(s) most directly supported your reading
 
@@ -137,12 +167,12 @@ WORK: ${work.source} (character: ${work.character})
 
 FULL SOLILOQUY (context — infer the character's larger goal from this):
 ${fullText}
-
+${adjacentBlock}
 CURRENT BEAT (beat ${beatIdx}${beat.label ? `, "${beat.label}"` : ''}):
 ${beatTextStr}
 
 RETRIEVED PASSAGES:
-${sourceBlocks || '(no sources retrieved successfully)'}
+${sourceBlocks || '(no sources retrieved successfully — do not cite any URL)'}
 
 Respond EXACTLY in this format, nothing else:
 INTENTION: <one-sentence tactical intention, or the word null>
@@ -285,11 +315,14 @@ router.post('/admin-preview/:authorId/:workId/:beatIndex', requireAdmin, async (
     if (!urls.length) return res.status(400).json({ error: 'no sources curated for this work' });
 
     const fetched = await Promise.all(urls.map(u => fetchSource(u)));
+    const idx = Number(beatIndex);
     const prompt = buildPrompt({
-      work, beat, beatIdx: Number(beatIndex),
+      work, beat, beatIdx: idx,
       beatTextStr: beatText(work, beat),
       fullText: fullSoliloquyText(work),
-      sources: fetched
+      sources: fetched,
+      prevBeatCtx: beatContext(work, idx - 1),
+      nextBeatCtx: beatContext(work, idx + 1)
     });
     const raw = await callGroq(prompt);
     const parsed = parseGroqResponse(raw);
@@ -330,7 +363,9 @@ router.post('/admin-generate/:authorId/:workId/:beatIndex?', requireAdmin, async
           work, beat, beatIdx: i,
           beatTextStr: beatText(work, beat),
           fullText,
-          sources: fetched
+          sources: fetched,
+          prevBeatCtx: beatContext(work, i - 1),
+          nextBeatCtx: beatContext(work, i + 1)
         });
         const raw = await callGroq(prompt);
         const parsed = parseGroqResponse(raw);
