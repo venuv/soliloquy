@@ -563,6 +563,49 @@ Saved to memory with the corrected framing.
 
 ---
 
+## 2026-09-04 — Day 14 (tentative: MT-adjacent word-of-mouth cluster?)
+
+### Reading tea leaves — MT-evangelism theory (low confidence)
+
+Owner flagged two recently active user keys (250175, 639987). Reconstructing:
+
+**Aug 30 cluster:**
+| Time (UTC) | User | Signal |
+|---|---|---|
+| 12:52 | English A-Level Teacher (850945) | Own session |
+| 15:26 | 614059 | Registers, zero further events (silent) |
+| 21:45 | 639987 | Registers, completes onboarding, samples `our-revels-now-are-ended` (Prospero) + `o-romeo-romeo` (Juliet balcony), leaves at 6 min |
+
+**Sept 3:**
+- 22:20 — 250175 (registered Aug 21) returns, goes straight to `we-few-we-happy-few` (St. Crispin's Day), completes lines test at 100% in 91s, leaves.
+
+**Owner's hypothesis:** MT is the converted early adopter, now showing the app to skeptics — colleagues, students, network. The 3 registrations trailing her Aug 30 session, plus 250175's return with a specific canonical audition speech, fit "someone was told about this, checked it, left."
+
+**Shape that fits:**
+- Speech choices read as litmus tests (Prospero revels, R&J balcony, St. Crispin's — all "does it have the greats?" probes, not exploratory picks)
+- Nobody returned; skeptics being shown only need one visit to form an opinion
+- No source attribution captured (direct URL — WhatsApp/email/in-person share)
+- Aug 30 same-day clustering is temporally suggestive
+
+**Sobering read if true:** She's evangelizing but not yet closing. First-ring contacts are usually hardest to convert — they don't need the app to validate her taste. Broader circles convert better.
+
+**Confidence: low. Still reading tea leaves.** Direct evidence would come from MT replying to the reddit thread (owner's DM to her sent earlier). If she confirms she's shown it around, theory upgrades from tentative to confirmed. Until then, don't act on it.
+
+### Note on prior open question
+
+Aug 30/31 diary asked: "Does MT-7543's Sept 1-7 return produce a student cluster in the detector?" The window is closing (today is Sept 4). If the evangelism theory holds, the cluster we were watching for may have *already happened* on Aug 30, before term started — as a demo/staffroom moment, not a classroom rollout. Cluster detector would only fire if a critical mass of new registrations shared a temporal window; 3 in one day is suggestive but below whatever threshold the detector uses.
+
+### Ships today
+- Marketing outreach paused; parked TODO saved to memory (`project_marketing_paused.md`)
+- Salles Substack outreach draft finalized (owner handling send)
+
+### Open questions
+- Does MT reply on reddit and confirm she's evangelizing? [tentative, awaiting]
+- If MT-evangelism theory holds, is there a lightweight way to help her convert her first ring? (Question to hold, not to act on while marketing paused.) [tentative]
+- Threshold-tune the cluster detector — 3-in-a-day on shared registration date is worth flagging, even without a shared source parameter. [carried]
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
