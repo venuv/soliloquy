@@ -32,6 +32,35 @@ function generateFingerprint() {
   return crypto.randomBytes(16).toString('hex');
 }
 
+// Pull server-observable device meta from headers. Fly sets Fly-Client-IP;
+// fall back to x-forwarded-for (first hop) then req.ip.
+function getServerMeta(req) {
+  const xff = req.headers['x-forwarded-for'];
+  const ip =
+    req.headers['fly-client-ip'] ||
+    (xff && xff.split(',')[0].trim()) ||
+    req.ip ||
+    null;
+  return {
+    ua: req.headers['user-agent'] || null,
+    ip
+  };
+}
+
+// Merge client-sent deviceMeta with server-observed headers into a single
+// shallow object. Client fields (tz, locale, screen) plus server fields (ua, ip).
+function buildLoginMeta(req) {
+  const client = (req.body && req.body.deviceMeta) || {};
+  const server = getServerMeta(req);
+  return {
+    tz: client.tz || null,
+    locale: client.locale || null,
+    screen: client.screen || null,
+    ua: server.ua,
+    ip: server.ip
+  };
+}
+
 // Ensure data directories exist
 async function ensureDataDirs() {
   try {
@@ -85,15 +114,18 @@ router.post('/register', async (req, res) => {
       return res.status(500).json({ error: 'Could not generate unique key' });
     }
     
+    const loginMeta = buildLoginMeta(req);
+
     data.keys[newKey] = {
       createdAt: new Date().toISOString(),
       fingerprints: [fingerprint],
       lastSeen: new Date().toISOString(),
-      flaggedForSharing: false
+      flaggedForSharing: false,
+      lastDevice: { tz: loginMeta.tz, locale: loginMeta.locale }
     };
-    
+
     await saveKeys(data);
-    
+
     // Initialize analytics file for this user
     const analyticsPath = path.join(ANALYTICS_DIR, `${newKey}.json`);
     await writeAndSync(analyticsPath, {
@@ -102,9 +134,9 @@ router.post('/register', async (req, res) => {
       sessions: [],
       progress: {}
     });
-    
+
     console.log(`New user registered: ${newKey}`);
-    appendEvent({ key: newKey, event: 'login-first' });
+    appendEvent({ key: newKey, event: 'login-first', ...loginMeta });
     res.json({ key: newKey });
   } catch (err) {
     console.error('Registration error:', err);
@@ -134,19 +166,27 @@ router.post('/validate', async (req, res) => {
       res.cookie(COOKIE_NAME, fingerprint, COOKIE_OPTIONS);
     }
     
+    const loginMeta = buildLoginMeta(req);
+
     // Update last seen
     data.keys[key].lastSeen = new Date().toISOString();
-    
+
+    // Refresh the light-weight device snapshot on every return login so the
+    // dashboard can show current tz/locale without scanning events.jsonl.
+    if (loginMeta.tz || loginMeta.locale) {
+      data.keys[key].lastDevice = { tz: loginMeta.tz, locale: loginMeta.locale };
+    }
+
     // Track fingerprints for sharing detection
     if (!data.keys[key].fingerprints.includes(fingerprint)) {
       data.keys[key].fingerprints.push(fingerprint);
-      
+
       // Flag if too many unique fingerprints (potential key sharing)
       if (data.keys[key].fingerprints.length > 5) {
         data.keys[key].flaggedForSharing = true;
       }
     }
-    
+
     await saveKeys(data);
     
     // Ensure analytics file exists
@@ -163,7 +203,12 @@ router.post('/validate', async (req, res) => {
     }
     
     console.log(`User validated: ${key}`);
-    appendEvent({ key, event: 'login-return', devices: data.keys[key].fingerprints.length });
+    appendEvent({
+      key,
+      event: 'login-return',
+      devices: data.keys[key].fingerprints.length,
+      ...loginMeta
+    });
     res.json({
       valid: true,
       flagged: data.keys[key].flaggedForSharing || false,

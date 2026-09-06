@@ -59,6 +59,21 @@ export function trackEvent(event, meta = {}) {
   }).catch(() => {})
 }
 
+// Browser-side device metadata — timezone + locale discriminate audiences
+// (e.g. UK teacher network vs. US actors). Included in register/validate
+// so the server can log geographic-hint fields on login events.
+export function getDeviceMeta() {
+  try {
+    return {
+      tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+      locale: navigator.language || null,
+      screen: `${window.screen?.width || 0}x${window.screen?.height || 0}`
+    }
+  } catch {
+    return {}
+  }
+}
+
 function App() {
   const [userKey, setUserKey] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -94,7 +109,7 @@ function App() {
       // Validate the key
       api('/auth/validate', {
         method: 'POST',
-        body: JSON.stringify({ key: savedKey })
+        body: JSON.stringify({ key: savedKey, deviceMeta: getDeviceMeta() })
       })
         .then(() => {
           setUserKey(savedKey)

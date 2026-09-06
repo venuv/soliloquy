@@ -363,7 +363,9 @@ router.get('/dashboard', async (req, res) => {
       createdAt: k.createdAt,
       lastSeen: k.lastSeen,
       devices: (k.fingerprints || []).length,
-      flagged: !!k.flaggedForSharing
+      flagged: !!k.flaggedForSharing,
+      tz: k.lastDevice?.tz || null,
+      locale: k.lastDevice?.locale || null
     }));
     const active = (windowDays) => users.filter(u =>
       u.lastSeen && (now - new Date(u.lastSeen).getTime()) < windowDays * DAY
@@ -950,12 +952,14 @@ router.get('/dashboard', async (req, res) => {
 
   <h2>Users detail</h2>
   <table>
-    <tr><th>id</th><th>created</th><th>last seen</th><th>devices</th></tr>
+    <tr><th>id</th><th>created</th><th>last seen</th><th>devices</th><th>tz</th><th>locale</th></tr>
     ${users.sort((a,b) => (b.lastSeen || '').localeCompare(a.lastSeen || '')).map(u => `<tr>
       <td><code>${esc(u.id)}</code>${u.flagged ? ' <span class="muted">(shared)</span>' : ''}</td>
       <td class="muted">${esc((u.createdAt || '').slice(0, 10))}</td>
       <td class="muted">${esc((u.lastSeen || '').slice(0, 16).replace('T', ' '))}</td>
       <td>${u.devices}</td>
+      <td class="muted">${esc(u.tz || '—')}</td>
+      <td class="muted">${esc(u.locale || '—')}</td>
     </tr>`).join('')}
   </table>
 

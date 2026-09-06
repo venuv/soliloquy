@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../App'
+import { useAuth, getDeviceMeta } from '../App'
 import { KeyRound, Sparkles } from 'lucide-react'
 
 function DemoCube() {
@@ -236,7 +236,7 @@ export default function Login() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({})
+        body: JSON.stringify({ deviceMeta: getDeviceMeta() })
       })
       const data = await res.json()
       if (data.key) {
@@ -261,7 +261,7 @@ export default function Login() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ key: key.trim() })
+        body: JSON.stringify({ key: key.trim(), deviceMeta: getDeviceMeta() })
       })
       const data = await res.json()
       if (data.valid) {
