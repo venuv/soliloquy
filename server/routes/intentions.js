@@ -97,7 +97,7 @@ async function fetchSource(url, maxBytes = 20000) {
   }
 }
 
-async function callGroq(prompt, { maxTokens = 400, temperature = 0.3 } = {}) {
+async function callGroq(prompt, { maxTokens = 1200, temperature = 0.4 } = {}) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
   const res = await fetch(GROQ_URL, {
@@ -107,7 +107,11 @@ async function callGroq(prompt, { maxTokens = 400, temperature = 0.3 } = {}) {
       model: MODEL,
       max_tokens: maxTokens,
       temperature,
-      reasoning_effort: 'low',
+      // 'medium' gives the model room to actually think about the
+      // beat + adjacent beats + sources before producing a tactical
+      // intention. 'low' produced conservative, generic verbs. Extra
+      // reasoning tokens are budgeted via the larger max_tokens.
+      reasoning_effort: 'medium',
       messages: [{ role: 'user', content: prompt }]
     })
   });
@@ -135,33 +139,36 @@ function buildPrompt({ work, beat, beatIdx, beatTextStr, fullText, sources, prev
   const adjacentBlock = adjacent.length
     ? `\nADJACENT BEATS (your intention must contrast with these — each beat is a distinct rhetorical move):\n${adjacent.join('\n')}\n`
     : '';
-  return `You are annotating a Shakespeare soliloquy for a memorization app. Write ONE Stanislavsky-style "verb + object" intention for the SPECIFIC BEAT below.
+  return `You are writing ONE intention for a beat in a Shakespeare soliloquy — for actors and students memorizing the piece. The intention must be MEMORABLE, SHARP, and specific about the psychological move.
 
-CRITICAL — WHAT AN INTENTION IS:
-An intention is the character's TACTICAL WANT in this moment — the strategic move they are making on the listener (or themselves).
-It is NOT a paraphrase of what they say. It is the manipulative purpose behind the words.
+WHAT AN INTENTION IS:
+The character's TACTICAL MOVE on the listener (or on themselves, in inward soliloquies) — the specific psychological button they push in THIS beat.
 
-BAD examples (all paraphrase the verse — REJECT these):
-- "to define mercy as a gentle rain that blesses both giver and receiver"    ← describes the metaphor
-- "to compare mercy to rain from heaven"                                     ← describes the image
-- "to say mercy is twice blessed"                                            ← restates the content
+BAD examples (generic, book-report tone — REJECT these):
+- "to reflect on the passage of time and life's futility"           ← describes content
+- "to persuade Shylock to grant mercy"                              ← names goal but not the LEVER
+- "to elevate mercy as a divine virtue"                             ← describes, doesn't act
+- "to soften X by portraying Y as a divine blessing that…"          ← the mediocre middle ground — vague verb + long paraphrase tail
 
-GOOD examples (state the tactic — the character's move):
-- "to soften Shylock's resolve by casting mercy as a natural, inescapable blessing"
-- "to raise mercy's status above earthly power so refusing it seems mean"
-- "to trap Shylock in his own logic — he too will one day need what he denies"
+GOOD examples (name the psychological lever + are memorable):
+- Macbeth "Tomorrow and tomorrow": "to numb himself against grief — if all time is meaningless, so is her death"
+- Hamlet "To be or not to be": "to talk himself into cowardice — nightmares after death are worse than living misery"
+- Lady Macbeth "The raven himself": "to bargain with the dark for a cruelty her woman's body doesn't carry"
+- Iago "And what's he then": "to make evil look like fair play — he's only helping Cassio, technically"
 
-STEP-BY-STEP:
-1. First, infer the CHARACTER'S LARGER GOAL across the whole soliloquy (whom are they trying to move, and toward what?)
-2. Then ask: what tactic is THIS specific beat using in service of that larger goal?
-3. Write the intention as that tactic — a verb of ACTION ON A LISTENER (soften, trap, disarm, shame, elevate, undercut, seduce, indict), not a verb of description (define, illustrate, show, describe).
+STEP-BY-STEP (think through this in order):
+1. LARGER GOAL: across the whole soliloquy, whom is the character trying to move, and toward what?
+2. LEVER: what psychological button does THIS specific beat push? Pick from: status, guilt, cost/ease, self-image, obligation, fear, hypocrisy, comfort, self-persuasion, shame, flattery, theology
+3. WRITE: the intention as verb-of-action + object + short em-dash tail naming the lever/mechanism
 
 RULES:
-- Format: "to [verb] [object]" (lowercase 'to'), one sentence, under 25 words
-- Grounded in retrieved passages — do not invent psychology absent from sources
-- MUST be distinct from adjacent beats' tactics (see ADJACENT BEATS below) — do not repeat verb+object shapes across neighbors
-- If the passages don't clearly support any tactical reading, respond with INTENTION: null
-- Cite which URL(s) most directly supported your reading
+- **UNDER 15 WORDS** — brevity forces sharpness
+- Concrete verb of ACTION (soften, disarm, trap, flatter, indict, shame, bargain, numb, seduce, coax, corner, unmask)
+- NOT verbs of description (define, illustrate, show, describe, present, portray, frame, emphasize)
+- Name the specific LEVER after an em-dash — makes the intention memorable and testable
+- Must be DISTINCT from the adjacent beats below — no shared verb+object shape
+- Grounded in the passages retrieved — do not invent psychology absent from sources
+- If sources don't support any tactical reading, respond INTENTION: null
 
 WORK: ${work.source} (character: ${work.character})
 
