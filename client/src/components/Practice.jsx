@@ -5,7 +5,7 @@ import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
   Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target,
-  ThumbsUp, ThumbsDown, Eye, EyeOff
+  ThumbsUp, ThumbsDown, Meh
 } from 'lucide-react'
 import { similarityScore, containsExpected, compositeScore, wordDiff, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
 import BeatEditor from './BeatEditor'
@@ -71,7 +71,6 @@ export default function Practice() {
   // source URLs (SparkNotes, LitCharts, Wikipedia etc.) that discuss the
   // specific beat. Indexed by beatIndex → { extracts: [{quote, source}] }.
   const [intentions, setIntentions] = useState([])
-  const [isOwner, setIsOwner] = useState(false)
   const [showReadUnderstand, setShowReadUnderstand] = useState(() => {
     try { return localStorage.getItem('readUnderstandOpen') === '1' } catch { return false }
   })
@@ -121,7 +120,6 @@ export default function Practice() {
     ])
       .then(([workData, progressData, vizData, beatsData, prefs, intentionsData]) => {
         if (intentionsData?.beats) setIntentions(intentionsData.beats)
-        if (intentionsData?.isOwner) setIsOwner(true)
         setWork(workData)
         const key = `${authorId}/${workId}`
         const savedProgress = progressData.progress?.[key]
@@ -459,33 +457,9 @@ export default function Practice() {
     saveMastered(newMastered)
   }
 
-  // Owner-only: toggle hide state on an extract. Hides it from all
-  // non-owner viewers; owner still sees it, marked as hidden.
-  const toggleExtractHidden = async (beatIndex, extractIdVal) => {
-    let nextHidden = false
-    setIntentions(intentions.map(b => {
-      if (b.beatIndex !== beatIndex) return b
-      return {
-        ...b,
-        extracts: b.extracts.map(ex => {
-          if (ex.id !== extractIdVal) return ex
-          nextHidden = !ex.hidden
-          return { ...ex, hidden: nextHidden }
-        })
-      }
-    }))
-    try {
-      await api(`/intentions/${authorId}/${workId}/${beatIndex}/${extractIdVal}/hide`, {
-        method: 'POST'
-      })
-    } catch (err) {
-      console.error('extract hide failed:', err)
-    }
-  }
-
-  // Cast (or clear) an up/down vote on a specific extract. Same direction
-  // twice clears the vote. Optimistic update, then POST — server tally
-  // is authoritative on next fetch.
+  // Cast (or clear) a three-way vote (up | meh | down) on an extract. Same
+  // direction twice clears. Optimistic update, then POST — server tally
+  // is authoritative on the next fetch.
   const castExtractVote = async (beatIndex, extractIdVal, direction) => {
     let newVote = direction
     setIntentions(intentions.map(b => {
@@ -497,12 +471,15 @@ export default function Practice() {
           const prior = ex.myVote
           newVote = prior === direction ? null : direction
           let up = ex.votes.up
+          let meh = ex.votes.meh || 0
           let down = ex.votes.down
           if (prior === 'up') up -= 1
+          if (prior === 'meh') meh -= 1
           if (prior === 'down') down -= 1
           if (newVote === 'up') up += 1
+          if (newVote === 'meh') meh += 1
           if (newVote === 'down') down += 1
-          return { ...ex, myVote: newVote, votes: { up, down } }
+          return { ...ex, myVote: newVote, votes: { up, meh, down } }
         })
       }
     }))
@@ -1053,18 +1030,17 @@ export default function Practice() {
                             let host = ex.source
                             try { host = new URL(ex.source).hostname.replace(/^www\./, '') } catch {}
                             return (
-                              <div key={ex.id || i} style={{ display: 'flex', alignItems: 'stretch', gap: '0.5rem', marginBottom: '0.85rem', opacity: ex.hidden ? 0.45 : 1 }}>
-                                {isOwner && (
-                                  <button
-                                    onClick={() => toggleExtractHidden(currentIndex, ex.id)}
-                                    title={ex.hidden ? 'Show this extract to everyone' : 'Hide this extract from everyone (owner action)'}
-                                    style={{ background: ex.hidden ? 'rgba(155,45,48,0.15)' : 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 4, padding: '0.25rem 0.35rem', cursor: 'pointer', color: ex.hidden ? colors.crimson : colors.faded, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start', marginTop: '0.4rem' }}
-                                  >
-                                    {ex.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-                                  </button>
-                                )}
-                                <blockquote style={{ margin: 0, padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${ex.hidden ? colors.crimson : colors.gold}`, background: 'transparent', flex: 1 }}>
-                                  <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1rem', color: colors.ink, lineHeight: 1.55, margin: '0 0 0.35rem 0', fontStyle: 'italic', textDecoration: ex.hidden ? 'line-through' : 'none' }}>
+                              <div key={ex.id || i} style={{ display: 'flex', alignItems: 'stretch', gap: '0.5rem', marginBottom: '0.85rem' }}>
+                                <button
+                                  onClick={() => castExtractVote(currentIndex, ex.id, 'meh')}
+                                  title="Meh — not great, not bad"
+                                  style={{ background: ex.myVote === 'meh' ? 'rgba(196,163,90,0.2)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.25rem 0.4rem', cursor: 'pointer', color: ex.myVote === 'meh' ? colors.gold : colors.faded, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start', marginTop: '0.4rem', fontSize: '0.7rem', gap: '0.15rem' }}
+                                >
+                                  <Meh size={14} />
+                                  {ex.votes?.meh > 0 ? <span>{ex.votes.meh}</span> : null}
+                                </button>
+                                <blockquote style={{ margin: 0, padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${colors.gold}`, background: 'transparent', flex: 1 }}>
+                                  <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1rem', color: colors.ink, lineHeight: 1.55, margin: '0 0 0.35rem 0', fontStyle: 'italic' }}>
                                     &ldquo;{ex.quote}&rdquo;
                                   </p>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
