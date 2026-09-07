@@ -1,6 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { writeAndSync } from '../persist.js';
 
@@ -12,6 +13,7 @@ const DATA_DIR = path.join(__dirname, '../data');
 const ANALYTICS_DIR = path.join(DATA_DIR, 'analytics');
 const SOURCES_PATH = path.join(ANALYTICS_DIR, 'intention-sources.json');
 const CANONICAL_PATH = path.join(ANALYTICS_DIR, 'canonical-intentions.json');
+const VOTES_PATH = path.join(ANALYTICS_DIR, 'extract-votes.json');
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'openai/gpt-oss-120b';
@@ -26,6 +28,16 @@ async function readJson(p, fallback) {
 
 function beatKey(authorId, workId, beatIndex) {
   return `${authorId}/${workId}/${beatIndex}`;
+}
+
+// Stable ID for an extract — hash(quote + source). Survives regeneration
+// when the LLM picks the same extract again; votes stay attached.
+function extractId(quote, source) {
+  return crypto.createHash('sha256').update(`${quote}|${source}`).digest('hex').slice(0, 12);
+}
+
+function voteKey(authorId, workId, beatIndex, exId) {
+  return `${authorId}/${workId}/${beatIndex}/${exId}`;
 }
 function workKey(authorId, workId) {
   return `${authorId}/${workId}`;
@@ -177,29 +189,56 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+async function validateUserKey(req, res, next) {
+  const key = req.headers['x-user-key'];
+  if (!key) return res.status(401).json({ error: 'No key provided' });
+  try {
+    await fs.access(path.join(ANALYTICS_DIR, `${key}.json`));
+    req.userKey = key;
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid key' });
+  }
+}
+
 // ---------- Public endpoints ----------
 
 // Return all beats for a work with the cached extracts (LLM-selected verbatim
-// quotes from curated sources) plus the terse baseline intention as a
-// short cue. Extraction happens once via admin-generate and is cached in
-// canonical-intentions.json — this endpoint is a cheap read.
+// quotes from curated sources) plus per-extract vote tallies. Extraction
+// happens once via admin-generate and is cached in canonical-intentions.json
+// — this endpoint is a cheap read.
 router.get('/:authorId/:workId', async (req, res) => {
   try {
     const { authorId, workId } = req.params;
+    const userKey = req.headers['x-user-key'] || null;
     const work = await loadWork(authorId, workId);
     if (!work) return res.status(404).json({ error: 'work not found' });
 
     const canonical = await readJson(CANONICAL_PATH, {});
     const sources = await readJson(SOURCES_PATH, {});
+    const votes = await readJson(VOTES_PATH, {});
 
     const beats = (work.beats || []).map((b, i) => {
       const k = beatKey(authorId, workId, i);
       const cached = canonical[k];
+      const extracts = (cached?.extracts || []).map(ex => {
+        const id = extractId(ex.quote, ex.source);
+        const v = votes[voteKey(authorId, workId, i, id)] || { up: [], down: [] };
+        return {
+          id,
+          quote: ex.quote,
+          source: ex.source,
+          votes: { up: v.up?.length || 0, down: v.down?.length || 0 },
+          myVote: userKey
+            ? (v.up?.includes(userKey) ? 'up' : (v.down?.includes(userKey) ? 'down' : null))
+            : null
+        };
+      });
       return {
         beatIndex: i,
         label: b.label || null,
         baselineIntention: b.intention || null,
-        extracts: cached?.extracts || [],
+        extracts,
         generatedAt: cached?.generatedAt || null
       };
     });
@@ -212,6 +251,29 @@ router.get('/:authorId/:workId', async (req, res) => {
     });
   } catch (err) {
     console.error('GET intentions failed:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cast (or clear) a vote on a specific extract. Same-direction click clears.
+router.post('/:authorId/:workId/:beatIndex/:extractId/vote', validateUserKey, async (req, res) => {
+  try {
+    const { authorId, workId, beatIndex, extractId: exId } = req.params;
+    const vote = req.body?.vote; // 'up' | 'down' | null
+    if (![null, 'up', 'down'].includes(vote)) {
+      return res.status(400).json({ error: 'vote must be up, down, or null' });
+    }
+    const votes = await readJson(VOTES_PATH, {});
+    const k = voteKey(authorId, workId, Number(beatIndex), exId);
+    if (!votes[k]) votes[k] = { up: [], down: [] };
+    votes[k].up = votes[k].up.filter(u => u !== req.userKey);
+    votes[k].down = votes[k].down.filter(u => u !== req.userKey);
+    if (vote === 'up') votes[k].up.push(req.userKey);
+    if (vote === 'down') votes[k].down.push(req.userKey);
+    await writeAndSync(VOTES_PATH, votes);
+    res.json({ success: true, votes: { up: votes[k].up.length, down: votes[k].down.length } });
+  } catch (err) {
+    console.error('extract vote failed:', err);
     res.status(500).json({ error: err.message });
   }
 });

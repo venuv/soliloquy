@@ -4,7 +4,8 @@ import { api, trackEvent } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
-  Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target
+  Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target,
+  ThumbsUp, ThumbsDown
 } from 'lucide-react'
 import { similarityScore, containsExpected, compositeScore, wordDiff, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
 import BeatEditor from './BeatEditor'
@@ -454,6 +455,39 @@ export default function Practice() {
     }
     setMastered(newMastered)
     saveMastered(newMastered)
+  }
+
+  // Cast (or clear) an up/down vote on a specific extract. Same direction
+  // twice clears the vote. Optimistic update, then POST — server tally
+  // is authoritative on next fetch.
+  const castExtractVote = async (beatIndex, extractIdVal, direction) => {
+    let newVote = direction
+    setIntentions(intentions.map(b => {
+      if (b.beatIndex !== beatIndex) return b
+      return {
+        ...b,
+        extracts: b.extracts.map(ex => {
+          if (ex.id !== extractIdVal) return ex
+          const prior = ex.myVote
+          newVote = prior === direction ? null : direction
+          let up = ex.votes.up
+          let down = ex.votes.down
+          if (prior === 'up') up -= 1
+          if (prior === 'down') down -= 1
+          if (newVote === 'up') up += 1
+          if (newVote === 'down') down += 1
+          return { ...ex, myVote: newVote, votes: { up, down } }
+        })
+      }
+    }))
+    try {
+      await api(`/intentions/${authorId}/${workId}/${beatIndex}/${extractIdVal}/vote`, {
+        method: 'POST',
+        body: JSON.stringify({ vote: newVote })
+      })
+    } catch (err) {
+      console.error('extract vote failed:', err)
+    }
   }
 
   const toggleReadUnderstand = () => {
@@ -993,13 +1027,22 @@ export default function Practice() {
                             let host = ex.source
                             try { host = new URL(ex.source).hostname.replace(/^www\./, '') } catch {}
                             return (
-                              <blockquote key={i} style={{ margin: '0 0 0.85rem 0', padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${colors.gold}`, background: 'transparent' }}>
+                              <blockquote key={ex.id || i} style={{ margin: '0 0 0.85rem 0', padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${colors.gold}`, background: 'transparent' }}>
                                 <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1rem', color: colors.ink, lineHeight: 1.55, margin: '0 0 0.35rem 0', fontStyle: 'italic' }}>
                                   &ldquo;{ex.quote}&rdquo;
                                 </p>
-                                <a href={ex.source} target="_blank" rel="noopener noreferrer" style={{ color: colors.muted, textDecoration: 'none', fontSize: '0.75rem' }}>
-                                  — {host} ↗
-                                </a>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                  <a href={ex.source} target="_blank" rel="noopener noreferrer" style={{ color: colors.muted, textDecoration: 'none', fontSize: '0.75rem' }}>
+                                    — {host} ↗
+                                  </a>
+                                  <span style={{ flex: 1 }} />
+                                  <button onClick={() => castExtractVote(currentIndex, ex.id, 'up')} title="This extract is useful" style={{ background: ex.myVote === 'up' ? 'rgba(61,92,74,0.15)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.2rem 0.45rem', cursor: 'pointer', color: ex.myVote === 'up' ? colors.forest : colors.faded, display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
+                                    <ThumbsUp size={12} />{ex.votes?.up > 0 ? ex.votes.up : ''}
+                                  </button>
+                                  <button onClick={() => castExtractVote(currentIndex, ex.id, 'down')} title="This extract is not useful (e.g. just repeats the verse)" style={{ background: ex.myVote === 'down' ? 'rgba(155,45,48,0.12)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.2rem 0.45rem', cursor: 'pointer', color: ex.myVote === 'down' ? colors.crimson : colors.faded, display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
+                                    <ThumbsDown size={12} />{ex.votes?.down > 0 ? ex.votes.down : ''}
+                                  </button>
+                                </div>
                               </blockquote>
                             )
                           })}
