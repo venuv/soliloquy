@@ -5,7 +5,7 @@ import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
   Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target,
-  ThumbsUp, ThumbsDown
+  ThumbsUp, ThumbsDown, Eye, EyeOff
 } from 'lucide-react'
 import { similarityScore, containsExpected, compositeScore, wordDiff, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
 import BeatEditor from './BeatEditor'
@@ -71,6 +71,7 @@ export default function Practice() {
   // source URLs (SparkNotes, LitCharts, Wikipedia etc.) that discuss the
   // specific beat. Indexed by beatIndex → { extracts: [{quote, source}] }.
   const [intentions, setIntentions] = useState([])
+  const [isOwner, setIsOwner] = useState(false)
   const [showReadUnderstand, setShowReadUnderstand] = useState(() => {
     try { return localStorage.getItem('readUnderstandOpen') === '1' } catch { return false }
   })
@@ -120,6 +121,7 @@ export default function Practice() {
     ])
       .then(([workData, progressData, vizData, beatsData, prefs, intentionsData]) => {
         if (intentionsData?.beats) setIntentions(intentionsData.beats)
+        if (intentionsData?.isOwner) setIsOwner(true)
         setWork(workData)
         const key = `${authorId}/${workId}`
         const savedProgress = progressData.progress?.[key]
@@ -455,6 +457,30 @@ export default function Practice() {
     }
     setMastered(newMastered)
     saveMastered(newMastered)
+  }
+
+  // Owner-only: toggle hide state on an extract. Hides it from all
+  // non-owner viewers; owner still sees it, marked as hidden.
+  const toggleExtractHidden = async (beatIndex, extractIdVal) => {
+    let nextHidden = false
+    setIntentions(intentions.map(b => {
+      if (b.beatIndex !== beatIndex) return b
+      return {
+        ...b,
+        extracts: b.extracts.map(ex => {
+          if (ex.id !== extractIdVal) return ex
+          nextHidden = !ex.hidden
+          return { ...ex, hidden: nextHidden }
+        })
+      }
+    }))
+    try {
+      await api(`/intentions/${authorId}/${workId}/${beatIndex}/${extractIdVal}/hide`, {
+        method: 'POST'
+      })
+    } catch (err) {
+      console.error('extract hide failed:', err)
+    }
   }
 
   // Cast (or clear) an up/down vote on a specific extract. Same direction
@@ -1027,23 +1053,34 @@ export default function Practice() {
                             let host = ex.source
                             try { host = new URL(ex.source).hostname.replace(/^www\./, '') } catch {}
                             return (
-                              <blockquote key={ex.id || i} style={{ margin: '0 0 0.85rem 0', padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${colors.gold}`, background: 'transparent' }}>
-                                <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1rem', color: colors.ink, lineHeight: 1.55, margin: '0 0 0.35rem 0', fontStyle: 'italic' }}>
-                                  &ldquo;{ex.quote}&rdquo;
-                                </p>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                                  <a href={ex.source} target="_blank" rel="noopener noreferrer" style={{ color: colors.muted, textDecoration: 'none', fontSize: '0.75rem' }}>
-                                    — {host} ↗
-                                  </a>
-                                  <span style={{ flex: 1 }} />
-                                  <button onClick={() => castExtractVote(currentIndex, ex.id, 'up')} title="This extract is useful" style={{ background: ex.myVote === 'up' ? 'rgba(61,92,74,0.15)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.2rem 0.45rem', cursor: 'pointer', color: ex.myVote === 'up' ? colors.forest : colors.faded, display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
-                                    <ThumbsUp size={12} />{ex.votes?.up > 0 ? ex.votes.up : ''}
+                              <div key={ex.id || i} style={{ display: 'flex', alignItems: 'stretch', gap: '0.5rem', marginBottom: '0.85rem', opacity: ex.hidden ? 0.45 : 1 }}>
+                                {isOwner && (
+                                  <button
+                                    onClick={() => toggleExtractHidden(currentIndex, ex.id)}
+                                    title={ex.hidden ? 'Show this extract to everyone' : 'Hide this extract from everyone (owner action)'}
+                                    style={{ background: ex.hidden ? 'rgba(155,45,48,0.15)' : 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 4, padding: '0.25rem 0.35rem', cursor: 'pointer', color: ex.hidden ? colors.crimson : colors.faded, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start', marginTop: '0.4rem' }}
+                                  >
+                                    {ex.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
                                   </button>
-                                  <button onClick={() => castExtractVote(currentIndex, ex.id, 'down')} title="This extract is not useful (e.g. just repeats the verse)" style={{ background: ex.myVote === 'down' ? 'rgba(155,45,48,0.12)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.2rem 0.45rem', cursor: 'pointer', color: ex.myVote === 'down' ? colors.crimson : colors.faded, display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
-                                    <ThumbsDown size={12} />{ex.votes?.down > 0 ? ex.votes.down : ''}
-                                  </button>
-                                </div>
-                              </blockquote>
+                                )}
+                                <blockquote style={{ margin: 0, padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${ex.hidden ? colors.crimson : colors.gold}`, background: 'transparent', flex: 1 }}>
+                                  <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1rem', color: colors.ink, lineHeight: 1.55, margin: '0 0 0.35rem 0', fontStyle: 'italic', textDecoration: ex.hidden ? 'line-through' : 'none' }}>
+                                    &ldquo;{ex.quote}&rdquo;
+                                  </p>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                    <a href={ex.source} target="_blank" rel="noopener noreferrer" style={{ color: colors.muted, textDecoration: 'none', fontSize: '0.75rem' }}>
+                                      — {host} ↗
+                                    </a>
+                                    <span style={{ flex: 1 }} />
+                                    <button onClick={() => castExtractVote(currentIndex, ex.id, 'up')} title="This extract is useful" style={{ background: ex.myVote === 'up' ? 'rgba(61,92,74,0.15)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.2rem 0.45rem', cursor: 'pointer', color: ex.myVote === 'up' ? colors.forest : colors.faded, display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
+                                      <ThumbsUp size={12} />{ex.votes?.up > 0 ? ex.votes.up : ''}
+                                    </button>
+                                    <button onClick={() => castExtractVote(currentIndex, ex.id, 'down')} title="This extract is not useful (e.g. just repeats the verse)" style={{ background: ex.myVote === 'down' ? 'rgba(155,45,48,0.12)' : 'none', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, padding: '0.2rem 0.45rem', cursor: 'pointer', color: ex.myVote === 'down' ? colors.crimson : colors.faded, display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
+                                      <ThumbsDown size={12} />{ex.votes?.down > 0 ? ex.votes.down : ''}
+                                    </button>
+                                  </div>
+                                </blockquote>
+                              </div>
                             )
                           })}
                         </>

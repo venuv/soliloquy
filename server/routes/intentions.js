@@ -14,6 +14,17 @@ const ANALYTICS_DIR = path.join(DATA_DIR, 'analytics');
 const SOURCES_PATH = path.join(ANALYTICS_DIR, 'intention-sources.json');
 const CANONICAL_PATH = path.join(ANALYTICS_DIR, 'canonical-intentions.json');
 const VOTES_PATH = path.join(ANALYTICS_DIR, 'extract-votes.json');
+const HIDDEN_PATH = path.join(ANALYTICS_DIR, 'hidden-extracts.json');
+
+// User keys that get owner privileges (side-thumb to hide bad extracts).
+// Env var OWNER_USER_KEYS is a comma-separated list; defaults to '121292'
+// (The Builder in NICKNAMES).
+const OWNER_KEYS = (process.env.OWNER_USER_KEYS || '121292')
+  .split(',').map(s => s.trim()).filter(Boolean);
+function isOwner(req) {
+  const key = req.headers['x-user-key'];
+  return key && OWNER_KEYS.includes(key);
+}
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'openai/gpt-oss-120b';
@@ -217,23 +228,29 @@ router.get('/:authorId/:workId', async (req, res) => {
     const canonical = await readJson(CANONICAL_PATH, {});
     const sources = await readJson(SOURCES_PATH, {});
     const votes = await readJson(VOTES_PATH, {});
+    const hidden = await readJson(HIDDEN_PATH, {});
+    const viewerIsOwner = isOwner(req);
 
     const beats = (work.beats || []).map((b, i) => {
       const k = beatKey(authorId, workId, i);
       const cached = canonical[k];
-      const extracts = (cached?.extracts || []).map(ex => {
+      const extractsAll = (cached?.extracts || []).map(ex => {
         const id = extractId(ex.quote, ex.source);
-        const v = votes[voteKey(authorId, workId, i, id)] || { up: [], down: [] };
+        const vk = voteKey(authorId, workId, i, id);
+        const v = votes[vk] || { up: [], down: [] };
         return {
           id,
           quote: ex.quote,
           source: ex.source,
+          hidden: !!hidden[vk],
           votes: { up: v.up?.length || 0, down: v.down?.length || 0 },
           myVote: userKey
             ? (v.up?.includes(userKey) ? 'up' : (v.down?.includes(userKey) ? 'down' : null))
             : null
         };
       });
+      // Owner sees hidden extracts (marked as such). Non-owners don't.
+      const extracts = viewerIsOwner ? extractsAll : extractsAll.filter(e => !e.hidden);
       return {
         beatIndex: i,
         label: b.label || null,
@@ -246,11 +263,30 @@ router.get('/:authorId/:workId', async (req, res) => {
     res.json({
       workId,
       authorId,
+      isOwner: viewerIsOwner,
       sourceUrls: sources[workKey(authorId, workId)] || [],
       beats
     });
   } catch (err) {
     console.error('GET intentions failed:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Owner-only: toggle hidden state on a specific extract. Hidden extracts
+// disappear from non-owner views entirely; owner still sees them marked.
+router.post('/:authorId/:workId/:beatIndex/:extractId/hide', validateUserKey, async (req, res) => {
+  try {
+    if (!isOwner(req)) return res.status(403).json({ error: 'owner only' });
+    const { authorId, workId, beatIndex, extractId: exId } = req.params;
+    const hidden = await readJson(HIDDEN_PATH, {});
+    const k = voteKey(authorId, workId, Number(beatIndex), exId);
+    if (hidden[k]) delete hidden[k];
+    else hidden[k] = { hiddenAt: new Date().toISOString(), by: req.userKey };
+    await writeAndSync(HIDDEN_PATH, hidden);
+    res.json({ success: true, hidden: !!hidden[k] });
+  } catch (err) {
+    console.error('extract hide failed:', err);
     res.status(500).json({ error: err.message });
   }
 });
