@@ -12,7 +12,6 @@ const DATA_DIR = path.join(__dirname, '../data');
 const ANALYTICS_DIR = path.join(DATA_DIR, 'analytics');
 const SOURCES_PATH = path.join(ANALYTICS_DIR, 'intention-sources.json');
 const CANONICAL_PATH = path.join(ANALYTICS_DIR, 'canonical-intentions.json');
-const VOTES_PATH = path.join(ANALYTICS_DIR, 'intention-votes.json');
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'openai/gpt-oss-120b';
@@ -58,14 +57,6 @@ function beatText(work, beat) {
 
 function fullSoliloquyText(work) {
   return (work.chunks || []).map(chunkText).join(' ');
-}
-
-// Build a small context object for an adjacent beat: label + text. Returns
-// null if the beat index is out of range.
-function beatContext(work, beatIdx) {
-  const beat = (work.beats || [])[beatIdx];
-  if (!beat) return null;
-  return { label: beat.label || null, text: beatText(work, beat) };
 }
 
 // Strip HTML tags + collapse whitespace. Not a real parser — but sufficient
@@ -128,73 +119,55 @@ async function callGroq(prompt, { maxTokens = 1200, temperature = 0.4 } = {}) {
 // prompt so the LLM can't cite them as if they mattered.
 const MIN_SOURCE_BYTES = 500;
 
-function buildPrompt({ work, beat, beatIdx, beatTextStr, fullText, sources, prevBeatCtx, nextBeatCtx }) {
+function buildPrompt({ work, beat, beatIdx, beatTextStr, fullText, sources }) {
   const sourceBlocks = sources
     .filter(s => s.ok && s.text && s.text.length >= MIN_SOURCE_BYTES)
     .map(s => `--- ${s.url} ---\n${s.text}`)
     .join('\n\n');
-  const adjacent = [];
-  if (prevBeatCtx) adjacent.push(`PREVIOUS BEAT (${prevBeatCtx.label || 'unlabeled'}): ${prevBeatCtx.text}`);
-  if (nextBeatCtx) adjacent.push(`NEXT BEAT (${nextBeatCtx.label || 'unlabeled'}): ${nextBeatCtx.text}`);
-  const adjacentBlock = adjacent.length
-    ? `\nADJACENT BEATS (your intention must contrast with these — each beat is a distinct rhetorical move):\n${adjacent.join('\n')}\n`
-    : '';
-  return `You are writing ONE intention for a beat in a Shakespeare soliloquy — for actors and students memorizing the piece. The intention must be MEMORABLE, SHARP, and specific about the psychological move.
+  return `You are annotating a Shakespeare soliloquy for a memorization app.
 
-WHAT AN INTENTION IS:
-The character's TACTICAL MOVE on the listener (or on themselves, in inward soliloquies) — the specific psychological button they push in THIS beat.
+YOUR JOB IS EXTRACTION, NOT SYNTHESIS. Do not write anything of your own. Do not paraphrase. Do not summarize. Do not "improve" the source language. Your entire output must be quotations pulled verbatim from the retrieved passages, plus the source URL each came from.
 
-BAD examples (generic, book-report tone — REJECT these):
-- "to reflect on the passage of time and life's futility"           ← describes content
-- "to persuade Shylock to grant mercy"                              ← names goal but not the LEVER
-- "to elevate mercy as a divine virtue"                             ← describes, doesn't act
-- "to soften X by portraying Y as a divine blessing that…"          ← the mediocre middle ground — vague verb + long paraphrase tail
-
-GOOD examples (name the psychological lever + are memorable):
-- Macbeth "Tomorrow and tomorrow": "to numb himself against grief — if all time is meaningless, so is her death"
-- Hamlet "To be or not to be": "to talk himself into cowardice — nightmares after death are worse than living misery"
-- Lady Macbeth "The raven himself": "to bargain with the dark for a cruelty her woman's body doesn't carry"
-- Iago "And what's he then": "to make evil look like fair play — he's only helping Cassio, technically"
-
-STEP-BY-STEP (think through this in order):
-1. LARGER GOAL: across the whole soliloquy, whom is the character trying to move, and toward what?
-2. LEVER: what psychological button does THIS specific beat push? Pick from: status, guilt, cost/ease, self-image, obligation, fear, hypocrisy, comfort, self-persuasion, shame, flattery, theology
-3. WRITE: the intention as verb-of-action + object + short em-dash tail naming the lever/mechanism
+For the CURRENT BEAT below, find the sentence(s) in the RETRIEVED PASSAGES that most directly discuss the MEANING, PURPOSE, or INTERPRETATION of what happens in this specific beat. Ignore passages that only discuss the whole play, other scenes, or the character's biography — we want the interpretive content SPECIFIC to what this beat says or does.
 
 RULES:
-- **UNDER 15 WORDS** — brevity forces sharpness
-- Concrete verb of ACTION (soften, disarm, trap, flatter, indict, shame, bargain, numb, seduce, coax, corner, unmask)
-- NOT verbs of description (define, illustrate, show, describe, present, portray, frame, emphasize)
-- Name the specific LEVER after an em-dash — makes the intention memorable and testable
-- Must be DISTINCT from the adjacent beats below — no shared verb+object shape
-- Grounded in the passages retrieved — do not invent psychology absent from sources
-- If sources don't support any tactical reading, respond INTENTION: null
+- Every extract MUST be verbatim from a retrieved passage — word for word. If in doubt, omit.
+- Prefer 1-3 short extracts (1-3 sentences each). Multiple short beats a single long dump.
+- Extracts should come from different sources when possible.
+- Extracts must actually pertain to THIS beat, not the whole speech.
+- If NO retrieved passage has anything specifically relevant to this beat, respond EXTRACTS: none
+- Never fabricate. If nothing verbatim fits, return none.
 
 WORK: ${work.source} (character: ${work.character})
 
-FULL SOLILOQUY (context — infer the character's larger goal from this):
+FULL SOLILOQUY (context only — for locating the beat, not for extraction):
 ${fullText}
-${adjacentBlock}
+
 CURRENT BEAT (beat ${beatIdx}${beat.label ? `, "${beat.label}"` : ''}):
 ${beatTextStr}
 
 RETRIEVED PASSAGES:
-${sourceBlocks || '(no sources retrieved successfully — do not cite any URL)'}
+${sourceBlocks || '(no sources retrieved — respond EXTRACTS: none)'}
 
 Respond EXACTLY in this format, nothing else:
-INTENTION: <one-sentence tactical intention, or the word null>
-SOURCES: <comma-separated URLs you drew from, or none>`;
+EXTRACT: "<verbatim quote>" | <source URL>
+EXTRACT: "<verbatim quote>" | <source URL>
+(add more EXTRACT lines as needed, or respond EXTRACTS: none)`;
 }
 
+// Parses either "EXTRACT: \"quote\" | url" lines or "EXTRACTS: none".
+// Returns { extracts: [{ quote, source }, ...] } — empty array if none.
 function parseGroqResponse(text) {
-  const intMatch = text.match(/INTENTION:\s*(.+?)(?:\n|$)/i);
-  const srcMatch = text.match(/SOURCES:\s*(.+?)(?:\n|$)/i);
-  let intention = intMatch ? intMatch[1].trim() : null;
-  if (intention && /^null$/i.test(intention)) intention = null;
-  const sources = srcMatch
-    ? srcMatch[1].split(',').map(s => s.trim()).filter(s => s && !/^none$/i.test(s))
-    : [];
-  return { intention, sources };
+  if (/EXTRACTS:\s*none/i.test(text)) return { extracts: [] };
+  const extracts = [];
+  const lineRe = /EXTRACT:\s*"([^"]+)"\s*\|\s*(\S+)/gi;
+  let m;
+  while ((m = lineRe.exec(text)) !== null) {
+    const quote = m[1].trim();
+    const source = m[2].trim();
+    if (quote && source) extracts.push({ quote, source });
+  }
+  return { extracts };
 }
 
 function requireAdmin(req, res, next) {
@@ -204,51 +177,30 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-async function validateUserKey(req, res, next) {
-  const key = req.headers['x-user-key'];
-  if (!key) return res.status(401).json({ error: 'No key provided' });
-  try {
-    await fs.access(path.join(ANALYTICS_DIR, `${key}.json`));
-    req.userKey = key;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Invalid key' });
-  }
-}
-
 // ---------- Public endpoints ----------
 
-// Return all beats for a work with either the canonical (generated) intention
-// or the baseline (from shakespeare.json) as fallback. Includes vote tallies
-// for canonical intentions and the caller's own vote if any.
+// Return all beats for a work with the cached extracts (LLM-selected verbatim
+// quotes from curated sources) plus the terse baseline intention as a
+// short cue. Extraction happens once via admin-generate and is cached in
+// canonical-intentions.json — this endpoint is a cheap read.
 router.get('/:authorId/:workId', async (req, res) => {
   try {
     const { authorId, workId } = req.params;
-    const userKey = req.headers['x-user-key'] || null;
     const work = await loadWork(authorId, workId);
     if (!work) return res.status(404).json({ error: 'work not found' });
 
     const canonical = await readJson(CANONICAL_PATH, {});
-    const votes = await readJson(VOTES_PATH, {});
     const sources = await readJson(SOURCES_PATH, {});
 
     const beats = (work.beats || []).map((b, i) => {
       const k = beatKey(authorId, workId, i);
-      const gen = canonical[k];
-      const v = votes[k] || { up: [], down: [] };
-      const myVote = userKey
-        ? (v.up?.includes(userKey) ? 'up' : (v.down?.includes(userKey) ? 'down' : null))
-        : null;
+      const cached = canonical[k];
       return {
         beatIndex: i,
         label: b.label || null,
-        // Prefer generated (sourced) intention if present; fall back to baseline.
-        intention: gen?.intention || b.intention || null,
-        isSourced: !!gen,
-        sources: gen?.sources || [],
-        generatedAt: gen?.generatedAt || null,
-        votes: { up: v.up?.length || 0, down: v.down?.length || 0 },
-        myVote
+        baselineIntention: b.intention || null,
+        extracts: cached?.extracts || [],
+        generatedAt: cached?.generatedAt || null
       };
     });
 
@@ -264,31 +216,10 @@ router.get('/:authorId/:workId', async (req, res) => {
   }
 });
 
-// Cast or clear a vote.
-router.post('/:authorId/:workId/:beatIndex/vote', validateUserKey, async (req, res) => {
-  try {
-    const { authorId, workId, beatIndex } = req.params;
-    const vote = req.body?.vote; // 'up' | 'down' | null
-    if (![null, 'up', 'down'].includes(vote)) {
-      return res.status(400).json({ error: 'vote must be up, down, or null' });
-    }
-    const votes = await readJson(VOTES_PATH, {});
-    const k = beatKey(authorId, workId, Number(beatIndex));
-    if (!votes[k]) votes[k] = { up: [], down: [] };
-    // Remove any prior vote from this user, then add the new one.
-    votes[k].up = votes[k].up.filter(u => u !== req.userKey);
-    votes[k].down = votes[k].down.filter(u => u !== req.userKey);
-    if (vote === 'up') votes[k].up.push(req.userKey);
-    if (vote === 'down') votes[k].down.push(req.userKey);
-    await writeAndSync(VOTES_PATH, votes);
-    res.json({ success: true, votes: { up: votes[k].up.length, down: votes[k].down.length } });
-  } catch (err) {
-    console.error('vote failed:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // ---------- Admin endpoints ----------
+// Votes endpoint removed — extractive retrieval doesn't need moderation
+// the same way synthesized intentions did. The quote is either verbatim
+// and relevant, or it isn't; owner can regenerate if a bad extract slips.
 
 // Set the curated URL list for a work.
 router.post('/admin-sources/:authorId/:workId', requireAdmin, async (req, res) => {
@@ -327,9 +258,7 @@ router.post('/admin-preview/:authorId/:workId/:beatIndex', requireAdmin, async (
       work, beat, beatIdx: idx,
       beatTextStr: beatText(work, beat),
       fullText: fullSoliloquyText(work),
-      sources: fetched,
-      prevBeatCtx: beatContext(work, idx - 1),
-      nextBeatCtx: beatContext(work, idx + 1)
+      sources: fetched
     });
     const raw = await callGroq(prompt);
     const parsed = parseGroqResponse(raw);
@@ -370,22 +299,19 @@ router.post('/admin-generate/:authorId/:workId/:beatIndex?', requireAdmin, async
           work, beat, beatIdx: i,
           beatTextStr: beatText(work, beat),
           fullText,
-          sources: fetched,
-          prevBeatCtx: beatContext(work, i - 1),
-          nextBeatCtx: beatContext(work, i + 1)
+          sources: fetched
         });
         const raw = await callGroq(prompt);
         const parsed = parseGroqResponse(raw);
-        if (parsed.intention) {
+        if (parsed.extracts.length > 0) {
           canonical[beatKey(authorId, workId, i)] = {
-            intention: parsed.intention,
-            sources: parsed.sources,
+            extracts: parsed.extracts,
             generatedAt: new Date().toISOString(),
-            version: 1
+            version: 2
           };
-          results.push({ beatIndex: i, intention: parsed.intention, sources: parsed.sources });
+          results.push({ beatIndex: i, extracts: parsed.extracts });
         } else {
-          results.push({ beatIndex: i, skipped: 'insufficient source coverage' });
+          results.push({ beatIndex: i, skipped: 'no relevant extracts found in sources' });
         }
       } catch (err) {
         results.push({ beatIndex: i, error: err.message });
@@ -394,39 +320,13 @@ router.post('/admin-generate/:authorId/:workId/:beatIndex?', requireAdmin, async
     await writeAndSync(CANONICAL_PATH, canonical);
     res.json({
       success: true,
-      generated: results.filter(r => r.intention).length,
+      generated: results.filter(r => r.extracts).length,
       skipped: results.filter(r => r.skipped).length,
       errors: results.filter(r => r.error).length,
       results
     });
   } catch (err) {
     console.error('admin-generate failed:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Return current beats flagged by voting: ≥ 3 downvotes AND downvote ratio > 50%.
-router.get('/admin-flagged', requireAdmin, async (req, res) => {
-  try {
-    const votes = await readJson(VOTES_PATH, {});
-    const canonical = await readJson(CANONICAL_PATH, {});
-    const flagged = [];
-    for (const [k, v] of Object.entries(votes)) {
-      const down = v.down?.length || 0;
-      const up = v.up?.length || 0;
-      const total = down + up;
-      if (down >= 3 && total > 0 && down / total > 0.5) {
-        flagged.push({
-          beatKey: k,
-          up, down,
-          intention: canonical[k]?.intention || null,
-          sources: canonical[k]?.sources || []
-        });
-      }
-    }
-    res.json({ flagged });
-  } catch (err) {
-    console.error('admin-flagged failed:', err);
     res.status(500).json({ error: err.message });
   }
 });

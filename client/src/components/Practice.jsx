@@ -4,8 +4,7 @@ import { api, trackEvent } from '../App'
 import {
   Home, BookOpen, GraduationCap, ChevronLeft, ChevronRight,
   CheckCircle2, Mic, MicOff, RotateCcw, ArrowLeft, Image,
-  Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target,
-  ThumbsUp, ThumbsDown
+  Sparkles, Loader2, Check, Edit3, Map, Square, Shuffle, Target
 } from 'lucide-react'
 import { similarityScore, containsExpected, compositeScore, wordDiff, wordCount, getBeatText, getBeatPrompt, getBeatCue } from '../utils/memoryCard'
 import BeatEditor from './BeatEditor'
@@ -67,13 +66,13 @@ export default function Practice() {
   const [memTab, setMemTab] = useState('learn') // 'learn' | 'drill' | 'tools'
   const [toolsChunkIndex, setToolsChunkIndex] = useState(0) // which chunk within a beat to show in tools
 
-  // Beat intentions (sourced via LLM+URLs, with baseline fallback). Indexed
-  // by beat index. Voting handles moderation without owner-in-the-loop.
+  // Extractive beat annotations: LLM picks verbatim quotes from curated
+  // source URLs (SparkNotes, LitCharts, Wikipedia etc.) that discuss the
+  // specific beat. Indexed by beatIndex → { extracts: [{quote, source}] }.
   const [intentions, setIntentions] = useState([])
   const [showReadUnderstand, setShowReadUnderstand] = useState(() => {
     try { return localStorage.getItem('readUnderstandOpen') === '1' } catch { return false }
   })
-  const [showSources, setShowSources] = useState(false)
 
   // Drill mode state
   const [drillChunks, setDrillChunks] = useState([]) // weighted queue of chunk indices
@@ -457,36 +456,6 @@ export default function Practice() {
     saveMastered(newMastered)
   }
 
-  // Cast (or clear) an up/down vote on the current beat's intention. Clicking
-  // the same direction twice clears the vote. Optimistic local update, then
-  // POST — server is the authority on final tallies.
-  const castVote = async (beatIndex, direction) => {
-    const current = intentions.find(b => b.beatIndex === beatIndex)
-    if (!current) return
-    const newVote = current.myVote === direction ? null : direction
-    // Optimistic update
-    setIntentions(intentions.map(b => {
-      if (b.beatIndex !== beatIndex) return b
-      const up = new Set()
-      const down = new Set()
-      for (let i = 0; i < b.votes.up; i++) up.add(`u${i}`)
-      for (let i = 0; i < b.votes.down; i++) down.add(`d${i}`)
-      if (b.myVote === 'up') up.delete('u0')
-      if (b.myVote === 'down') down.delete('d0')
-      if (newVote === 'up') up.add('me')
-      if (newVote === 'down') down.add('me')
-      return { ...b, myVote: newVote, votes: { up: up.size, down: down.size } }
-    }))
-    try {
-      await api(`/intentions/${authorId}/${workId}/${beatIndex}/vote`, {
-        method: 'POST',
-        body: JSON.stringify({ vote: newVote })
-      })
-    } catch (err) {
-      console.error('vote failed:', err)
-    }
-  }
-
   const toggleReadUnderstand = () => {
     const next = !showReadUnderstand
     setShowReadUnderstand(next)
@@ -859,11 +828,10 @@ export default function Practice() {
     const chunk = inBeatsMode ? null : work.chunks[currentIndex]
     const beat = inBeatsMode ? beats[currentIndex] : null
     const isMastered = inBeatsMode ? masteredBeats.has(currentIndex) : mastered.has(currentIndex)
-    // Resolve the display intention: sourced (LLM+URLs) if generated, else
-    // baseline from shakespeare.json. Voting only meaningful on sourced.
-    const currentIntentionData = inBeatsMode ? intentions.find(i => i.beatIndex === currentIndex) : null
-    const displayIntention = currentIntentionData?.intention || beat?.intention || null
-    const isSourcedIntention = !!currentIntentionData?.isSourced
+    // Extracts for the current beat: LLM-picked verbatim quotes from curated
+    // sources that discuss THIS beat's meaning. Empty if not yet generated.
+    const currentBeatEntry = inBeatsMode ? intentions.find(i => i.beatIndex === currentIndex) : null
+    const currentExtracts = currentBeatEntry?.extracts || []
     // Tools tab: resolve the actual chunk index for word pictures
     const toolsBeatChunkCount = inBeatsMode && beat ? (beat.endChunk - beat.startChunk + 1) : 0
     const clampedToolsChunkIndex = inBeatsMode ? Math.min(toolsChunkIndex, Math.max(toolsBeatChunkCount - 1, 0)) : 0
@@ -969,7 +937,7 @@ export default function Practice() {
                     <>
                       <p style={{ color: colors.blue, fontSize: '0.75rem', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Beat {currentIndex + 1}</p>
                       <h3 style={{ fontFamily: "'Cormorant', serif", fontSize: '1.4rem', color: colors.ink, lineHeight: 1.4, marginBottom: '0.5rem' }}>{beat.label}</h3>
-                      <p style={{ color: colors.muted, fontSize: '0.85rem', fontStyle: 'italic', marginBottom: '1rem' }}>{displayIntention || beat.intention}</p>
+                      <p style={{ color: colors.muted, fontSize: '0.85rem', fontStyle: 'italic', marginBottom: '1rem' }}>{beat.intention}</p>
                       <p style={{ fontFamily: "'Cormorant', serif", color: colors.ink, fontSize: '1.05rem', opacity: 0.7 }}>
                         "{getBeatCue(work.chunks, beat)}"
                       </p>
@@ -1014,43 +982,27 @@ export default function Practice() {
                   {showReadUnderstand && (
                     <div style={{ marginTop: '0.75rem', padding: '1.25rem 1.5rem', background: '#fafaf5', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8 }}>
                       <p style={{ color: colors.faded, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>The beat</p>
-                      <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: colors.ink, lineHeight: 1.7, marginBottom: '1.25rem' }}>
+                      <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.15rem', color: colors.ink, lineHeight: 1.7, marginBottom: currentExtracts.length > 0 ? '1.25rem' : 0 }}>
                         {work.chunks.slice(beat.startChunk, beat.endChunk + 1).map(c => `${c.front} ${c.back}`).join(' ')}
                       </p>
 
-                      {displayIntention && (
+                      {currentExtracts.length > 0 && (
                         <>
-                          <p style={{ color: colors.faded, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem' }}>
-                            Intention {isSourcedIntention && <span style={{ color: colors.forest, textTransform: 'none', letterSpacing: 0, fontStyle: 'italic', marginLeft: '0.35rem' }}>· sourced</span>}
-                          </p>
-                          <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1.1rem', color: colors.ink, fontStyle: 'italic', lineHeight: 1.55, marginBottom: isSourcedIntention ? '0.85rem' : 0 }}>
-                            {displayIntention}
-                          </p>
-
-                          {isSourcedIntention && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                              <button onClick={() => castVote(currentIndex, 'up')} title="This intention resonates" style={{ background: currentIntentionData?.myVote === 'up' ? 'rgba(61,92,74,0.15)' : 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 6, padding: '0.3rem 0.55rem', cursor: 'pointer', color: currentIntentionData?.myVote === 'up' ? colors.forest : colors.muted, display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
-                                <ThumbsUp size={14} /> {currentIntentionData?.votes?.up > 0 ? currentIntentionData.votes.up : ''}
-                              </button>
-                              <button onClick={() => castVote(currentIndex, 'down')} title="This intention doesn't fit" style={{ background: currentIntentionData?.myVote === 'down' ? 'rgba(155,45,48,0.12)' : 'none', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 6, padding: '0.3rem 0.55rem', cursor: 'pointer', color: currentIntentionData?.myVote === 'down' ? colors.crimson : colors.muted, display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
-                                <ThumbsDown size={14} /> {currentIntentionData?.votes?.down > 0 ? currentIntentionData.votes.down : ''}
-                              </button>
-                              {currentIntentionData?.sources?.length > 0 && (
-                                <button onClick={() => setShowSources(!showSources)} style={{ background: 'none', border: 'none', color: colors.muted, fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline', marginLeft: 'auto' }}>
-                                  sources ({currentIntentionData.sources.length}) {showSources ? '▴' : '▾'}
-                                </button>
-                              )}
-                            </div>
-                          )}
-                          {isSourcedIntention && showSources && currentIntentionData?.sources?.length > 0 && (
-                            <ul style={{ marginTop: '0.7rem', marginBottom: 0, paddingLeft: '1.1rem', color: colors.muted, fontSize: '0.78rem' }}>
-                              {currentIntentionData.sources.map(url => (
-                                <li key={url} style={{ marginBottom: '0.25rem', wordBreak: 'break-all' }}>
-                                  <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: colors.blue, textDecoration: 'underline' }}>{url}</a>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                          <p style={{ color: colors.faded, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>What the sources say</p>
+                          {currentExtracts.map((ex, i) => {
+                            let host = ex.source
+                            try { host = new URL(ex.source).hostname.replace(/^www\./, '') } catch {}
+                            return (
+                              <blockquote key={i} style={{ margin: '0 0 0.85rem 0', padding: '0.5rem 0 0.5rem 0.85rem', borderLeft: `3px solid ${colors.gold}`, background: 'transparent' }}>
+                                <p style={{ fontFamily: "'Cormorant', serif", fontSize: '1rem', color: colors.ink, lineHeight: 1.55, margin: '0 0 0.35rem 0', fontStyle: 'italic' }}>
+                                  &ldquo;{ex.quote}&rdquo;
+                                </p>
+                                <a href={ex.source} target="_blank" rel="noopener noreferrer" style={{ color: colors.muted, textDecoration: 'none', fontSize: '0.75rem' }}>
+                                  — {host} ↗
+                                </a>
+                              </blockquote>
+                            )
+                          })}
                         </>
                       )}
                     </div>
