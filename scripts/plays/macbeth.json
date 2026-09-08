@@ -56,6 +56,64 @@
           "endChunk": 15
         }
       ]
+    },
+    {
+      "id": "glamis-thou-art",
+      "title": "Glamis thou art, and Cawdor",
+      "character": "Lady Macbeth",
+      "act": "Act 1, Scene 5",
+      "chunks": [
+        { "front": "Glamis thou art,", "back": "and Cawdor;" },
+        { "front": "and shalt be what thou", "back": "art promised." },
+        { "front": "Yet do I fear", "back": "thy nature;" },
+        { "front": "it is too full o' the milk", "back": "of human kindness" },
+        { "front": "to catch", "back": "the nearest way." },
+        { "front": "Thou wouldst be great,", "back": "art not without ambition," },
+        { "front": "but without the illness", "back": "should attend it." },
+        { "front": "What thou wouldst highly,", "back": "that wouldst thou holily;" },
+        { "front": "wouldst not play false,", "back": "and yet wouldst wrongly win." },
+        { "front": "Thou'ldst have, great Glamis,", "back": "that which cries 'Thus thou must do,'" },
+        { "front": "if thou have it;", "back": "and that which rather" },
+        { "front": "thou dost fear to do,", "back": "than wishest should be undone." },
+        { "front": "Hie thee hither,", "back": "that I may pour" },
+        { "front": "my spirits", "back": "in thine ear," },
+        { "front": "and chastise with the valor", "back": "of my tongue" },
+        { "front": "all that impedes thee", "back": "from the golden round," },
+        { "front": "which fate and metaphysical aid", "back": "doth seem" },
+        { "front": "to have thee", "back": "crown'd withal." }
+      ],
+      "beats": [
+        {
+          "label": "Name The Obstacle",
+          "intention": "To name what stands in her way — his tenderness",
+          "startChunk": 0,
+          "endChunk": 4
+        },
+        {
+          "label": "Diagnose The Flaw",
+          "intention": "To identify the exact defect — ambition without ruthlessness",
+          "startChunk": 5,
+          "endChunk": 6
+        },
+        {
+          "label": "Catalogue The Contradictions",
+          "intention": "To lay bare his moral confusion — he wants the crown but fears the deed",
+          "startChunk": 7,
+          "endChunk": 11
+        },
+        {
+          "label": "Summon Him Home",
+          "intention": "To call him back so she can drive out his conscience with her tongue",
+          "startChunk": 12,
+          "endChunk": 14
+        },
+        {
+          "label": "Claim The Crown For Both",
+          "intention": "To position herself as fate's instrument, removing what stalls the coronation",
+          "startChunk": 15,
+          "endChunk": 17
+        }
+      ]
     }
   ]
 }
