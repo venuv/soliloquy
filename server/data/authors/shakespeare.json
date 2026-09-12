@@ -1403,43 +1403,62 @@
         {
           "front": "to render the deeds",
           "back": "of mercy."
+        },
+        {
+          "front": "I have spoke thus much",
+          "back": "to mitigate"
+        },
+        {
+          "front": "the justice of thy plea;",
+          "back": "which if thou follow,"
+        },
+        {
+          "front": "this strict court of Venice",
+          "back": "must needs give sentence"
+        },
+        {
+          "front": "'gainst the merchant",
+          "back": "there."
         }
       ],
       "beats": [
         {
           "id": 0,
-          "label": "Define Mercy",
-          "intention": "To illustrate",
+          "label": "Open with the image of mercy",
+          "intention": "to set mercy in the room as a natural, blessing thing — a shared truth the court agrees on before it becomes an argument",
           "startChunk": 0,
           "endChunk": 3
         },
         {
           "id": 1,
-          "label": "Emphasize Mercy",
-          "intention": "To emphasize",
+          "label": "Elevate mercy above kingship",
+          "intention": "to build mercy as higher than any earthly power, riding rising tension into the crescendo — a king resembles God most when justice bends to mercy",
           "startChunk": 4,
-          "endChunk": 8
+          "endChunk": 13
         },
         {
           "id": 2,
-          "label": "Exalt Mercy",
-          "intention": "To elevate",
-          "startChunk": 9,
-          "endChunk": 11
+          "label": "Turn on Shylock",
+          "intention": "to name him directly and spring the theological trap — the prayers he says every day demand he grant what he now refuses",
+          "startChunk": 14,
+          "endChunk": 18
         },
         {
           "id": 3,
-          "label": "Relate Mercy to God",
-          "intention": "To show",
-          "startChunk": 12,
-          "endChunk": 12
+          "label": "State the ruling that follows",
+          "intention": "to close the argument aloud — name the specific consequence if the strict-justice route continues, that the court must rule against Antonio",
+          "startChunk": 19,
+          "endChunk": 22
+        }
+      ],
+      "beatSources": [
+        {
+          "name": "Acting Coach Scotland",
+          "url": "https://www.actingcoachscotland.co.uk/portias-monologue-from-act-4-scene-1-of-the-merchant-of-venice"
         },
         {
-          "id": 4,
-          "label": "Apply and Plead for Mercy",
-          "intention": "To persuade",
-          "startChunk": 13,
-          "endChunk": 18
+          "name": "StageMilk",
+          "url": "https://www.stagemilk.com/portia-monologue-act-4-scene-1/"
         }
       ]
     },

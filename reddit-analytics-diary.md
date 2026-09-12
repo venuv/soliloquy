@@ -606,6 +606,89 @@ Aug 30/31 diary asked: "Does MT-7543's Sept 1-7 return produce a student cluster
 
 ---
 
+## 2026-09-12 — Day 22 (Beyreis arrival theory, coach-sourced beats methodology)
+
+### Cincinnati outreach — first plausible arrival
+
+Marketing cadence resumed 2026-09-08 (1 personalized cold-outreach/day to Cincinnati private-HS English teachers, per `project_marketing_paused.md`). First send went out 9/8 evening to **Mark Beyreis** (Seven Hills, Upper School English Dept Head) via the 7hills.org contact form. Draft included: filmed Much Ado hook, AI-researcher-from-liberal-arts framing, Perbacco umbrella + Main Street Ventures Cincinnati-local grant, Recite+Beats feature callout, r/shakespeare validation link, "labor of love / usage-and-cocktail-party-stories are the currency" close, LinkedIn signature.
+
+Dashboard shows a new user 24h later:
+- **`371654`** — first-login **2026-09-09 21:37 Cincinnati local**, iPhone iOS 18.7, Eastern-Time tz.
+- Completed all 4 onboarding slides, went `home → catalog → practice-open` in ~40s, landed on **`know-bank-where-wild-thyme`** (Oberon fairy speech, MND).
+- **Returned 4:59 AM local next day**, re-opened same passage. No completed session.
+
+**Theory (unconfirmed):** `371654` is Beyreis responding to the 9/8 outreach. Signals: exact day-after timing, Cincinnati-consistent tz, iPhone-mobile (teacher-typical), Oberon MND pick (consistent with English Dept Head who films MND-adjacent comedies). Counter-evidence: no completed session, no reply, no direct signal. Recorded as theory in `project_marketing_paused.md`, NOT as confirmed. Nick Rose is the next queued send (rosen@countryday.net — direct email confirmed via a public Country Day page).
+
+**Self-correction lesson:** I initially attributed `371654` to "NYC" because the tz payload was `America/New_York`. Owner corrected — tz ≠ city, and Cincinnati is on Eastern. Saved as `feedback_tz_geo_attribution.md` — future dashboard reads should use tz for time-of-day only, not location. If in doubt, ask the owner (who tracks outreach recipients).
+
+### Methodology shift — coach-sourced beats + giveback tooltip
+
+Doing my own end-to-end test of `quality-of-mercy` (Portia) against Acting Coach Scotland's breakdown exposed a systemic quality problem with the current LLM-generated beats:
+
+1. **Truncation.** Our chunks stop at "to render the deeds of mercy" — missing the last 4 lines where Portia turns from preacher to advocate ("this strict court of Venice / must needs give sentence 'gainst the merchant there"). That's the rhetorical *pivot* of the speech. Losing it makes it read as a sermon rather than a legal trap dressed as a sermon. This is Portia-as-Balthazar's whole character move; the app has been silently omitting it.
+
+2. **A syntactic unit split across beats.** "And earthly power doth then show likest God's" (chunk 12) completes only when chunk 13 arrives with "When mercy seasons justice." We put those two chunks in separate beats. Splitting them mangles the crescendo — that line *is* the crescendo of the mercy-vs-earthly-power movement.
+
+3. **Boundary off-by-one on the dramatic pivot.** Our Beat 4 starts at chunk 13, but chunk 14 ("Therefore, Jew…") is where Portia stops speaking to the room and speaks *at* Shylock. Beat 4 staples the tail of one thought onto the head of the next.
+
+4. **Generic intention verbs.** "To illustrate / emphasize / elevate / show / persuade" gives an actor nowhere to go. A coach's intention ("to shame him with theology he can't refute") is a real object; ours is text summary.
+
+These aren't Portia-specific — they're a class of error LLM-summary-of-text produces. The coach who directed the play authors from dramatic *intention*, not text-shape parsing.
+
+**Decision (owner call): switch to coach-sourced authoring for the top-N works.**
+- **Methodology:** read a reputable acting-coach breakdown (Acting Coach Scotland, StageMilk, RSC, Folger, Globe, drama-teacher.com); use it as ground truth for boundaries + intentions + dramatic arc; author beats **in own voice** informed by (not copied from) the source.
+- **Giveback framing (owner's phrasing):** "point to theirs as an authoritative source, as a giveback." Not IP fig-leaf — genuine reciprocity. Backlinks also produce real referral traffic to the coach; may open latent-outreach channels.
+- **Design (owner call):** sources appear as a **hover tooltip on desktop, tap-to-toggle on touch**, triggered by a small ⓘ icon next to the "Beats" header. Keeps interface clean. Mobile tap-toggle is essential because dashboard shows heavy iPhone/Android traffic.
+- **Data:** optional `beatSources: [{name, url}]` per work in `shakespeare.json`. Absence = no icon rendered. Zero UI change for works without coach sourcing; enables gradual rollout. Silent state is honest — no "empty state" distinguishes "no sources yet" from "no sources exist."
+- **Voice consistency:** commit to Stanislavsky action-verb intentions across the whole re-authored corpus. No mixing schools.
+
+Saved as `project_coach_sourced_beats.md`.
+
+### Coverage audit — go/no-go test
+
+Launched a research agent (60-min time-box) to audit whether coach-grade breakdowns exist across the 44-work corpus, prioritizing the top-10 opened list. Go/no-go signal for the methodology:
+- <10 works covered → methodology unworkable; keep LLM-generated with hand-authored polish
+- 10–25 works covered → tier the corpus: coach-sourced for the top tier, hand-authored elsewhere
+- 25+ works covered → make coach-sourced the standard, deep-cuts as exceptions
+
+Results deferred to next diary entry once the agent reports back.
+
+### Aligning with H1 (beauty over slop)
+
+This whole shift is a **H1 investment**. LLM-summary-of-text is exactly the "generic AI output" the passionate-user filter would notice on Portia; a Nick Rose or English A-Level Teacher opens the app, plays with the beats, and instantly senses whether a human with taste sat between the text and the output. Coach-sourced authoring is the seam where "AI can produce beauty" gets tested against a hard-graded audience.
+
+Cost tradeoff: hand-authoring goes from ~20 min/work to ~45-60 min/work with coach ingestion. Ship rate falls. Trade is defensible while the app is in learning mode with a small passionate audience — velocity of ships isn't the constraint; per-ship *depth* is.
+
+### Ships today
+- **Memory:** `project_coach_sourced_beats.md` (methodology + design decision + coverage-audit result + tiering), `feedback_tz_geo_attribution.md` (tz≠city lesson)
+- **Memory update:** `project_marketing_paused.md` (Beyreis sent, 371654 theory logged as unconfirmed, Nick Rose queued as next-send with confirmed direct email `rosen@countryday.net`)
+- **Draft:** Nick Rose outreach email adapted for theater-director + CSC-cofounder lens (owner drafted; pending send)
+- **Coverage audit:** 26 YES / 9 PARTIAL / 9 NO across 44 works. Top-10 opened = 9/10 YES. StageMilk is corpus workhorse (~30 works); Acting Coach Scotland double-covers the top canonical pieces. Pericles cluster (5 of 9 NOs) accepted as tier-3 (class-2 Shakespeare, no pruning).
+- **Code ship — `quality-of-mercy` re-authored as reference example:**
+  - Added 4 missing chunks (19-22): "I have spoke thus much…must needs give sentence 'gainst the merchant there." The dramatic pivot the LLM-authored version had silently truncated.
+  - Consolidated 5 mushy beats into 4 coach-aligned beats: (0) Open with image of mercy [0-3], (1) Elevate mercy above kingship [4-13, climaxing on "when mercy seasons justice"], (2) Turn on Shylock [14-18], (3) State the ruling that follows [19-22].
+  - Fixed the syntactic-unit split ("earthly power…when mercy seasons justice" now within a single beat, not straddling two).
+  - Fixed the off-by-one on Beat 2's start (chunk 14 "Therefore, Jew…" not chunk 13).
+  - Replaced generic intention verbs ("To illustrate / emphasize / elevate / show / persuade") with Stanislavsky action-verb intentions an actor can *do* (e.g. "to name him directly and spring the theological trap — the prayers he says every day demand he grant what he now refuses").
+  - Introduced `beatSources` data shape on the work: `[{name, url}]`. Portia cites Acting Coach Scotland + StageMilk. Absence of the array = no icon rendered (silent), so gradual rollout across Tier 1 works ships zero-risk.
+  - UI tooltip component (ⓘ next to Beats header, hover-desktop / tap-toggle-mobile) NOT yet built — data-shape shipping first so authoring can proceed in parallel with UI work.
+
+### Open questions
+- **Does `371654` return again?** A third visit would elevate the Beyreis theory from tea-leaves to plausible. Silence for 5+ days would demote it.
+- **First live user reaction to re-authored Portia beats** — she's the highest-traffic work at 20 opens/30d and the calibration piece. Any change in session duration / completion rate on quality-of-mercy over the next 2 weeks would be a directional signal.
+- **UI tooltip build** — small overlay, low priority relative to continuing the Tier 1 re-authoring wave. Both Portia's re-authored beats AND the `beatSources` data ship silently without the tooltip; UI just makes the giveback visible.
+- **Which Tier 1 work next?** Natural order = descending traffic among the 26 YES works: `to-be-or-not-to-be`, `tomorrow-and-tomorrow`, `raven-himself-hoarse`, `we-few-we-happy-few`, `if-music-be-the-food`, `blow-winds`. Each ~45-60 min.
+- Carried: MT-7543 evangelism theory, cluster detector threshold tuning.
+
+### Open questions
+- **Does `371654` return again?** A third visit would elevate the Beyreis theory from tea-leaves to plausible. Silence for 5+ days would demote it.
+- **Coverage audit result** — determines whether coach-sourced becomes standard-for-many or top-tier-only.
+- **First re-authored work** — assuming coverage supports it, `quality-of-mercy` is the natural starter given we've already done the ground-truth comparison. Ship it as the reference example, use as calibration for subsequent re-authors.
+- **Does the ⓘ tooltip need a settings-panel escape hatch** for users who dislike hover UI? (Probably no — small footprint, low intrusion — but worth watching if any user comments on it.)
+- Carried: MT-7543 evangelism theory, cluster detector threshold tuning.
+
+---
+
 <!-- Next entry template
 
 ## YYYY-MM-DD — Short label
